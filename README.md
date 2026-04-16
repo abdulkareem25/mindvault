@@ -1,1 +1,1 @@
-# mindvault
+# MindVault
