@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
+import { sendEmail } from "./mail.service.js";
 
 export const signup = async ({
   name,
@@ -31,6 +32,16 @@ export const signup = async ({
     process.env.JWT_SECRET,
     { expiresIn: "7d" }
   );
+
+  sendEmail(
+    email,
+    "Welcome to MindVault!",
+    `<h1>Welcome to MindVault, ${name}!</h1>
+     <p>Your account has been successfully created.</p>
+     <p>Start storing and solving your problems smarter 💡</p>`
+  ).catch((err) => {
+    console.error("Error sending welcome email:", err.message);
+  });
 
   return {
     _id: user._id,
