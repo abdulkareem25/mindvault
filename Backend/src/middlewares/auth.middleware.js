@@ -3,7 +3,7 @@ import User from "../models/user.model.js";
 
 const authMiddleware = async (req, res, next) => {
   try {
-    let token, err;
+    let token, error;
 
     if (
       req.headers.authorization &&
@@ -13,9 +13,9 @@ const authMiddleware = async (req, res, next) => {
     }
 
     if (!token) {
-      err = new Error("Unauthorized - No token provided");
-      err.statusCode = 401;
-      throw err;
+      error = new Error("Unauthorized - No token provided");
+      error.statusCode = 401;
+      throw error;
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -23,9 +23,9 @@ const authMiddleware = async (req, res, next) => {
     const user = await User.findById(decoded.id).select("-password");
 
     if (!user) {
-      err = new Error("Unauthorized - User not found");
-      err.statusCode = 401;
-      throw err;
+      error = new Error("Unauthorized - User not found");
+      error.statusCode = 401;
+      throw error;
     }
 
     req.user = user;
