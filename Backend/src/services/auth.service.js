@@ -40,7 +40,7 @@ export const signup = async ({
 
   await sendEmail(
     email,
-    "Welcome to MindVault!",
+    "Welcome to MindVault - Please Verify Your Email",
     `
       <h1>Welcome, ${name}!</h1>
       <p>Thank you for signing up for MindVault. Please verify your email by clicking the link below:</p>
