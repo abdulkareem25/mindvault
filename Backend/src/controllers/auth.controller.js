@@ -40,6 +40,17 @@ export const loginController = asyncHandler(async (req, res) => {
   });
 });
 
+export const verifyEmailController = asyncHandler(async (req, res) => {
+  const { token } = req.query;
+  
+  await authService.verifyEmail(token);
+
+  res.json({
+    success: true,
+    message: "Email verified successfully",
+  });
+});
+
 
 
 

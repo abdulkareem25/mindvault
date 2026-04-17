@@ -1,4 +1,4 @@
-import { body } from "express-validator";
+import { body, query } from "express-validator";
 
 export const signupValidator = [
   body("name")
@@ -53,4 +53,10 @@ export const loginValidator = [
   body("password")
     .notEmpty()
     .withMessage("Password is required"),
+];
+
+export const verifyEmailValidator = [
+  query("token")
+    .notEmpty()
+    .withMessage("Verification token is required")
 ];

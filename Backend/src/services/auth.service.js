@@ -33,12 +33,19 @@ export const signup = async ({
     { expiresIn: "7d" }
   );
 
-  sendEmail(
+  const emailVerificationToken = jwt.sign(
+    { id: user._id },
+    process.env.JWT_SECRET
+  );
+
+  await sendEmail(
     email,
     "Welcome to MindVault!",
-    `<h1>Welcome to MindVault, ${name}!</h1>
-     <p>Your account has been successfully created.</p>
-     <p>Start storing and solving your problems smarter 💡</p>`
+    `
+      <h1>Welcome, ${name}!</h1>
+      <p>Thank you for signing up for MindVault. Please verify your email by clicking the link below:</p>
+      <a href="http://localhost:${process.env.PORT}/api/auth/verify-email?token=${emailVerificationToken}">Verify Email</a>
+    `
   ).catch((err) => {
     console.error("Error sending welcome email:", err.message);
   });
@@ -81,4 +88,20 @@ export const login = async ({ email, password }) => {
     email: user.email,
     token,
   };
+};
+
+export const verifyEmail = async (token) => {
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const userId = decoded.id;
+
+  const user = await User.findById(userId);
+
+  if (!user) {
+    const error = new Error("Invalid verification token");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  user.isVerified = true;
+  await user.save();
 };
