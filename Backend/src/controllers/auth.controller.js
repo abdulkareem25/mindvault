@@ -164,6 +164,15 @@ export const verifyEmailController = asyncHandler(async (req, res) => {
   res.send(html);
 });
 
+export const getUserController = asyncHandler(async (req, res) => {
+  
+    const user = await authService.getUser(req.user._id);
+    res.status(200).json({
+        success: true,
+        data: user,
+    });
+});
+
 
 
 

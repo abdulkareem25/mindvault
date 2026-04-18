@@ -76,6 +76,14 @@ export const login = async ({ email, password }) => {
     throw error;
   }
 
+  const isVerified = user.isVerified;
+
+  if (!isVerified) {
+    const error = new Error("Email not verified. Please check your inbox.");
+    error.statusCode = 403;
+    throw error;
+  }
+
   const token = jwt.sign(
     { id: user._id },
     process.env.JWT_SECRET,
@@ -104,4 +112,16 @@ export const verifyEmail = async (token) => {
 
   user.isVerified = true;
   await user.save();
+};
+
+export const getUser = async (userId) => {
+  const user = await User.findById(userId).select("-password");
+
+  if (!user) {
+    const error = new Error("User not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  return user;
 };

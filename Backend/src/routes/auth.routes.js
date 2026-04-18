@@ -9,7 +9,9 @@ import {
   signupController,
   loginController,
   verifyEmailController,
+  getUserController,
 } from "../controllers/auth.controller.js";
+import authMiddleware from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
@@ -54,6 +56,18 @@ router.get(
   validateMiddleware,
   verifyEmailController
 );
-  
+
+/**
+ * @route GET /api/auth/me
+ * @desc Get current logged in user
+ * @access Private
+ * @header { Authorization: "Bearer <token>" }  
+ */
+
+router.get(
+  "/me",
+  authMiddleware,
+  getUserController
+);
 
 export default router;
