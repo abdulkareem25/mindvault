@@ -46,8 +46,7 @@ const problemSchema = new mongoose.Schema(
       {
         type: String,
         trim: true,
-        lowercase: true,
-        index: true,
+        lowercase: true
       },
     ],
 
