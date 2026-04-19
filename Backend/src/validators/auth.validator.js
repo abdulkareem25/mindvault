@@ -56,8 +56,14 @@ export const loginValidator = [
     .withMessage("Password is required"),
 ];
 
-export const verifyEmailValidator = [
+export const tokenValidator = [
   query("token")
     .notEmpty()
     .withMessage("Verification token is required")
+];
+
+export const emailValidator = [
+  body("email")
+    .notEmpty()
+    .withMessage("Verification email is required")
 ];

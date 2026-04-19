@@ -2,7 +2,8 @@ import express from "express";
 import {
   signupValidator,
   loginValidator,
-  verifyEmailValidator,
+  emailValidator,
+  tokenValidator,
 } from "../validators/auth.validator.js";
 import validateMiddleware from "../middlewares/validate.middleware.js";
 import {
@@ -10,6 +11,7 @@ import {
   loginController,
   verifyEmailController,
   getUserController,
+  resendEmailVerificationController,
 } from "../controllers/auth.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 
@@ -52,9 +54,23 @@ router.post(
 
 router.get(
   "/verify-email",
-  verifyEmailValidator,
+  tokenValidator,
   validateMiddleware,
   verifyEmailController
+);
+
+/**
+ * @route POST /api/auth/resend-verification
+ * @desc Resend email verification link
+ * @access Public
+ * @body { email }
+ */
+
+router.post(
+  "/resend-verification",
+  emailValidator,
+  validateMiddleware,
+  resendEmailVerificationController
 );
 
 /**
