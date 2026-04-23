@@ -38,7 +38,7 @@ const useAuth = () => {
       dispatch(setUser(data.user));
       dispatch(setError(null));
     } catch (error) {
-      dispatch(setError(error.message || 'Failed to fetch user'));
+      dispatch(setUser(null));
     } finally {
       dispatch(setLoading(false));
     }
