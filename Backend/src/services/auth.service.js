@@ -27,12 +27,6 @@ export const signup = async ({
     }
   });
 
-  const token = jwt.sign(
-    { id: user._id },
-    process.env.JWT_SECRET,
-    { expiresIn: "7d" }
-  );
-
   const emailVerificationToken = jwt.sign(
     { id: user._id },
     process.env.JWT_SECRET
@@ -49,14 +43,6 @@ export const signup = async ({
   ).catch((err) => {
     console.error("Error sending welcome email:", err.message);
   });
-
-  return {
-    _id: user._id,
-    name: user.name,
-    email: user.email,
-    preferences: user.preferences,
-    token,
-  };
 };
 
 export const login = async ({ email, password }) => {
@@ -91,10 +77,13 @@ export const login = async ({ email, password }) => {
   );
 
   return {
-    _id: user._id,
-    name: user.name,
-    email: user.email,
     token,
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      preferences: user.preferences,
+    }
   };
 };
 

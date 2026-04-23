@@ -5,12 +5,7 @@ const authMiddleware = async (req, res, next) => {
   try {
     let token, error;
 
-    if (
-      req.headers.authorization &&
-      req.headers.authorization.startsWith("Bearer")
-    ) {
-      token = req.headers.authorization.split(" ")[1];
-    }
+    token = req.cookies.token;
 
     if (!token) {
       error = new Error("Unauthorized - No token provided");

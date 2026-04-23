@@ -10,7 +10,7 @@ export const signupController = asyncHandler(async (req, res) => {
         aiTone,
     } = req.body;
 
-    const user = await authService.signup({
+    await authService.signup({
         name,
         email,
         password,
@@ -20,23 +20,29 @@ export const signupController = asyncHandler(async (req, res) => {
 
     res.status(201).json({
         success: true,
-        message: "User registered successfully",
-        data: user,
+        message: "Signup successful! Please check your email to verify your account."
     });
 });
 
 export const loginController = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
 
-    const user = await authService.login({
+    const { user, token } = await authService.login({
         email,
         password
+    });
+
+    res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
     res.status(200).json({
         success: true,
         message: "Login successful",
-        data: user,
+        user,
     });
 });
 
@@ -64,7 +70,7 @@ export const getUserController = asyncHandler(async (req, res) => {
     const user = await authService.getUser(req.user._id);
     res.status(200).json({
         success: true,
-        data: user,
+        user,
     });
 });
 
