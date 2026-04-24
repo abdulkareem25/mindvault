@@ -5,6 +5,7 @@ import Login from "../features/auth/pages/Login";
 import Signup from "../features/auth/pages/Signup";
 import VerifyEmail from "../features/auth/pages/VerifyEmail";
 import VerifySuccess from "../features/auth/pages/VerifySuccess";
+import Dashboard from "../features/problem/pages/Dashboard";
 
 const router = createBrowserRouter([
   {
@@ -25,9 +26,7 @@ const router = createBrowserRouter([
   }, {
     path: "/dashboard",
     element: <Protected>
-      <div className="min-h-screen flex items-center justify-center text-2xl font-semibold text-gray-500">
-        Welcome to the Dashboard!
-      </div>
+      <Dashboard />
     </Protected>
   }
 ]);
