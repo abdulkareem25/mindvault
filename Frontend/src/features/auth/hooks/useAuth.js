@@ -1,11 +1,11 @@
 import { useDispatch } from 'react-redux';
-import { setUser, setLoading, setError } from '../auth.slice';
-import { login, signup, getCurrentUser } from '../service/auth.api';
+import { setError, setLoading, setUser } from '../auth.slice';
+import { getCurrentUser, login, resendVerificationEmail, signup } from '../service/auth.api';
 
 
 const useAuth = () => {
   const dispatch = useDispatch();
-  
+
   const loginUser = async (email, password) => {
     dispatch(setLoading(true));
     try {
@@ -24,8 +24,10 @@ const useAuth = () => {
     try {
       await signup(name, email, password, confirmPassword);
       dispatch(setError(null));
+      return true;
     } catch (error) {
       dispatch(setError(error.message || 'Signup failed'));
+      return false;
     } finally {
       dispatch(setLoading(false));
     }
@@ -44,10 +46,19 @@ const useAuth = () => {
     }
   };
 
+  const resendVerificationEmailHandler = async (email) => {
+    try {
+      await resendVerificationEmail(email);
+    } catch (error) {
+      throw new Error(error.message || 'Failed to resend verification email');
+    }
+  };
+
   return {
     loginUser,
     signupUser,
     fetchCurrentUser,
+    resendVerificationEmail: resendVerificationEmailHandler,
   };
 };
 

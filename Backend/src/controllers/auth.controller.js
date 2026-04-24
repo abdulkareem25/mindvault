@@ -6,6 +6,7 @@ export const signupController = asyncHandler(async (req, res) => {
         name,
         email,
         password,
+        confirmPassword,
         defaultCategory,
         aiTone,
     } = req.body;
@@ -49,9 +50,16 @@ export const loginController = asyncHandler(async (req, res) => {
 export const verifyEmailController = asyncHandler(async (req, res) => {
     const { token } = req.query;
 
-    const html = await authService.verifyEmail(token);
+    const result = await authService.verifyEmail(token);
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
 
-    res.send(html);
+    if (result.isAlreadyVerified) {
+        // Redirect to already-verified frontend page
+        return res.redirect(`${clientUrl}/already-verified`);
+    }
+
+    // Redirect to verify-success frontend page
+    return res.redirect(`${clientUrl}/verify-success`);
 });
 
 export const resendEmailVerificationController = asyncHandler(async (req, res) => {

@@ -16,7 +16,7 @@ export const login = async (email, password) => {
 
 export const signup = async (name, email, password, confirmPassword) => {
   try {
-    const response = await api.post('/signup', { name, email, password, confirmpassword });
+    const response = await api.post('/signup', { name, email, password, confirmPassword });
     return response.data;
   } catch (error) {
     throw error.response ? error.response.data : new Error('Network error');
@@ -26,6 +26,15 @@ export const signup = async (name, email, password, confirmPassword) => {
 export const getCurrentUser = async () => {
   try {
     const response = await api.get('/me');
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('Network error');
+  }
+};
+
+export const resendVerificationEmail = async (email) => {
+  try {
+    const response = await api.post('/resend-verification', { email });
     return response.data;
   } catch (error) {
     throw error.response ? error.response.data : new Error('Network error');

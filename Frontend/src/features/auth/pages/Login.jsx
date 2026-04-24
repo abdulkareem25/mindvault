@@ -26,10 +26,13 @@ const Login = () => {
     await loginUser(formData.email, formData.password);
   };
 
-  
   useEffect(() => {
     if (user && !error && !loading) {
-      navigate('/dashboard');
+      if (user.isVerified) {
+        navigate('/dashboard');
+      } else {
+        navigate('/verify-email');
+      }
     }
   }, [user, error, loading, navigate]);
 

@@ -1,114 +1,35 @@
-import axios from 'axios'
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState } from 'react';
+import { useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
+import useAuth from '../hooks/useAuth';
 
 const Signup = () => {
+
+  const { signupUser } = useAuth();
+  const navigate = useNavigate();
+  const { loading, error } = useSelector((state) => state.auth);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
   })
-  const [errors, setErrors] = useState({})
-  const [loading, setLoading] = useState(false)
-  const [apiError, setApiError] = useState('')
-  const navigate = useNavigate()
-
-  const validateForm = () => {
-    const newErrors = {}
-
-    if (!formData.name) {
-      newErrors.name = 'Name is required'
-    } else if (formData.name.length < 2) {
-      newErrors.name = 'Name must be at least 2 characters'
-    }
-
-    if (!formData.email) {
-      newErrors.email = 'Email is required'
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid'
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required'
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters'
-    } else if (!/(?=.*[a-z])/.test(formData.password)) {
-      newErrors.password = 'Password must contain lowercase letters'
-    } else if (!/(?=.*[A-Z])/.test(formData.password)) {
-      newErrors.password = 'Password must contain uppercase letters'
-    } else if (!/(?=.*\d)/.test(formData.password)) {
-      newErrors.password = 'Password must contain numbers'
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password'
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match'
-    }
-
-    return newErrors
-  }
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
-    // Clear error for this field when user starts typing
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: '',
-      }))
-    }
-    // Clear confirmPassword error if password is being updated
-    if (name === 'password' && errors.confirmPassword) {
-      setErrors((prev) => ({
-        ...prev,
-        confirmPassword: '',
-      }))
-    }
-  }
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    })
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setApiError('')
-
-    const newErrors = validateForm()
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors)
-      return
+    e.preventDefault();
+    const success = await signupUser(formData.name, formData.email, formData.password, formData.confirmPassword);
+    console.log(success)
+    if (success) {
+      navigate('/verify-email', { state: { email: formData.email } });
     }
-
-    setLoading(true)
-
-    try {
-      // Replace with your actual API endpoint
-      const response = await axios.post(
-        'http://localhost:5000/api/auth/signup',
-        {
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-        }
-      )
-
-      // Store token in localStorage
-      localStorage.setItem('token', response.data.token)
-      localStorage.setItem('user', JSON.stringify(response.data.user))
-
-      // Navigate to dashboard or home
-      navigate('/dashboard')
-    } catch (error) {
-      setApiError(
-        error.response?.data?.message || 'Signup failed. Please try again.'
-      )
-    } finally {
-      setLoading(false)
-    }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center p-4 relative overflow-hidden">
@@ -129,7 +50,7 @@ const Signup = () => {
           </div>
 
           {/* Error Message */}
-          {apiError && (
+          {error && (
             <div className="mb-6 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-start gap-2">
               <svg
                 className="w-4 h-4 text-red-500 mt-0.5 shrink-0"
@@ -142,7 +63,7 @@ const Signup = () => {
                   clipRule="evenodd"
                 />
               </svg>
-              <p className="text-red-400 text-xs">{apiError}</p>
+              <p className="text-red-400 text-xs">{error}</p>
             </div>
           )}
 
@@ -158,17 +79,13 @@ const Signup = () => {
                 id="name"
                 name="name"
                 value={formData.name}
+                required
                 onChange={handleChange}
                 placeholder="John Doe"
                 disabled={loading}
-                className={`w-full px-4 py-2.5 rounded-lg bg-[#2a2a2a] border transition-all duration-200 focus:outline-none focus:ring-2 ${errors.name
-                  ? 'border-red-500/50 focus:ring-red-500/30'
-                  : 'border-[#3a3a3a] focus:border-[#21808d]/50 focus:ring-[#21808d]/20'
-                  } text-[#f0f0f0] placeholder-[#707070] disabled:opacity-50 disabled:cursor-not-allowed`}
+                className={`w-full px-4 py-2.5 rounded-lg bg-[#2a2a2a] border transition-all duration-200 focus:outline-none focus:ring-2 'border-[#3a3a3a] focus:border-[#21808d]/50 focus:ring-[#21808d]/20'
+                   text-[#f0f0f0] placeholder-[#707070] disabled:opacity-50 disabled:cursor-not-allowed`}
               />
-              {errors.name && (
-                <p className="text-red-400 text-xs mt-1.5">{errors.name}</p>
-              )}
             </div>
 
             {/* Email Input */}
@@ -181,17 +98,13 @@ const Signup = () => {
                 id="email"
                 name="email"
                 value={formData.email}
+                required
                 onChange={handleChange}
                 placeholder="you@example.com"
                 disabled={loading}
-                className={`w-full px-4 py-2.5 rounded-lg bg-[#2a2a2a] border transition-all duration-200 focus:outline-none focus:ring-2 ${errors.email
-                  ? 'border-red-500/50 focus:ring-red-500/30'
-                  : 'border-[#3a3a3a] focus:border-[#21808d]/50 focus:ring-[#21808d]/20'
-                  } text-[#f0f0f0] placeholder-[#707070] disabled:opacity-50 disabled:cursor-not-allowed`}
+                className={`w-full px-4 py-2.5 rounded-lg bg-[#2a2a2a] border transition-all duration-200 focus:outline-none focus:ring-2 'border-[#3a3a3a] focus:border-[#21808d]/50 focus:ring-[#21808d]/20'
+                  text-[#f0f0f0] placeholder-[#707070] disabled:opacity-50 disabled:cursor-not-allowed`}
               />
-              {errors.email && (
-                <p className="text-red-400 text-xs mt-1.5">{errors.email}</p>
-              )}
             </div>
 
             {/* Password Input */}
@@ -204,20 +117,13 @@ const Signup = () => {
                 id="password"
                 name="password"
                 value={formData.password}
+                required
                 onChange={handleChange}
                 placeholder="••••••••"
                 disabled={loading}
-                className={`w-full px-4 py-2.5 rounded-lg bg-[#2a2a2a] border transition-all duration-200 focus:outline-none focus:ring-2 ${errors.password
-                  ? 'border-red-500/50 focus:ring-red-500/30'
-                  : 'border-[#3a3a3a] focus:border-[#21808d]/50 focus:ring-[#21808d]/20'
-                  } text-[#f0f0f0] placeholder-[#707070] disabled:opacity-50 disabled:cursor-not-allowed`}
+                className={`w-full px-4 py-2.5 rounded-lg bg-[#2a2a2a] border transition-all duration-200 focus:outline-none focus:ring-2 'border-[#3a3a3a] focus:border-[#21808d]/50 focus:ring-[#21808d]/20'
+                   text-[#f0f0f0] placeholder-[#707070] disabled:opacity-50 disabled:cursor-not-allowed`}
               />
-              {errors.password && (
-                <p className="text-red-400 text-xs mt-1.5">{errors.password}</p>
-              )}
-              <p className="text-[#707070] text-xs mt-1.5">
-                Min 6 chars, uppercase, lowercase, numbers
-              </p>
             </div>
 
             {/* Confirm Password Input */}
@@ -230,17 +136,13 @@ const Signup = () => {
                 id="confirmPassword"
                 name="confirmPassword"
                 value={formData.confirmPassword}
+                required
                 onChange={handleChange}
                 placeholder="••••••••"
                 disabled={loading}
-                className={`w-full px-4 py-2.5 rounded-lg bg-[#2a2a2a] border transition-all duration-200 focus:outline-none focus:ring-2 ${errors.confirmPassword
-                  ? 'border-red-500/50 focus:ring-red-500/30'
-                  : 'border-[#3a3a3a] focus:border-[#21808d]/50 focus:ring-[#21808d]/20'
-                  } text-[#f0f0f0] placeholder-[#707070] disabled:opacity-50 disabled:cursor-not-allowed`}
+                className={`w-full px-4 py-2.5 rounded-lg bg-[#2a2a2a] border transition-all duration-200 focus:outline-none focus:ring-2 'border-[#3a3a3a] focus:border-[#21808d]/50 focus:ring-[#21808d]/20'
+                   text-[#f0f0f0] placeholder-[#707070] disabled:opacity-50 disabled:cursor-not-allowed`}
               />
-              {errors.confirmPassword && (
-                <p className="text-red-400 text-xs mt-1.5">{errors.confirmPassword}</p>
-              )}
             </div>
 
             {/* Submit Button */}
