@@ -1,12 +1,12 @@
-import './config/env.js';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import express from 'express';
 import morgan from 'morgan';
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
-import notFoundMiddleware from './middlewares/notFound.middleware.js';
+import './config/env.js';
 import errorMiddleware from './middlewares/error.middleware.js';
+import notFoundMiddleware from './middlewares/notFound.middleware.js';
 import authRouter from './routes/auth.routes.js';
-import problemRouter from './routes/problem.routes.js';
+import chatRouter from './routes/chat.routes.js';
 
 const app = express();
 
@@ -20,7 +20,7 @@ app.use(cors({
 }));
 
 app.use('/api/auth', authRouter);
-app.use('/api/problems', problemRouter);
+app.use('/api/chats', chatRouter);
 
 app.get('/', (req, res) => {
   res.send('Welcome to the MindVault API!');

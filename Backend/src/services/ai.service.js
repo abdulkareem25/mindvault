@@ -1,33 +1,36 @@
 import { ChatMistralAI } from '@langchain/mistralai';
-import { HumanMessage } from 'langchain';
-import readline from 'readline/promises';
+import { HumanMessage, SystemMessage } from 'langchain';
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
+const mistralModel = new ChatMistralAI({
+  model: 'mistral-small-latest'
 });
 
-const model = new ChatMistralAI({
-  model: 'mistral-small-latest',
-  apiKey: process.env.MISTRAL_API_KEY
+const mistralLargeModel = new ChatMistralAI({
+  model: 'mistral-large-latest'
 });
 
-const messages = [];
+export const generateChatTitle = async (initialMessage) => {
+  const systemPrompt = `You are a helpful assistant that creates concise and descriptive titles for user conversations. The title should capture the main topic or theme of the conversation in a few words. Avoid generic titles and focus on the specific content of the initial message.`;
 
-while (true) {
-  const userInput = await rl.question('You: ');
-  
-  if (userInput.toLowerCase() === 'exit') {
-    console.log('Exiting...');
-    break;
-  }
+  const humanPrompt = `Based on the following initial message, generate a concise and descriptive title for the conversation:\n\n"${initialMessage}"\n\nThe title should be no more than 5 words.`;
 
-  messages.push(new HumanMessage(userInput).content);
+  const response = await mistralModel.invoke([
+    new SystemMessage(systemPrompt),
+    new HumanMessage(humanPrompt)
+  ]);
 
-  const response = await model.invoke(messages);
+  return response.text.trim();
+};
 
-  messages.push(response.text);
+export const generateAIResponse = async (conversationHistory, category) => {  
+  const systemPrompt = `You are a helpful assistant that provides thoughtful and relevant responses to user messages. The conversation is categorized as "${category}", so tailor your response to fit that context. Use the conversation history to understand the user's needs and provide a meaningful reply.`;
 
-  console.log('MistralAI:', response.text);
-}
-rl.close();
+  const humanPrompt = `Here is the conversation history:\n\n${conversationHistory}\n\nBased on this conversation, provide a helpful and relevant response to the user's latest message.`;
+
+  const response = await mistralLargeModel.invoke([
+    new SystemMessage(systemPrompt),
+    new HumanMessage(humanPrompt)
+  ]);
+
+  return response.text.trim();
+};
