@@ -6,11 +6,11 @@ export const initSocketServer = (httpServer) => {
   io = new Server(httpServer, {
     cors: {
       origin: process.env.CLIENT_URL,
-      withCredentials: true,
+      credentials: true,
     },
   });
   console.log('Socket.io server initialized');
-  
+
   io.on('connection', (socket) => {
     console.log('New client connected:', socket.id);
 
