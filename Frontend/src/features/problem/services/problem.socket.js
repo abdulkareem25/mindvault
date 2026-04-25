@@ -13,5 +13,5 @@ export const initSocketConnection = () => {
     console.log("Disconnected from problem socket server");
   });
 
-  // return socket;
+  return socket;
 };
