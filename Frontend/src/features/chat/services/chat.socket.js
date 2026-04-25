@@ -6,11 +6,11 @@ export const initSocketConnection = () => {
   });
 
   socket.on("connect", () => {
-    console.log("Connected to problem socket server");
+    console.log("Connected to chat socket server");
   });
 
   socket.on("disconnect", () => {
-    console.log("Disconnected from problem socket server");
+    console.log("Disconnected from chat socket server");
   });
 
   return socket;

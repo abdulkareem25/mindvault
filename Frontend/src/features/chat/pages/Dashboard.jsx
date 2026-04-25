@@ -1,9 +1,9 @@
-import { useEffect } from 'react'
-import { useProblem } from '../hooks/useProblem';
+import { useEffect } from 'react';
+import { useChat } from '../hooks/useChat';
 
 const Dashboard = () => {
 
-  const { initSocketConnection } = useProblem();
+  const { initSocketConnection } = useChat();
 
   useEffect(() => {
     initSocketConnection();

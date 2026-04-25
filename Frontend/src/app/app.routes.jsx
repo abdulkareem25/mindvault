@@ -5,7 +5,7 @@ import Login from "../features/auth/pages/Login";
 import Signup from "../features/auth/pages/Signup";
 import VerifyEmail from "../features/auth/pages/VerifyEmail";
 import VerifySuccess from "../features/auth/pages/VerifySuccess";
-import Dashboard from "../features/problem/pages/Dashboard";
+import Dashboard from "../features/chat/pages/Dashboard";
 
 const router = createBrowserRouter([
   {
