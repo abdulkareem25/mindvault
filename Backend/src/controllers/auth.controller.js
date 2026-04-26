@@ -54,11 +54,9 @@ export const verifyEmailController = asyncHandler(async (req, res) => {
     const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
 
     if (result.isAlreadyVerified) {
-        // Redirect to already-verified frontend page
         return res.redirect(`${clientUrl}/already-verified`);
     }
 
-    // Redirect to verify-success frontend page
     return res.redirect(`${clientUrl}/verify-success`);
 });
 
@@ -78,6 +76,7 @@ export const getUserController = asyncHandler(async (req, res) => {
     const user = await authService.getUser(req.user._id);
     res.status(200).json({
         success: true,
+        message: "User retrieved successfully",
         user,
     });
 });

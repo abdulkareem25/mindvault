@@ -11,28 +11,61 @@ export const createChat = async (userId, category, initialMessage) => {
     category,
     title
   });
-
-  const userMessage = await Message.create({
-    chatId: chat._id,
-    role: "user",
-    content: initialMessage,
-  });
-
-  chat.messages.push(userMessage._id);
-  chat.lastMessageAt = new Date();
-  await chat.save();
+  
+  await addMessageToChat(chat._id, userId, "user", initialMessage);
 
   const response = await generateAIResponse(initialMessage, category);
 
-  const assistantMessage = await Message.create({
-    chatId: chat._id,
-    role: "assistant",
-    content: response,
-  });
-
-  chat.messages.push(assistantMessage._id);
-  chat.lastMessageAt = new Date();
-  await chat.save();
+  await addMessageToChat(chat._id, userId, "assistant", response);
 
   return chat.populate("messages");
+};
+
+export const getChats = async (userId) => {
+  const chats = await Chat.find({ userId });
+  return chats;
+};
+
+export const getChatById = async (chatId, userId) => {
+  const chat = await Chat.findOne({ _id: chatId, userId }).populate("messages");
+  return chat;
+};
+
+export const deleteChat = async (chatId, userId) => {
+  const chat = await Chat.findOneAndDelete({ _id: chatId, userId });
+  if (chat) {
+    await Message.deleteMany({ chatId: chat._id });
+  }
+  return chat;
+};
+
+export const sendMessage = async (chatId, userId, message) => {
+
+  const chat = await Chat.findOne({ _id: chatId, userId });
+
+  if (!chat) {
+    throw new Error("Chat not found");
+  }
+
+  await addMessageToChat(chatId, userId, "user", message);
+
+  const response = await generateAIResponse(message, chat.category);
+
+  await addMessageToChat(chatId, userId, "assistant", response);
+
+  return response;
+};
+
+const addMessageToChat = async (chatId, userId, sender, content) => {
+
+  const message = await Message.create({
+    chatId,
+    userId,
+    sender,
+    content,
+  });
+
+  await Chat.findByIdAndUpdate(chatId, { $push: { messages: message._id } });
+  
+  return message;
 };
