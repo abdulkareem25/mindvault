@@ -54,7 +54,7 @@ const Login = () => {
           {error && (
             <div className="mb-6 p-4 bg-claude-error/10 border border-claude-error rounded-base flex items-start gap-3">
               <svg
-                className="w-5 h-5 text-claude-error mt-0.5 shrink-0"
+                className="w-10 h-10 text-claude-error shrink-0"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
