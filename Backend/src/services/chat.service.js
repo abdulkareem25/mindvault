@@ -1,6 +1,6 @@
 import Chat from "../models/chat.model.js";
 import Message from "../models/message.model.js";
-import { generateChatTitle, generateAIResponse } from "./ai.service.js";
+import { generateChatTitle, generateAIResponse, generateInitialAIResponse } from "./ai.service.js";
 
 export const createChat = async (userId, category, initialMessage) => {
 
@@ -14,7 +14,7 @@ export const createChat = async (userId, category, initialMessage) => {
   
   await addMessageToChat(chat._id, userId, "user", initialMessage);
 
-  const response = await generateAIResponse(initialMessage, category);
+  const response = await generateInitialAIResponse(initialMessage, category);
 
   await addMessageToChat(chat._id, userId, "assistant", response);
 

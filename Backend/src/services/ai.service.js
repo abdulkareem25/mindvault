@@ -22,6 +22,19 @@ export const generateChatTitle = async (initialMessage) => {
   return response.text.trim();
 };
 
+export const generateInitialAIResponse = async (initialMessage, category) => {
+  const systemPrompt = `You are a helpful assistant that provides thoughtful and relevant responses to user messages. The conversation is categorized as "${category}", so tailor your response to fit that context. Based on the initial message, provide a meaningful reply that encourages further conversation.`;
+
+  const humanPrompt = `Here is the initial message:\n\n"${initialMessage}"\n\nBased on this message, provide a helpful and relevant response that encourages further conversation.`;
+
+  const response = await mistralModel.invoke([
+    new SystemMessage(systemPrompt),
+    new HumanMessage(humanPrompt)
+  ]);
+
+  return response.text.trim();
+};
+
 export const generateAIResponse = async (conversationHistory, category) => {  
   const systemPrompt = `You are a helpful assistant that provides thoughtful and relevant responses to user messages. The conversation is categorized as "${category}", so tailor your response to fit that context. Use the conversation history to understand the user's needs and provide a meaningful reply.`;
 

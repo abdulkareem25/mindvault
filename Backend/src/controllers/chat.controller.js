@@ -89,7 +89,7 @@ export const deleteChatController = asyncHandler(async (req, res) => {
   });
 });
 
-export const sendMessageController = asyncHandler(async (req, res) => {
+export const sendMessageAndGetResponseController = asyncHandler(async (req, res) => {
 
   const chatId = req.params.id;
   const { message } = req.body;
@@ -111,7 +111,7 @@ export const sendMessageController = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    message: "Message sent successfully",
+    message: "Message sent and response received successfully",
     data: response,
   });
 });

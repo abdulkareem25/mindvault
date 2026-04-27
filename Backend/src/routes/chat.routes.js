@@ -1,5 +1,5 @@
 import express from "express";
-import { createChatController } from "../controllers/chat.controller.js";
+import { createChatController, getChatByIdController, getChatsController, sendMessageAndGetResponseController } from "../controllers/chat.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import validateMiddleware from "../middlewares/validate.middleware.js";
 import { createChatValidator } from "../validators/chat.validator.js";
@@ -29,10 +29,43 @@ router.post(
  * @returns { chats[] }
  */
 
-// router.get(
-//   "/",
-//   authMiddleware,
-//   getChatsController
-// );
+router.get(
+  "/",
+  authMiddleware,
+  getChatsController
+);
+
+/**
+ * @route GET /api/chats/:id
+ * @desc Get a specific chat by ID
+ * @access Private
+ * @param { id } - Chat ID
+ * @returns { chat }
+ */
+
+router.get(
+  "/:id",
+  authMiddleware,
+  idValidator,
+  validateMiddleware,
+  getChatByIdController
+);
+
+/**
+ * @route POST /api/chats/:id/messages
+ * @desc Send a message in a specific chat and get AI response
+ * @access Private
+ * @param { id } - Chat ID
+ * @body { message: String }
+ * @returns { response }
+ */
+
+router.post(
+  "/:id/messages",
+  authMiddleware,
+  sendMessageValidator,
+  validateMiddleware,
+  sendMessageAndGetResponseController
+);
 
 export default router;
