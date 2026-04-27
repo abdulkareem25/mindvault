@@ -25,7 +25,7 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const success = await signupUser(formData.name, formData.email, formData.password, formData.confirmPassword);
-    console.log(success)
+  
     if (success) {
       navigate('/verify-email', { state: { email: formData.email } });
     }
