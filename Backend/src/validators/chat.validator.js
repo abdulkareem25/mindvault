@@ -1,4 +1,4 @@
-import { body, params } from "express-validator";
+import { body, param } from "express-validator";
 
 export const createChatValidator = [
   body("category")
@@ -17,7 +17,7 @@ export const createChatValidator = [
 ];
 
 export const idValidator = [
-  params("id")
+  param("id")
     .isMongoId()
     .withMessage("Invalid ID format")
     .notEmpty()
@@ -25,7 +25,7 @@ export const idValidator = [
 ];
 
 export const sendMessageValidator = [
-  params("id")
+  param("id")
     .isMongoId()
     .withMessage("Invalid chat ID format")
     .notEmpty()
