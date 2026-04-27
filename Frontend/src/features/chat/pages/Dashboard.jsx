@@ -10,8 +10,11 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center text-2xl font-semibold text-gray-500">
-      Welcome to the Dashboard!
+    <div className="min-h-screen bg-claude-deep-dark flex items-center justify-center p-4">
+      <div className="text-center">
+        <h1 className="section-heading text-claude-ivory mb-4">Welcome to Dashboard!</h1>
+        <p className="body-large text-claude-warm-silver">Your AI-Powered Mind Mapping Experience</p>
+      </div>
     </div>
   )
 }

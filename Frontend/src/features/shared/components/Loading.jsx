@@ -1,5 +1,3 @@
-
-
 const Loading = ({
   fullScreen = true,
   size = 'md',
@@ -10,7 +8,7 @@ const Loading = ({
   const dotAnimation = `
     @keyframes smoothDots {
       0%, 60%, 100% {
-        opacity: 0.3;
+        opacity: 0.6;
         transform: translateY(0);
       }
       30% {
@@ -23,11 +21,11 @@ const Loading = ({
     }
   `
 
-  // Size configurations
+  // Size configurations - increased sizes
   const sizeConfig = {
-    sm: { dotSize: 'w-2 h-2', gap: 'gap-1.5', text: 'text-sm' },
-    md: { dotSize: 'w-3 h-3', gap: 'gap-2.5', text: 'text-base' },
-    lg: { dotSize: 'w-4 h-4', gap: 'gap-3.5', text: 'text-lg' },
+    sm: { dotSize: 'w-3 h-3', gap: 'gap-2', text: 'text-sm' },
+    md: { dotSize: 'w-4 h-4', gap: 'gap-3', text: 'text-base' },
+    lg: { dotSize: 'w-5 h-5', gap: 'gap-4', text: 'text-lg' },
   }
 
   const config = sizeConfig[size] || sizeConfig.md
@@ -39,13 +37,16 @@ const Loading = ({
         {[...Array(3)].map((_, i) => (
           <div
             key={i}
-            className={`${config.dotSize} bg-linear-to-b from-[#21808d] to-[#00aaff] rounded-full dot-animate`}
-            style={{ animationDelay: `${i * 0.2}s` }}
+            className={`${config.dotSize} bg-claude-terracotta rounded-full dot-animate`}
+            style={{
+              animationDelay: `${i * 0.2}s`,
+              backgroundColor: '#c96442'
+            }}
           />
         ))}
       </div>
       {showMessage && (
-        <p className={`${config.text} font-medium text-[#a0a0a0]`}>
+        <p className={`${config.text} font-medium text-claude-warm-silver`}>
           {message}
         </p>
       )}
@@ -54,14 +55,9 @@ const Loading = ({
 
   if (fullScreen) {
     return (
-      <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center p-4 relative overflow-hidden">
-        {/* Subtle gradient background */}
-        <div className="absolute inset-0 bg-linear-to-br from-[#0f0f0f] via-[#1a1a1a] to-[#0f0f0f]"></div>
-        <div className="absolute top-1/4 left-1/2 w-96 h-96 bg-[#21808d]/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-1/4 right-1/3 w-96 h-96 bg-[#00aaff]/5 rounded-full blur-3xl"></div>
-
+      <div className="min-h-screen bg-claude-deep-dark flex items-center justify-center p-4">
         {/* Content */}
-        <div className="relative z-10">
+        <div>
           <LoadingContent />
         </div>
       </div>

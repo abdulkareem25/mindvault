@@ -46,28 +46,23 @@ const VerifyEmail = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Subtle gradient background */}
-      <div className="absolute inset-0 bg-linear-to-br from-[#0f0f0f] via-[#1a1a1a] to-[#0f0f0f]"></div>
-      <div className="absolute top-1/4 left-1/2 w-96 h-96 bg-[#21808d]/5 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-1/4 right-1/3 w-96 h-96 bg-[#00aaff]/5 rounded-full blur-3xl"></div>
-
+    <div className="min-h-screen bg-claude-deep-dark flex items-center justify-center p-4">
       {/* Content Container */}
-      <div className="relative w-full max-w-md z-10">
-        <div className="bg-[#1a1a1a] backdrop-blur-sm rounded-xl shadow-xl p-8 border border-[#2a2a2a]">
+      <div className="w-full max-w-md">
+        <div className="card">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-semibold text-[#f0f0f0] mb-2">
+            <h1 className="feature-title text-claude-terracotta mb-2">
               MindVault
             </h1>
-            <p className="text-[#a0a0a0] text-sm font-normal">Verify your email</p>
+            <p className="text-claude-warm-silver text-sm">Verify your email</p>
           </div>
 
           {/* Email Icon */}
           <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 bg-[#21808d]/10 rounded-full flex items-center justify-center border border-[#21808d]/30">
+            <div className="w-16 h-16 bg-claude-terracotta/10 rounded-full flex items-center justify-center border border-claude-terracotta/30">
               <svg
-                className="w-8 h-8 text-[#21808d]"
+                className="w-8 h-8 text-claude-terracotta"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -84,29 +79,29 @@ const VerifyEmail = () => {
 
           {/* Main Message */}
           <div className="text-center mb-6">
-            <h2 className="text-xl font-semibold text-[#f0f0f0] mb-3">
+            <h2 className="feature-title text-claude-ivory mb-3">
               Verification email sent!
             </h2>
-            <p className="text-[#c0c0c0] text-sm mb-2">
+            <p className="text-claude-warm-silver text-sm mb-2">
               We've sent a verification link to:
             </p>
-            <p className="text-[#21808d] font-medium text-sm break-all">
+            <p className="text-claude-terracotta font-medium text-sm break-all">
               {userEmail}
             </p>
           </div>
 
           {/* Instructions */}
-          <div className="bg-[#2a2a2a]/50 border border-[#3a3a3a] rounded-lg p-4 mb-6">
-            <p className="text-[#a0a0a0] text-sm leading-relaxed">
+          <div className="bg-claude-dark-surface border border-claude-border-dark rounded-base p-4 mb-6">
+            <p className="text-claude-warm-silver text-sm leading-relaxed">
               Please check your email and click the verification link to activate your account. The link will expire in 24 hours.
             </p>
           </div>
 
           {/* Success Message */}
           {resendSuccess && (
-            <div className="mb-6 p-3 bg-green-500/10 border border-green-500/30 rounded-lg flex items-start gap-2 animate-in fade-in">
+            <div className="mb-6 p-4 bg-green-100 border border-green-300 rounded-base flex items-start gap-3 animate-in fade-in">
               <svg
-                className="w-4 h-4 text-green-500 mt-0.5 shrink-0"
+                className="w-5 h-5 text-green-600 mt-0.5 shrink-0"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -116,7 +111,7 @@ const VerifyEmail = () => {
                   clipRule="evenodd"
                 />
               </svg>
-              <p className="text-green-400 text-xs">Verification email resent successfully!</p>
+              <p className="text-green-700 text-sm">Verification email resent successfully!</p>
             </div>
           )}
 
@@ -125,10 +120,10 @@ const VerifyEmail = () => {
             <button
               onClick={handleResendEmail}
               disabled={cooldown > 0 || resendLoading || loading}
-              className={`w-full py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2
+              className={`w-full py-2.5 rounded-base font-medium transition-all duration-200 flex items-center justify-center gap-2
                 ${cooldown > 0 || resendLoading || loading
-                  ? 'bg-[#21808d]/30 text-[#21808d]/60 cursor-not-allowed border border-[#21808d]/20'
-                  : 'bg-[#21808d] text-white hover:bg-[#1a6670] border border-[#21808d] hover:shadow-lg hover:shadow-[#21808d]/20'
+                  ? 'btn-secondary opacity-50 cursor-not-allowed'
+                  : 'btn-primary hover:shadow-whisper'
                 }`}
             >
               {resendLoading ? (
@@ -170,24 +165,24 @@ const VerifyEmail = () => {
               )}
             </button>
 
-            <p className="text-center text-[#707070] text-xs">
+            <p className="text-center text-claude-stone text-xs">
               Didn't receive the email? Check your spam folder or try resending.
             </p>
           </div>
 
           {/* Divider */}
           <div className="my-6 flex items-center gap-3">
-            <div className="flex-1 h-px bg-[#3a3a3a]"></div>
-            <span className="text-[#707070] text-xs">or</span>
-            <div className="flex-1 h-px bg-[#3a3a3a]"></div>
+            <div className="flex-1 h-px bg-claude-border-dark"></div>
+            <span className="text-claude-stone text-xs">or</span>
+            <div className="flex-1 h-px bg-claude-border-dark"></div>
           </div>
 
           {/* Help Text */}
-          <p className="text-center text-[#a0a0a0] text-xs">
+          <p className="text-center text-claude-warm-silver text-xs">
             Already verified?{' '}
             <button
               onClick={() => navigate('/login')}
-              className="text-[#21808d] hover:text-[#1a6670] transition-colors font-medium"
+              className="text-claude-terracotta hover:text-claude-coral transition-colors font-medium"
             >
               Go to login
             </button>
@@ -195,7 +190,7 @@ const VerifyEmail = () => {
         </div>
 
         {/* Footer Info */}
-        <p className="text-center text-[#707070] text-xs mt-6">
+        <p className="text-center text-claude-stone text-xs mt-6">
           This page automatically updates when you verify your email
         </p>
       </div>

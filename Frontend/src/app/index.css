@@ -1,1 +1,488 @@
 @import 'tailwindcss';
+
+/* Claude Design System - Global Typography & Base Styles */
+
+@layer base {
+
+  /* Font Face Declarations - Using System Fallbacks */
+  @font-face {
+    font-family: 'Anthropic Serif';
+    src: local('Georgia'), local('serif');
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Anthropic Sans';
+    src: local('Arial'), local('system-ui'), local('sans-serif');
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Anthropic Mono';
+    src: local('Courier New'), local('monospace');
+    font-display: swap;
+  }
+
+  /* Root/HTML base settings */
+  html {
+    font-family: 'Anthropic Sans', Arial, system-ui, sans-serif;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: #141413;
+    color: #faf9f5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  /* Display / Hero - 64px */
+  .display {
+    font-family: Georgia, serif;
+    font-weight: 500;
+    font-size: 64px;
+    line-height: 1.10;
+    letter-spacing: normal;
+  }
+
+  /* Section Heading - 52px */
+  .section-heading {
+    font-family: Georgia, serif;
+    font-weight: 500;
+    font-size: 52px;
+    line-height: 1.20;
+    letter-spacing: normal;
+  }
+
+  /* Sub-heading Large - 36px */
+  .sub-heading-lg {
+    font-family: Georgia, serif;
+    font-weight: 500;
+    font-size: 36px;
+    line-height: 1.30;
+    letter-spacing: normal;
+  }
+
+  /* Sub-heading - 32px */
+  .sub-heading {
+    font-family: Georgia, serif;
+    font-weight: 500;
+    font-size: 32px;
+    line-height: 1.10;
+    letter-spacing: normal;
+  }
+
+  /* Sub-heading Small - 25.6px */
+  .sub-heading-sm {
+    font-family: Georgia, serif;
+    font-weight: 500;
+    font-size: 25.6px;
+    line-height: 1.20;
+    letter-spacing: normal;
+  }
+
+  /* Feature Title - 20.8px */
+  .feature-title {
+    font-family: Georgia, serif;
+    font-weight: 500;
+    font-size: 20.8px;
+    line-height: 1.20;
+    letter-spacing: normal;
+  }
+
+  /* Body Serif - 17px (for editorial passages) */
+  .body-serif {
+    font-family: Georgia, serif;
+    font-weight: 400;
+    font-size: 17px;
+    line-height: 1.60;
+    letter-spacing: normal;
+  }
+
+  /* Body Large - 20px */
+  .body-large {
+    font-family: Arial, system-ui, sans-serif;
+    font-weight: 400;
+    font-size: 20px;
+    line-height: 1.60;
+    letter-spacing: normal;
+  }
+
+  /* Body Standard - 16px */
+  .body-standard {
+    font-family: Arial, system-ui, sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.25;
+    letter-spacing: normal;
+  }
+
+  /* Body Small - 15px */
+  .body-small {
+    font-family: Arial, system-ui, sans-serif;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 1.00;
+    letter-spacing: normal;
+  }
+
+  /* Caption - 14px */
+  .caption {
+    font-family: Arial, system-ui, sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 1.43;
+    letter-spacing: normal;
+  }
+
+  /* Label - 12px */
+  .label {
+    font-family: Arial, system-ui, sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 1.25;
+    letter-spacing: 0.12px;
+  }
+
+  /* Overline - 10px */
+  .overline {
+    font-family: Arial, system-ui, sans-serif;
+    font-weight: 400;
+    font-size: 10px;
+    line-height: 1.60;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* Micro - 9.6px */
+  .micro {
+    font-family: Arial, system-ui, sans-serif;
+    font-weight: 400;
+    font-size: 9.6px;
+    line-height: 1.60;
+    letter-spacing: 0.096px;
+  }
+
+  /* Code - 15px */
+  .code {
+    font-family: 'Courier New', monospace;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 1.60;
+    letter-spacing: -0.32px;
+  }
+
+  /* Links */
+  a {
+    color: #d97757;
+    transition: color 0.2s;
+  }
+
+  a:hover {
+    color: #c96442;
+  }
+
+  /* Dark Theme - Headings */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: #faf9f5;
+  }
+
+  /* Headings */
+  h1 {
+    font-family: Georgia, serif;
+    font-weight: 500;
+    font-size: 64px;
+    line-height: 1.10;
+  }
+
+  h2 {
+    font-family: Georgia, serif;
+    font-weight: 500;
+    font-size: 52px;
+    line-height: 1.20;
+  }
+
+  h3 {
+    font-family: Georgia, serif;
+    font-weight: 500;
+    font-size: 32px;
+    line-height: 1.10;
+  }
+
+  h4 {
+    font-family: Georgia, serif;
+    font-weight: 500;
+    font-size: 20.8px;
+    line-height: 1.20;
+  }
+
+  h5,
+  h6 {
+    font-family: Georgia, serif;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 1.25;
+  }
+
+  /* Paragraphs */
+  p {
+    font-family: Arial, system-ui, sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.25;
+  }
+
+  /* Code blocks */
+  code {
+    font-family: 'Courier New', monospace;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 1.60;
+    letter-spacing: -0.32px;
+  }
+
+  pre {
+    background-color: #30302e;
+    color: #b0aea5;
+    border-radius: 8px;
+    padding: 1rem;
+    overflow: auto;
+  }
+
+  /* Form Elements */
+  input,
+  textarea,
+  select {
+    font-family: Arial, system-ui, sans-serif;
+    font-weight: 400;
+    background-color: #30302e;
+    border: 1px solid #30302e;
+    border-radius: 12px;
+    padding: 0.5rem 0.75rem;
+    color: #faf9f5;
+    transition: all 0.2s;
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+    border-color: #3898ec;
+    box-shadow: 0 0 0 2px #3898ec33;
+  }
+
+  input::placeholder,
+  textarea::placeholder,
+  select::placeholder {
+    color: #87867f;
+  }
+
+  textarea {
+    resize: vertical;
+  }
+
+  button {
+    font-family: Arial, system-ui, sans-serif;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+}
+
+/* Component Classes */
+
+/* Primary Button - Terracotta Brand */
+.btn-primary {
+  background-color: #c96442;
+  color: #faf9f5;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #c96442;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-primary:active {
+  box-shadow: inset 0px 0px 0px 1px rgba(0, 0, 0, 0.15);
+}
+
+/* Secondary Button - Dark Surface */
+.btn-secondary {
+  background-color: #141413;
+  color: #b0aea5;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+  box-shadow: 0px 0px 0px 1px #c2c0b6;
+}
+
+.btn-secondary:hover {
+  background-color: #30302e;
+}
+
+/* Tertiary Button - Dark Variant */
+.btn-tertiary {
+  background-color: #30302e;
+  color: #b0aea5;
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  border: 1px solid #30302e;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.btn-tertiary:hover {
+  background-color: #141413;
+  color: #faf9f5;
+}
+
+/* Dark Button */
+.btn-dark {
+  background-color: #30302e;
+  color: #b0aea5;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+  box-shadow: 0px 0px 0px 1px #30302e;
+}
+
+.btn-dark:hover {
+  background-color: #141413;
+}
+
+/* Card Component - Dark Theme */
+.card {
+  background-color: #30302e;
+  border: 1px solid #30302e;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: rgba(0, 0, 0, 0.3) 0px 4px 24px;
+  transition: all 0.2s;
+}
+
+.card:hover {
+  box-shadow: rgba(0, 0, 0, 0.4) 0px 4px 24px;
+}
+
+/* Dark Card */
+.card-dark {
+  background-color: #30302e;
+  border: 1px solid #30302e;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+/* Container */
+.container {
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  max-width: 1200px;
+}
+
+/* Hero Container - Dark Theme */
+.hero {
+  background-color: #141413;
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
+
+@media (min-width: 768px) {
+  .hero {
+    padding-top: 8rem;
+    padding-bottom: 8rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero {
+    padding-top: 12rem;
+    padding-bottom: 12rem;
+  }
+}
+
+/* Dark Section */
+.section-dark {
+  background-color: #141413;
+  color: #b0aea5;
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
+
+@media (min-width: 768px) {
+  .section-dark {
+    padding-top: 8rem;
+    padding-bottom: 8rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .section-dark {
+    padding-top: 12rem;
+    padding-bottom: 12rem;
+  }
+}
+
+/* Text Utilities */
+.text-primary {
+  color: #141413;
+}
+
+.text-secondary {
+  color: #5e5d59;
+}
+
+.text-tertiary {
+  color: #87867f;
+}
+
+.text-brand {
+  color: #c96442;
+}
+
+/* Focus State */
+.focus-ring {
+  outline: none;
+  box-shadow: 0 0 0 2px #3898ec;
+  border-radius: 4px;
+}
+
+/* Utility: Text Truncation */
+.truncate-1 {
+  display: -webkit-box;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.truncate-2 {
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.truncate-3 {
+  display: -webkit-box;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

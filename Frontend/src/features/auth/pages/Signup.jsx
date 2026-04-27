@@ -32,28 +32,23 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Subtle gradient background */}
-      <div className="absolute inset-0 bg-linear-to-br from-[#0f0f0f] via-[#1a1a1a] to-[#0f0f0f]"></div>
-      <div className="absolute top-1/4 left-1/2 w-96 h-96 bg-[#21808d]/5 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-1/4 right-1/3 w-96 h-96 bg-[#00aaff]/5 rounded-full blur-3xl"></div>
-
+    <div className="min-h-screen bg-claude-deep-dark flex items-center justify-center p-4">
       {/* Form Container */}
-      <div className="relative w-full max-w-md z-10 max-h-screen overflow-y-auto scrollbar-hide">
-        <div className="bg-[#1a1a1a] backdrop-blur-sm rounded-xl shadow-xl p-8 border border-[#2a2a2a]">
+      <div className="w-full max-w-md max-h-screen overflow-y-auto">
+        <div className="card">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-semibold text-[#f0f0f0] mb-2">
+            <h1 className="feature-title text-claude-terracotta mb-2">
               MindVault
             </h1>
-            <p className="text-[#a0a0a0] text-sm font-normal">Create your account</p>
+            <p className="text-claude-warm-silver text-sm">Create your account</p>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="mb-6 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-start gap-2">
+            <div className="mb-6 p-4 bg-claude-error/10 border border-claude-error rounded-base flex items-start gap-3">
               <svg
-                className="w-4 h-4 text-red-500 mt-0.5 shrink-0"
+                className="w-5 h-5 text-claude-error mt-0.5 shrink-0"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -63,7 +58,7 @@ const Signup = () => {
                   clipRule="evenodd"
                 />
               </svg>
-              <p className="text-red-400 text-xs">{error}</p>
+              <p className="text-claude-error text-sm">{error}</p>
             </div>
           )}
 
@@ -71,7 +66,7 @@ const Signup = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Name Input */}
             <div>
-              <label htmlFor="name" className="block text-[#c0c0c0] text-sm font-medium mb-2">
+              <label htmlFor="name" className="block text-claude-warm-silver text-sm font-medium mb-2">
                 Full Name
               </label>
               <input
@@ -83,14 +78,13 @@ const Signup = () => {
                 onChange={handleChange}
                 placeholder="John Doe"
                 disabled={loading}
-                className={`w-full px-4 py-2.5 rounded-lg bg-[#2a2a2a] border transition-all duration-200 focus:outline-none focus:ring-2 'border-[#3a3a3a] focus:border-[#21808d]/50 focus:ring-[#21808d]/20'
-                   text-[#f0f0f0] placeholder-[#707070] disabled:opacity-50 disabled:cursor-not-allowed`}
+                className='w-full px-3 py-2 rounded-lg bg-claude-dark-surface border border-claude-border-dark transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-claude-focus focus:border-claude-focus text-claude-ivory placeholder-claude-stone disabled:opacity-50 disabled:cursor-not-allowed'
               />
             </div>
 
             {/* Email Input */}
             <div>
-              <label htmlFor="email" className="block text-[#c0c0c0] text-sm font-medium mb-2">
+              <label htmlFor="email" className="block text-claude-warm-silver text-sm font-medium mb-2">
                 Email Address
               </label>
               <input
@@ -102,14 +96,13 @@ const Signup = () => {
                 onChange={handleChange}
                 placeholder="you@example.com"
                 disabled={loading}
-                className={`w-full px-4 py-2.5 rounded-lg bg-[#2a2a2a] border transition-all duration-200 focus:outline-none focus:ring-2 'border-[#3a3a3a] focus:border-[#21808d]/50 focus:ring-[#21808d]/20'
-                  text-[#f0f0f0] placeholder-[#707070] disabled:opacity-50 disabled:cursor-not-allowed`}
+                className='w-full px-3 py-2 rounded-lg bg-claude-dark-surface border border-claude-border-dark transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-claude-focus focus:border-claude-focus text-claude-ivory placeholder-claude-stone disabled:opacity-50 disabled:cursor-not-allowed'
               />
             </div>
 
             {/* Password Input */}
             <div>
-              <label htmlFor="password" className="block text-[#c0c0c0] text-sm font-medium mb-2">
+              <label htmlFor="password" className="block text-claude-warm-silver text-sm font-medium mb-2">
                 Password
               </label>
               <input
@@ -121,14 +114,13 @@ const Signup = () => {
                 onChange={handleChange}
                 placeholder="••••••••"
                 disabled={loading}
-                className={`w-full px-4 py-2.5 rounded-lg bg-[#2a2a2a] border transition-all duration-200 focus:outline-none focus:ring-2 'border-[#3a3a3a] focus:border-[#21808d]/50 focus:ring-[#21808d]/20'
-                   text-[#f0f0f0] placeholder-[#707070] disabled:opacity-50 disabled:cursor-not-allowed`}
+                className='w-full px-3 py-2 rounded-lg bg-claude-dark-surface border border-claude-border-dark transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-claude-focus focus:border-claude-focus text-claude-ivory placeholder-claude-stone disabled:opacity-50 disabled:cursor-not-allowed'
               />
             </div>
 
             {/* Confirm Password Input */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-[#c0c0c0] text-sm font-medium mb-2">
+              <label htmlFor="confirmPassword" className="block text-claude-warm-silver text-sm font-medium mb-2">
                 Confirm Password
               </label>
               <input
@@ -140,8 +132,7 @@ const Signup = () => {
                 onChange={handleChange}
                 placeholder="••••••••"
                 disabled={loading}
-                className={`w-full px-4 py-2.5 rounded-lg bg-[#2a2a2a] border transition-all duration-200 focus:outline-none focus:ring-2 'border-[#3a3a3a] focus:border-[#21808d]/50 focus:ring-[#21808d]/20'
-                   text-[#f0f0f0] placeholder-[#707070] disabled:opacity-50 disabled:cursor-not-allowed`}
+                className='w-full px-3 py-2 rounded-lg bg-claude-dark-surface border border-claude-border-dark transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-claude-focus focus:border-claude-focus text-claude-ivory placeholder-claude-stone disabled:opacity-50 disabled:cursor-not-allowed'
               />
             </div>
 
@@ -149,7 +140,7 @@ const Signup = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 px-4 bg-[#21808d] hover:bg-[#1a6670] text-[#f0f0f0] font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-6"
+              className="btn-primary w-full mt-6 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -167,22 +158,22 @@ const Signup = () => {
 
           {/* Divider */}
           <div className="my-6 flex items-center gap-3">
-            <div className="flex-1 h-px bg-[#3a3a3a]"></div>
-            <span className="text-[#707070] text-xs">or</span>
-            <div className="flex-1 h-px bg-[#3a3a3a]"></div>
+            <div className="flex-1 h-px bg-claude-border-dark"></div>
+            <span className="text-claude-stone text-xs">or</span>
+            <div className="flex-1 h-px bg-claude-border-dark"></div>
           </div>
 
           {/* Login Link */}
-          <p className="text-center text-[#a0a0a0] text-sm">
+          <p className="text-center text-claude-warm-silver text-sm">
             Already have an account?{' '}
-            <Link to="/login" className="text-[#00aaff] hover:text-[#00aaff]/80 transition-colors">
+            <Link to="/login" className="text-claude-coral hover:text-claude-terracotta transition-colors font-medium">
               Sign in
             </Link>
           </p>
         </div>
 
         {/* Footer */}
-        <p className="text-center text-[#606060] text-xs mt-8">
+        <p className="text-center text-claude-stone text-xs mt-8">
           © 2026 MindVault
         </p>
       </div>
