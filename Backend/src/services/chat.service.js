@@ -57,7 +57,9 @@ export const sendMessage = async (chatId, userId, message) => {
 
   await addMessageToChat(chatId, userId, "user", message);
 
-  const response = await generateAIResponse(message, chat.category);
+  const updatedChat = await Chat.findById(chatId).populate("messages");
+
+  const response = await generateAIResponse(updatedChat.messages, chat.category);
 
   await addMessageToChat(chatId, userId, "assistant", response);
 

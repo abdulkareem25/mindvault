@@ -1,5 +1,6 @@
 import {
   ArrowUp,
+  Loader,
   MessageSquare,
   MessagesSquareIcon,
   Plus,
@@ -8,8 +9,9 @@ import {
   SidebarOpenIcon
 } from "lucide-react";
 import { useEffect, useState } from 'react';
-import { useChat } from '../hooks/useChat';
 import { useSelector } from "react-redux";
+import Toast from '../../shared/components/Toast';
+import { useChat } from '../hooks/useChat';
 
 const NAV_ITEMS = [
   { id: "new", label: "New chat", icon: Plus },
@@ -19,13 +21,15 @@ const NAV_ITEMS = [
 
 const Dashboard = () => {
 
-  const { initSocketConnection, loadChats, loadMessageHistory } = useChat();
-  const { chats, messageHistory } = useSelector((state) => state.chat);
+  const { initSocketConnection, loadChats, loadMessageHistory, sendMessageToChat } = useChat();
+  const { chats, messageHistory, loading } = useSelector((state) => state.chat);
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeNav, setActiveNav] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [activeChatId, setActiveChatId] = useState();
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
 
   useEffect(() => {
     initSocketConnection();
@@ -34,17 +38,43 @@ const Dashboard = () => {
 
   const handleChat = async (chat) => {
     setActiveChatId(chat._id);
-    await loadMessageHistory(chat._id);
+    setIsLoadingHistory(true);
+    try {
+      await loadMessageHistory(chat._id);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
+  const handleNavClick = (id) => {
+    setActiveNav(id);
+    if (id === "new") {
+      setActiveChatId(null);
+    } else if (id === "chats") {
+      setActiveChatId(null);
+    } else if (id === "search") {
+      // Implement search functionality here
+    } else {
+      // Handle other nav items if needed
+    }
   };
 
 
-  const handleSend = () => {
-    if (!inputValue.trim()) return;
-    setInputValue("");
+  const handleSend = async () => {
+    const message = inputValue.trim();
+    if (!message || !activeChatId) return;
+    setIsSendingMessage(true);
+    try {
+      await sendMessageToChat(activeChatId, message);
+      setInputValue("");
+      await loadMessageHistory(activeChatId);
+    } finally {
+      setIsSendingMessage(false);
+    }
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey && !isSendingMessage) {
       e.preventDefault();
       handleSend();
     }
@@ -52,7 +82,6 @@ const Dashboard = () => {
 
   const handleInput = (e) => {
     setInputValue(e.target.value);
-
   };
 
   return (
@@ -60,6 +89,7 @@ const Dashboard = () => {
       className="flex h-screen overflow-hidden bg-claude-deep-dark"
       style={{ fontFamily: "var(--font-sans)" }}
     >
+      <Toast />
       {/* ── Mobile backdrop ── */}
       {sidebarOpen && (
         <div
@@ -126,17 +156,14 @@ const Dashboard = () => {
           {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              onClick={() => setActiveNav(id)}
-              className={`
+              onClick={() => handleNavClick(id)}
+              className="group
                 flex items-center gap-3 px-3 py-2.5 rounded-base w-full text-left
                 transition-all duration-150 text-body-sm
-                ${activeNav === id
-                  ? "bg-claude-dark-surface-2 border border-claude-border-dark text-claude-text-on-dark"
-                  : "text-claude-text-on-dark-soft hover:bg-claude-dark-surface-2 hover:text-claude-text-on-dark border border-transparent"
-                }
-              `}
+                active:bg-claude-dark-surface-2 active:border active:border-claude-border-dark active:text-claude-text-on-dark
+                text-claude-text-on-dark-soft hover:bg-claude-dark-surface-2 hover:text-claude-text-on-dark border border-transparent"
             >
-              <Icon size={20} strokeWidth={1.75} className={activeNav === id ? "text-claude-coral" : "text-claude-stone"} />
+              <Icon size={20} strokeWidth={1.75} className="group-active:text-claude-coral text-claude-stone" />
               <span style={{ fontSize: "15px" }}>{label}</span>
             </button>
           ))}
@@ -155,14 +182,14 @@ const Dashboard = () => {
               <button
                 key={chat._id}
                 onClick={() => handleChat(chat)}
-                className="
+                className="group
                 flex items-center gap-2.5 px-3 py-2.5 rounded-base w-full text-left
                 text-claude-text-on-dark-soft
                 hover:bg-claude-dark-surface-2 hover:text-claude-text-on-dark
                 transition-all duration-150 border border-transparent
                 truncate shrink-0"
               >
-                <MessageSquare size={16} strokeWidth={1.75} className="text-claude-stone shrink-0" />
+                <MessageSquare size={16} strokeWidth={1.75} className="text-claude-stone group-active:text-claude-coral shrink-0" />
                 <span className="truncate" style={{ fontSize: "15px" }}>{chat.title}</span>
               </button>
             ))}
@@ -218,14 +245,14 @@ const Dashboard = () => {
               className="flex-1 text-claude-text-on-dark font-medium text-lg tracking-tight text-center"
               style={{ fontFamily: "var(--font-serif)" }}
             >
-              {RECENT_CHATS.find((chat) => chat.id === activeChatId)?.title || "Chat"}
+              {chats.find((chat) => chat.id === activeChatId)?.title || "Chat"}
             </span>
             <button className="w-15 h-15" />
           </div>
         )}
 
         {/* top bar */}
-        {activeChatId && messageHistory &&(
+        {activeChatId && messageHistory && (
           <div className="hidden md:flex items-center justify-center p-6 border-b border-claude-border-subtle-dark">
             <span
               className="text-claude-text-on-dark font-medium text-lg tracking-tight"
@@ -239,7 +266,15 @@ const Dashboard = () => {
         {/* Chat area */}
         <div className="flex-1 p-6 overflow-y-auto">
           <div className="flex flex-col gap-6 max-w-3xl mx-auto justify-bottom h-full">
-            {messageHistory.length === 0 && (
+            {isLoadingHistory ? (
+              // {/* Loading state */}
+              <div className="flex-1 flex flex-col items-center justify-center px-6 pb-8 pt-16">
+                <div className="flex items-center justify-center gap-3">
+                  <Loader className="animate-spin text-claude-terracotta" size={28} />
+                  <p className="text-claude-text-on-dark-soft">Loading messages...</p>
+                </div>
+              </div>
+            ) : !activeChatId || messageHistory.length === 0 ? (
               // {/* Greeting */}
               <div className="flex-1 flex flex-col items-center justify-center px-6 pb-8 pt-16">
                 <h1
@@ -259,34 +294,34 @@ const Dashboard = () => {
                   How can I help you today?
                 </p>
               </div>
-            ) || (
-                // {/* Messages */}
-                <div className="flex flex-col gap-6 w-full">
-                  {messageHistory.map(({ _id, sender, content }) => (
-                    <div
-                      key={_id}
-                      className={`
+            ) : (
+              // {/* Messages */}
+              <div className="flex flex-col gap-6 w-full">
+                {messageHistory.map(({ _id, sender, content }) => (
+                  <div
+                    key={_id}
+                    className={`
                       flex items-start gap-4
                       ${sender === "user" ? "justify-end" : "justify-start"}
                     `}
-                    >
-                      <div className={`
+                  >
+                    <div className={`
                       px-4 py-3 rounded-lg
                       ${sender === "user" ? "bg-claude-terracotta/90 text-white max-w-[80%]" : "text-claude-text-on-dark max-w-[90%]"}
                     `}>
-                        <p style={{ fontSize: "15px", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
-                          {content}
-                        </p>
-                      </div>
+                      <p style={{ fontSize: "15px", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
+                        {content}
+                      </p>
                     </div>
-                  ))}
-                </div>
-              )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
         {/* ── Composer ── */}
-        <div className="px-4 pb-6 flex justify-center">
+        <div className="px-4 py-6 flex justify-center">
           <div
             className="
               w-full max-w-190 p-6
@@ -308,7 +343,7 @@ const Dashboard = () => {
               placeholder="Type your message here..."
               className="
                   flex-1 bg-transparent outline-none border-none 
-                  resize-none focus-visible:ring-0 text-lg
+                  resize-none focus-visible:ring-0 text-md
                   text-claude-text-on-dark placeholder:text-claude-stone
                   leading-relaxed h-auto max-h-50 overflow-y-auto
                 "
@@ -332,16 +367,20 @@ const Dashboard = () => {
               {/* Send button */}
               <button
                 onClick={handleSend}
-                disabled={!inputValue.trim()}
+                disabled={!inputValue.trim() || isSendingMessage}
                 className={`
                   flex items-center justify-center w-15 h-15 rounded-full shrink-0 transition-all duration-150
-                  ${inputValue.trim()
+                  ${inputValue.trim() && !isSendingMessage
                     ? "bg-claude-terracotta hover:bg-claude-coral hover:scale-105 text-white"
                     : "bg-claude-dark-surface-2 text-claude-stone cursor-not-allowed"
                   }
                 `}
               >
-                <ArrowUp size={25} strokeWidth={2} />
+                {isSendingMessage ? (
+                  <Loader size={25} strokeWidth={2} className="animate-spin" />
+                ) : (
+                  <ArrowUp size={25} strokeWidth={2} />
+                )}
               </button>
             </div>
 

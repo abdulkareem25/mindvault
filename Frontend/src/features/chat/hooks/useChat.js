@@ -1,17 +1,18 @@
-import { initSocketConnection } from "../services/chat.socket";
-import { 
-  fetchChats, 
-  createChat, 
-  fetchChatById, 
-  fetchMessageHistory, 
-  sendMessage 
-} from "../services/chat.api";
+import { useDispatch, useSelector } from "react-redux";
+import { showToast } from "../../shared/components/Toast";
 import { setChats, setError, setLoading, setMessageHistory } from "../chat.slice";
-import { useDispatch } from "react-redux";
+import {
+  fetchChats,
+  fetchMessageHistory,
+  sendMessage
+} from "../services/chat.api";
+import { initSocketConnection } from "../services/chat.socket";
 
 export const useChat = () => {
 
   const dispatch = useDispatch();
+
+  const { messageHistory } = useSelector((state) => state.chat);
 
   const loadChats = async () => {
     try {
@@ -19,10 +20,12 @@ export const useChat = () => {
       const chats = await fetchChats();
       dispatch(setChats(chats.data));
     } catch (error) {
-      dispatch(setError(error.message));
+      const errorMessage = error.response?.data?.message || error.message || "Failed to load chats";
+      dispatch(setError(errorMessage));
+      showToast(errorMessage, "error");
     } finally {
       dispatch(setLoading(false));
-    } 
+    }
   };
 
   const loadMessageHistory = async (chatId) => {
@@ -31,7 +34,22 @@ export const useChat = () => {
       const messages = await fetchMessageHistory(chatId);
       dispatch(setMessageHistory(messages.data));
     } catch (error) {
-      dispatch(setError(error.message));
+      const errorMessage = error.response?.data?.message || error.message || "Failed to load messages";
+      dispatch(setError(errorMessage));
+      showToast(errorMessage, "error");
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+
+  const sendMessageToChat = async (chatId, message) => {
+    try {
+      dispatch(setLoading(true));
+      await sendMessage(chatId, message);
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message || "Failed to send message";
+      dispatch(setError(errorMessage));
+      showToast(errorMessage, "error");
     } finally {
       dispatch(setLoading(false));
     }
@@ -40,6 +58,7 @@ export const useChat = () => {
   return {
     initSocketConnection,
     loadChats,
-    loadMessageHistory
+    loadMessageHistory,
+    sendMessageToChat
   };
 };
