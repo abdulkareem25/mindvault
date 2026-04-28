@@ -12,7 +12,7 @@ const mistralLargeModel = new ChatMistralAI({
 export const generateChatTitle = async (initialMessage) => {
   const systemPrompt = `You are a helpful assistant that creates concise and descriptive titles for user conversations. The title should capture the main topic or theme of the conversation in a few words. Avoid generic titles and focus on the specific content of the initial message.`;
 
-  const humanPrompt = `Based on the following initial message, generate a concise and descriptive title for the conversation:\n\n"${initialMessage}"\n\nThe title should be no more than 5 words.`;
+  const humanPrompt = `Based on the following initial message, generate a concise and descriptive title for the conversation:\n\n"${initialMessage}"\n\nThe title should be no more than 5 words, and it should not include any quotation marks.`;
 
   const response = await mistralModel.invoke([
     new SystemMessage(systemPrompt),

@@ -9,12 +9,11 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from 'react';
 import { useChat } from '../hooks/useChat';
+import { useSelector } from "react-redux";
 
 
 
-const RECENT_CHATS = [
-  { id: 1, title: "Explain transformer architecture" }
-];
+const RECENT_CHATS = [];
 
 const NAV_ITEMS = [
   { id: "new", label: "New chat", icon: Plus },
@@ -22,23 +21,23 @@ const NAV_ITEMS = [
   { id: "chats", label: "Chats", icon: MessagesSquareIcon }
 ];
 
-const messageHistory = [
-  { id: 1, sender: "user", content: "Hey Claude, can you explain how transformers work?" },
-  { id: 2, sender: "claude", content: "Sure! Transformers are a type of deep learning model that use self-attention mechanisms to process sequential data. They consist of an encoder and a decoder, where the encoder processes the input data and the decoder generates the output. The self-attention mechanism allows the model to weigh the importance of different parts of the input when generating each part of the output, making it particularly effective for tasks like language understanding and generation." }
-];
+const messageHistory = [];
 
 const Dashboard = () => {
 
-  const { initSocketConnection } = useChat();
-
-  useEffect(() => {
-    initSocketConnection();
-  }, []);
+  const { initSocketConnection, loadChats } = useChat();
+  const { chats } = useSelector((state) => state.chat);
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeNav, setActiveNav] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [activeChatId, setActiveChatId] = useState();
+
+  useEffect(() => {
+    initSocketConnection();
+    loadChats();
+  }, []);
+
 
   const handleSend = () => {
     if (!inputValue.trim()) return;
@@ -153,9 +152,9 @@ const Dashboard = () => {
             Recents
           </p>
           <div className="flex flex-col gap-1.5 overflow-y-auto pr-1 h-[calc(100vh-270px)]">
-            {RECENT_CHATS.map((chat) => (
+            {chats.map((chat) => (
               <button
-                key={chat.id}
+                key={chat._id}
                 className="
                 flex items-center gap-2.5 px-3 py-2.5 rounded-base w-full text-left
                 text-claude-text-on-dark-soft

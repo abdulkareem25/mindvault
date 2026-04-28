@@ -33,19 +33,6 @@ const userSchema = new mongoose.Schema(
       enum: ["user"],
       default: "user",
     },
-
-    preferences: {
-      defaultCategory: {
-        type: String,
-        enum: ["coding", "deen", "admin", "life", "career"],
-        default: "coding",
-      },
-      aiTone: {
-        type: String,
-        enum: ["concise", "detailed"],
-        default: "detailed",
-      },
-    },
   },
   {
     timestamps: true,

@@ -4,7 +4,7 @@ export const createChatValidator = [
   body("category")
     .isString()
     .withMessage("Category must be a string")
-    .isIn(["development", "deen", "admin", "life", "career"])
+    .isIn(["development", "career", "life", "admin", "deen"])
     .withMessage("Invalid category")
     .notEmpty()
     .withMessage("Category is required"), 

@@ -7,16 +7,12 @@ export const signupController = asyncHandler(async (req, res) => {
         email,
         password,
         confirmPassword,
-        defaultCategory,
-        aiTone,
     } = req.body;
 
     await authService.signup({
         name,
         email,
-        password,
-        defaultCategory,
-        aiTone,
+        password
     });
 
     res.status(201).json({

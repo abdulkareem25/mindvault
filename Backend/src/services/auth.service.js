@@ -5,9 +5,7 @@ import { sendEmail } from "./mail.service.js";
 export const signup = async ({
   name,
   email,
-  password,
-  defaultCategory,
-  aiTone,
+  password
 }) => {
   const existingUser = await User.findOne({ email });
 
@@ -20,11 +18,7 @@ export const signup = async ({
   const user = await User.create({
     name,
     email,
-    password,
-    preferences: {
-      defaultCategory,
-      aiTone,
-    }
+    password
   });
 
   const emailVerificationToken = jwt.sign(

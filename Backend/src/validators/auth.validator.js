@@ -29,18 +29,7 @@ export const signupValidator = [
         throw new Error("Passwords do not match");
       }
       return true;
-    }),
-
-  // optional fields
-  body("defaultCategory")
-    .optional()
-    .isIn(["coding", "deen", "admin", "life", "career"])
-    .withMessage("Invalid category"),
-
-  body("aiTone")
-    .optional()
-    .isIn(["concise", "detailed"])
-    .withMessage("Invalid AI tone"),
+    })
 ];
 
 export const loginValidator = [

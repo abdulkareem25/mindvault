@@ -21,7 +21,7 @@ const router = express.Router();
  * @route POST /api/auth/signup
  * @desc Register a new user
  * @access Public
- * @body { name, email, password, confirmPassword, defaultCategory?, aiTone? }
+ * @body { name, email, password, confirmPassword }
  */
 
 router.post(

@@ -11,7 +11,7 @@ const chatSchema = new mongoose.Schema(
 
     category: {
       type: String,
-      enum: ["development", "deen", "admin", "life", "career"],
+      enum: ["development", "career", "life", "admin", "deen"],
       required: true,
       index: true,
     },
