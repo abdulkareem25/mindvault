@@ -29,7 +29,7 @@ const Login = () => {
   useEffect(() => {
     if (user && !error && !loading) {
       if (user.isVerified) {
-        navigate('/dashboard');
+        navigate('/');
       } else {
         navigate('/verify-email');
       }

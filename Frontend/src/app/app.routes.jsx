@@ -9,6 +9,11 @@ import Dashboard from "../features/chat/pages/Dashboard";
 
 const router = createBrowserRouter([
   {
+    path: "/",
+    element: <Protected>
+      <Dashboard />
+    </Protected>
+  }, {
     path: "/login",
     element: <Login />,
   }, {
@@ -23,11 +28,6 @@ const router = createBrowserRouter([
   }, {
     path: "/already-verified",
     element: <AlreadyVerified />,
-  }, {
-    path: "/dashboard",
-    element: <Protected>
-      <Dashboard />
-    </Protected>
   }
 ]);
 

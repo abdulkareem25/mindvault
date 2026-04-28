@@ -1,20 +1,14 @@
-import { useEffect, useState, useRef } from 'react';
-import { useChat } from '../hooks/useChat';
 import {
+  ArrowUp,
+  MessageSquare,
+  MessagesSquareIcon,
   Plus,
   Search,
-  MessageSquare,
-  Clock,
-  X,
-  Menu,
-  ArrowUp,
-  Paperclip,
-  Sparkles,
   SidebarCloseIcon,
-  SidebarOpenIcon,
-  MessagesSquareIcon,
-  User
+  SidebarOpenIcon
 } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { useChat } from '../hooks/useChat';
 
 
 
@@ -28,6 +22,11 @@ const NAV_ITEMS = [
   { id: "chats", label: "Chats", icon: MessagesSquareIcon }
 ];
 
+const messageHistory = [
+  { id: 1, sender: "user", content: "Hey Claude, can you explain how transformers work?" },
+  { id: 2, sender: "claude", content: "Sure! Transformers are a type of deep learning model that use self-attention mechanisms to process sequential data. They consist of an encoder and a decoder, where the encoder processes the input data and the decoder generates the output. The self-attention mechanism allows the model to weigh the importance of different parts of the input when generating each part of the output, making it particularly effective for tasks like language understanding and generation." }
+];
+
 const Dashboard = () => {
 
   const { initSocketConnection } = useChat();
@@ -37,14 +36,13 @@ const Dashboard = () => {
   }, []);
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeNav, setActiveNav] = useState("new");
+  const [activeNav, setActiveNav] = useState("");
   const [inputValue, setInputValue] = useState("");
-  const textareaRef = useRef(null);
+  const [activeChatId, setActiveChatId] = useState();
 
   const handleSend = () => {
     if (!inputValue.trim()) return;
     setInputValue("");
-    if (textareaRef.current) textareaRef.current.style.height = "auto";
   };
 
   const handleKeyDown = (e) => {
@@ -56,11 +54,7 @@ const Dashboard = () => {
 
   const handleInput = (e) => {
     setInputValue(e.target.value);
-    const ta = textareaRef.current;
-    if (ta) {
-      ta.style.height = "auto";
-      ta.style.height = Math.min(ta.scrollHeight, 200) + "px";
-    }
+
   };
 
   return (
@@ -99,11 +93,13 @@ const Dashboard = () => {
         className={`
           fixed md:relative z-30 md:z-auto inset-y-0 left-0
           flex flex-col
-          w-70 shrink-0
+          ${sidebarOpen ? "w-70" : "w-0 md:w-0"}
+          shrink-0
           bg-claude-dark-surface
           border-r border-claude-border-subtle-dark
-          transition-transform duration-300 ease-in-out
-          ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:-translate-x-full"}
+          transition-all duration-300 ease-in-out
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+          overflow-hidden
         `}
       >
         {/* Sidebar header */}
@@ -176,9 +172,9 @@ const Dashboard = () => {
         </div>
 
         {/* Profile section */}
-        <div className="fixed bottom-0 w-full px-4 border-t border-claude-border-subtle-dark">
+        <div className="fixed bottom-0 w-full px-4 py-3 border-t border-claude-border-subtle-dark">
           <button className="
-            flex items-center gap-5 px-4 py-2.5 w-full rounded-base
+            flex items-center gap-5 px-4 py-1.5 w-full rounded-base
             hover:bg-claude-dark-surface-2 transition-all duration-150
             border border-transparent
           ">
@@ -207,9 +203,9 @@ const Dashboard = () => {
       ══════════════════════════════ */}
       <main className="flex-1 flex flex-col min-w-0 bg-claude-deep-dark relative">
 
-        {/* Mobile top bar — hamburger */}
+        {/* Mobile top bar — hamburger && title */}
         {!sidebarOpen && (
-          <div className="absolute top-6 left-6 z-10 md:hidden">
+          <div className="flex items-center p-4 border-b border-claude-border-subtle-dark md:hidden">
             <button
               onClick={() => setSidebarOpen(true)}
               className="
@@ -220,29 +216,75 @@ const Dashboard = () => {
             >
               <SidebarOpenIcon size={25} />
             </button>
+            <span
+              className="flex-1 text-claude-text-on-dark font-medium text-lg tracking-tight text-center"
+              style={{ fontFamily: "var(--font-serif)" }}
+            >
+              {RECENT_CHATS.find((chat) => chat.id === activeChatId)?.title || "Chat"}
+            </span>
+            <button className="w-15 h-15" />
           </div>
         )}
 
-        {/* Center greeting area */}
-        <div className="flex-1 flex flex-col items-center justify-center px-6 pb-8 pt-16">
+        {/* top bar */}
+        {activeChatId || messageHistory &&(
+          <div className="hidden md:flex items-center justify-center p-6 border-b border-claude-border-subtle-dark">
+            <span
+              className="text-claude-text-on-dark font-medium text-lg tracking-tight"
+              style={{ fontFamily: "var(--font-serif)" }}
+            >
+              {RECENT_CHATS.find((chat) => chat.id === activeChatId)?.title || "Chat"}
+            </span>
+          </div>
+        )}
 
-          {/* Greeting */}
-          <h1
-            className="text-claude-text-on-dark text-center font-medium mb-3"
-            style={{
-              fontFamily: "var(--font-serif)",
-              fontSize: "clamp(26px, 5vw, 42px)",
-              lineHeight: 1.15,
-            }}
-          >
-            Hey Rahul, welcome back!
-          </h1>
-          <p
-            className="text-claude-text-on-dark-soft text-center max-w-sm"
-            style={{ fontSize: "15px", lineHeight: 1.6 }}
-          >
-            How can I help you today?
-          </p>
+        {/* Chat area */}
+        <div className="flex-1 p-6 overflow-y-auto">
+          <div className="flex flex-col gap-6 max-w-3xl mx-auto justify-bottom h-full">
+            {messageHistory.length === 0 && (
+              // {/* Greeting */}
+              <div className="flex-1 flex flex-col items-center justify-center px-6 pb-8 pt-16">
+                <h1
+                  className="text-claude-text-on-dark text-center font-medium mb-3"
+                  style={{
+                    fontFamily: "var(--font-serif)",
+                    fontSize: "clamp(26px, 5vw, 42px)",
+                    lineHeight: 1.15,
+                  }}
+                >
+                  Hey Rahul, welcome back!
+                </h1>
+                <p
+                  className="text-claude-text-on-dark-soft text-center max-w-sm"
+                  style={{ fontSize: "15px", lineHeight: 1.6 }}
+                >
+                  How can I help you today?
+                </p>
+              </div>
+            ) || (
+                // {/* Messages */}
+                <div className="flex flex-col gap-6 w-full">
+                  {messageHistory.map(({ id, sender, content }) => (
+                    <div
+                      key={id}
+                      className={`
+                      flex items-start gap-4
+                      ${sender === "user" ? "justify-end" : "justify-start"}
+                    `}
+                    >
+                      <div className={`
+                      px-4 py-3 rounded-lg
+                      ${sender === "user" ? "bg-claude-terracotta/90 text-white max-w-[80%]" : "text-claude-text-on-dark max-w-[90%]"}
+                    `}>
+                        <p style={{ fontSize: "15px", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
+                          {content}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+          </div>
         </div>
 
         {/* ── Composer ── */}
@@ -261,7 +303,6 @@ const Dashboard = () => {
 
             {/* Textarea row */}
             <textarea
-              ref={textareaRef}
               value={inputValue}
               onChange={handleInput}
               onKeyDown={handleKeyDown}
@@ -314,8 +355,8 @@ const Dashboard = () => {
             MindVault can make mistakes. Verify important info.
           </p>
         </div>
-      </main>
-    </div>
+      </main >
+    </div >
   )
 }
 
