@@ -1,5 +1,5 @@
 import express from "express";
-import { createChatController, getChatByIdController, getChatsController, sendMessageAndGetResponseController } from "../controllers/chat.controller.js";
+import { createChatController, getChatByIdController, getChatsController, getMessageHistoryController, sendMessageAndGetResponseController } from "../controllers/chat.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import validateMiddleware from "../middlewares/validate.middleware.js";
 import { createChatValidator, idValidator, sendMessageValidator } from "../validators/chat.validator.js";
@@ -49,6 +49,22 @@ router.get(
   idValidator,
   validateMiddleware,
   getChatByIdController
+);
+
+/**
+ * @route GET /api/chats/:id/messages
+ * @desc Get message history for a specific chat
+ * @access Private
+ * @param { id } - Chat ID
+ * @returns { messages[] }
+ */
+
+router.get(
+  "/:id/messages",
+  authMiddleware,
+  idValidator,
+  validateMiddleware,
+  getMessageHistoryController
 );
 
 /**

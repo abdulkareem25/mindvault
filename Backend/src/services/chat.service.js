@@ -31,6 +31,14 @@ export const getChatById = async (chatId, userId) => {
   return chat;
 };
 
+export const getMessageHistory = async (chatId, userId) => {
+  const chat = await Chat.findOne({ _id: chatId, userId }).populate("messages");
+  if (!chat) {
+    throw new Error("Chat not found");
+  }
+  return chat.messages;
+};
+
 export const deleteChat = async (chatId, userId) => {
   const chat = await Chat.findOneAndDelete({ _id: chatId, userId });
   if (chat) {

@@ -11,22 +11,16 @@ import { useEffect, useState } from 'react';
 import { useChat } from '../hooks/useChat';
 import { useSelector } from "react-redux";
 
-
-
-const RECENT_CHATS = [];
-
 const NAV_ITEMS = [
   { id: "new", label: "New chat", icon: Plus },
   { id: "search", label: "Search", icon: Search },
   { id: "chats", label: "Chats", icon: MessagesSquareIcon }
 ];
 
-const messageHistory = [];
-
 const Dashboard = () => {
 
-  const { initSocketConnection, loadChats } = useChat();
-  const { chats } = useSelector((state) => state.chat);
+  const { initSocketConnection, loadChats, loadMessageHistory } = useChat();
+  const { chats, messageHistory } = useSelector((state) => state.chat);
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeNav, setActiveNav] = useState("");
@@ -37,6 +31,11 @@ const Dashboard = () => {
     initSocketConnection();
     loadChats();
   }, []);
+
+  const handleChat = async (chat) => {
+    setActiveChatId(chat._id);
+    await loadMessageHistory(chat._id);
+  };
 
 
   const handleSend = () => {
@@ -155,13 +154,13 @@ const Dashboard = () => {
             {chats.map((chat) => (
               <button
                 key={chat._id}
+                onClick={() => handleChat(chat)}
                 className="
                 flex items-center gap-2.5 px-3 py-2.5 rounded-base w-full text-left
                 text-claude-text-on-dark-soft
                 hover:bg-claude-dark-surface-2 hover:text-claude-text-on-dark
                 transition-all duration-150 border border-transparent
-                truncate shrink-0
-              "
+                truncate shrink-0"
               >
                 <MessageSquare size={16} strokeWidth={1.75} className="text-claude-stone shrink-0" />
                 <span className="truncate" style={{ fontSize: "15px" }}>{chat.title}</span>
@@ -226,13 +225,13 @@ const Dashboard = () => {
         )}
 
         {/* top bar */}
-        {activeChatId || messageHistory &&(
+        {activeChatId && messageHistory &&(
           <div className="hidden md:flex items-center justify-center p-6 border-b border-claude-border-subtle-dark">
             <span
               className="text-claude-text-on-dark font-medium text-lg tracking-tight"
               style={{ fontFamily: "var(--font-serif)" }}
             >
-              {RECENT_CHATS.find((chat) => chat.id === activeChatId)?.title || "Chat"}
+              {chats.find((chat) => chat._id === activeChatId)?.title || "Chat"}
             </span>
           </div>
         )}
@@ -263,9 +262,9 @@ const Dashboard = () => {
             ) || (
                 // {/* Messages */}
                 <div className="flex flex-col gap-6 w-full">
-                  {messageHistory.map(({ id, sender, content }) => (
+                  {messageHistory.map(({ _id, sender, content }) => (
                     <div
-                      key={id}
+                      key={_id}
                       className={`
                       flex items-start gap-4
                       ${sender === "user" ? "justify-end" : "justify-start"}

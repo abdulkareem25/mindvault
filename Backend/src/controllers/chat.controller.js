@@ -70,6 +70,25 @@ export const getChatByIdController = asyncHandler(async (req, res) => {
   });
 });
 
+export const getMessageHistoryController = asyncHandler(async (req, res) => {
+
+  const chatId = req.params.id;
+  const messages = await chatService.getMessageHistory(chatId, req.user._id);
+
+  if (!messages) {
+    return res.status(404).json({
+      success: false,
+      message: "Chat not found",
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "Message history retrieved successfully",
+    data: messages,
+  });
+});
+
 export const deleteChatController = asyncHandler(async (req, res) => {
 
   const chatId = req.params.id;
