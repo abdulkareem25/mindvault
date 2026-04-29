@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from 'react';
 import { useSelector } from "react-redux";
+import MarkdownMessage from '../../shared/components/MarkdownMessage';
 import Toast from '../../shared/components/Toast';
 import { useChat } from '../hooks/useChat';
 
@@ -305,14 +306,10 @@ const Dashboard = () => {
                       ${sender === "user" ? "justify-end" : "justify-start"}
                     `}
                   >
-                    <div className={`
-                      px-4 py-3 rounded-lg
-                      ${sender === "user" ? "bg-claude-terracotta/90 text-white max-w-[80%]" : "text-claude-text-on-dark max-w-[90%]"}
-                    `}>
-                      <p style={{ fontSize: "15px", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
-                        {content}
-                      </p>
-                    </div>
+                    <MarkdownMessage
+                      content={content}
+                      isUserMessage={sender === "user"}
+                    />
                   </div>
                 ))}
               </div>
