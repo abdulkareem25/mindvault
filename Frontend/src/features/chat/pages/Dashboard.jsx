@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { showToast } from '../../shared/components/Toast';
+import { setActiveChatId } from '../chat.slice';
 import CategoryModal from '../components/CategoryModal';
 import ChatMessages from '../components/ChatMessages';
 import ChatSidebar from '../components/ChatSidebar';
@@ -7,17 +9,18 @@ import ChatTopBar from '../components/ChatTopBar';
 import MessageComposer from '../components/MessageComposer';
 import SidebarToggle from '../components/SidebarToggle';
 import { useChat } from '../hooks/useChat';
+;
 
 const Dashboard = () => {
 
-  const { initSocketConnection, loadChats, loadMessageHistory, sendMessageToChat } = useChat();
-  const { chats, messageHistory, loading } = useSelector((state) => state.chat);
+  const { initSocketConnection, loadChats, loadMessageHistory, handleCreateChat, sendMessageToChat, initialState } = useChat();
+  const { chats, messageHistory, loading, activeChatId } = useSelector((state) => state.chat);
+  const dispatch = useDispatch();
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeNav, setActiveNav] = useState("");
   const [category, setCategory] = useState();
   const [inputValue, setInputValue] = useState("");
-  const [activeChatId, setActiveChatId] = useState();
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -28,7 +31,8 @@ const Dashboard = () => {
   }, []);
 
   const handleChat = async (chat) => {
-    setActiveChatId(chat._id);
+    dispatch(setActiveChatId(chat._id));
+    setCategory(chat.category);
     setIsLoadingHistory(true);
     try {
       await loadMessageHistory(chat._id);
@@ -40,7 +44,9 @@ const Dashboard = () => {
   const handleNavClick = (id) => {
     setActiveNav(id);
     if (id === "new") {
-      setActiveChatId(null);
+      setCategory(null);
+      setInputValue("");
+      initialState();
     } else if (id === "chats") {
       setActiveChatId(null);
     } else if (id === "search") {
@@ -53,12 +59,26 @@ const Dashboard = () => {
 
   const handleSend = async () => {
     const message = inputValue.trim();
-    if (!message || !activeChatId) return;
+    if (!message || !category) {
+      return showToast("Please enter a message and select a category before sending.", "error");
+    };
     setIsSendingMessage(true);
     try {
-      await sendMessageToChat(activeChatId, message);
+      let currentChatId = activeChatId;
+      if (!activeChatId) {
+        const chat = await handleCreateChat(category, message);
+        currentChatId = chat.data._id;
+        dispatch(setActiveChatId(currentChatId));
+        await loadChats();
+      } else {
+        await sendMessageToChat(activeChatId, message);
+      }
+      if (currentChatId) {
+        await loadMessageHistory(currentChatId);
+      }
       setInputValue("");
-      await loadMessageHistory(activeChatId);
+    } catch (error) {
+      console.error("Error sending message:", error);
     } finally {
       setIsSendingMessage(false);
     }
@@ -101,9 +121,7 @@ const Dashboard = () => {
         onCloseSidebar={() => setSidebarOpen(false)}
       />
 
-      {/* ══════════════════════════════
-          SIDEBAR
-      ══════════════════════════════ */}
+      {/* SIDEBAR */}
       <ChatSidebar
         sidebarOpen={sidebarOpen}
         onCloseSidebar={() => setSidebarOpen(false)}
@@ -113,9 +131,7 @@ const Dashboard = () => {
         activeNav={activeNav}
       />
 
-      {/* ══════════════════════════════
-          MAIN CONTENT
-      ══════════════════════════════ */}
+      {/* MAIN CONTENT */}
       <main className="flex-1 flex flex-col min-w-0 bg-claude-deep-dark relative">
         {/* ── Top Bar ── */}
         <ChatTopBar
@@ -146,6 +162,7 @@ const Dashboard = () => {
           isSendingMessage={isSendingMessage}
           category={category}
           onShowCategoryModal={() => setShowCategoryModal(true)}
+          hasMessages={messageHistory.length > 0}
         />
 
         {/* ── Bottom Bar ── */}

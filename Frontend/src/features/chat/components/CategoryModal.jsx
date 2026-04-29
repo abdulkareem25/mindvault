@@ -1,9 +1,9 @@
 const CATEGORIES = [
-  { id: "development", label: "Development" },
-  { id: "career", label: "Career" },
-  { id: "admin", label: "Admin" },
-  { id: "life", label: "Life" },
-  { id: "deen", label: "Deen" }
+  "development",
+  "career",
+  "admin",
+  "life",
+  "deen"
 ];
 
 const CategoryModal = ({ isOpen, onClose, selectedCategory, onSelectCategory }) => {
@@ -39,18 +39,18 @@ const CategoryModal = ({ isOpen, onClose, selectedCategory, onSelectCategory }) 
           <div className="p-4 space-y-2">
             {CATEGORIES.map((cat) => (
               <button
-                key={cat.id}
+                key={cat}
                 onClick={() => onSelectCategory(cat)}
                 className={`
                   w-full flex items-center gap-3 px-4 py-3 rounded-lg
                   transition-all duration-150
-                  ${selectedCategory?.id === cat.id
+                  ${selectedCategory === cat
                     ? "bg-claude-terracotta/20 border border-claude-terracotta text-claude-terracotta"
                     : "border border-transparent text-claude-text-on-dark-soft hover:bg-claude-dark-surface-2 hover:text-claude-text-on-dark"
                   }
                 `}
               >
-                <span className="font-medium w-full">{cat.label}</span>
+                <span className="font-medium w-full capitalize">{cat}</span>
               </button>
             ))}
           </div>

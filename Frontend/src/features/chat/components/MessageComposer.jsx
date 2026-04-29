@@ -7,7 +7,8 @@ const MessageComposer = ({
   onSend,
   isSendingMessage,
   category,
-  onShowCategoryModal
+  onShowCategoryModal,
+  hasMessages
 }) => {
   return (
     <div className="px-4 py-6 flex justify-center">
@@ -40,26 +41,38 @@ const MessageComposer = ({
         {/* Action buttons row */}
         <div className="flex items-center justify-between gap-2 px-6 py-4">
           {/* Category button */}
-          <button
-            onClick={onShowCategoryModal}
-            title="Category"
-            className="
-              flex items-center justify-center w-15 h-15 rounded-full shrink-0
-              text-claude-stone
-              hover:bg-claude-dark-surface-2 hover:text-claude-text-on-dark-soft
-              transition-all duration-150
-            "
-          >
-            <Plus size={25} strokeWidth={1.75} />
-          </button>
 
-          {/* Selected category badge */}
-          {category && (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-claude-dark-surface-2 border border-claude-border-dark">
-              <span className="text-xs text-claude-text-on-dark">
-                {category.label}
-              </span>
-            </div>
+          {category ? (
+            <button
+              onClick={onShowCategoryModal}
+              disabled={hasMessages}
+              title={hasMessages ? "Category cannot be changed after sending a message" : "Click to change category"}
+              className={`
+                flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-150
+                ${hasMessages
+                  ? "bg-claude-dark-surface-2/50 border border-claude-border-dark text-claude-stone cursor-not-allowed opacity-50"
+                  : "bg-claude-terracotta/20 border border-claude-terracotta text-claude-terracotta hover:bg-claude-terracotta/30"
+                }
+              `}
+            >
+              <span className="text-sm font-medium capitalize">{category}</span>
+            </button>
+          ) : (
+            <button
+              onClick={onShowCategoryModal}
+              disabled={hasMessages}
+              title={hasMessages ? "Category cannot be changed after sending a message" : "Click to add category"}
+              className={`
+                flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-150
+                ${hasMessages
+                  ? "border border-claude-border-dark text-claude-stone cursor-not-allowed opacity-50"
+                  : "border border-claude-dark-surface-2 text-claude-stone hover:bg-claude-dark-surface-2 hover:text-claude-text-on-dark"
+                }
+              `}
+            >
+              <Plus size={16} />
+              <span className="text-sm font-medium">Category</span>
+            </button>
           )}
 
           {/* Spacer */}

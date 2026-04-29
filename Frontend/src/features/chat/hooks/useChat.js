@@ -1,10 +1,11 @@
 import { useDispatch, useSelector } from "react-redux";
 import { showToast } from "../../shared/components/Toast";
-import { setChats, setError, setLoading, setMessageHistory } from "../chat.slice";
+import { setActiveChatId, setChats, setError, setLoading, setMessageHistory } from "../chat.slice";
 import {
   fetchChats,
   fetchMessageHistory,
-  sendMessage
+  sendMessage,
+  createChat
 } from "../services/chat.api";
 import { initSocketConnection } from "../services/chat.socket";
 
@@ -55,10 +56,11 @@ export const useChat = () => {
     }
   };
 
-  const createChat = async (category, initialMessage) => {
+  const handleCreateChat = async (category, initialMessage) => {
     try {
       dispatch(setLoading(true));
-      await createChat(category, initialMessage);
+      const chat = await createChat(category, initialMessage);
+      return chat;
     } catch (error) {
       const errorMessage = error.response?.data?.message || error.message || "Failed to create chat";
       dispatch(setError(errorMessage));
@@ -68,11 +70,17 @@ export const useChat = () => {
     }
   };
 
+  const initialState = () => {
+    dispatch(setActiveChatId(null));
+    dispatch(setMessageHistory([]));
+  };
+
   return {
     initSocketConnection,
     loadChats,
     loadMessageHistory,
     sendMessageToChat,
-    createChat
+    handleCreateChat,
+    initialState
   };
 };
