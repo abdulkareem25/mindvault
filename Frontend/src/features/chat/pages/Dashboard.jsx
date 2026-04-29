@@ -15,6 +15,7 @@ const Dashboard = () => {
 
   const { initSocketConnection, loadChats, loadMessageHistory, handleCreateChat, sendMessageToChat, initialState } = useChat();
   const { chats, messageHistory, loading, activeChatId } = useSelector((state) => state.chat);
+  const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -129,6 +130,7 @@ const Dashboard = () => {
         chats={chats}
         onChatSelect={handleChat}
         activeNav={activeNav}
+        user={user}
       />
 
       {/* MAIN CONTENT */}
@@ -149,6 +151,7 @@ const Dashboard = () => {
               isLoadingHistory={isLoadingHistory}
               activeChatId={activeChatId}
               messageHistory={messageHistory}
+              user={user}
             />
           </div>
         </div>

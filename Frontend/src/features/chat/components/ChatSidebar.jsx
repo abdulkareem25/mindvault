@@ -18,7 +18,8 @@ const ChatSidebar = ({
   onNavClick,
   chats,
   onChatSelect,
-  activeNav
+  activeNav,
+  user
 }) => {
   return (
     <aside
@@ -76,14 +77,14 @@ const ChatSidebar = ({
       </nav>
 
       {/* Recents section */}
-      <div className="mt-6 px-4">
+      <div className="mt-6 px-4 flex flex-col flex-1 overflow-hidden">
         <p
           className="px-3 mb-1 text-claude-stone uppercase"
           style={{ fontSize: "11px", letterSpacing: "0.06em", fontWeight: 500 }}
         >
           Recents
         </p>
-        <div className="flex flex-col gap-1.5 overflow-y-auto pr-1 h-[calc(100vh-270px)]">
+        <div className="flex-1 flex flex-col gap-1.5 overflow-y-auto py-2.5 pr-1">
           {chats.map((chat) => (
             <button
               key={chat._id}
@@ -103,7 +104,7 @@ const ChatSidebar = ({
       </div>
 
       {/* Profile section */}
-      <div className="fixed bottom-0 w-full px-4 py-3 border-t border-claude-border-subtle-dark">
+      <div className="w-full px-4 py-3 border-t border-claude-border-subtle-dark">
         <button className="
           flex items-center gap-5 px-4 py-1.5 w-full rounded-base
           hover:bg-claude-dark-surface-2 transition-all duration-150
@@ -115,14 +116,14 @@ const ChatSidebar = ({
             text-white font-medium
           "
           >
-            U
+            {user.name.slice(0, 2).toUpperCase()}
           </div>
           <div className="text-left min-w-0">
             <p className="text-claude-text-on-dark font-medium truncate">
-              User
+              {user.name}
             </p>
             <p className="text-claude-stone truncate text-xs">
-              Free plan
+              {user.email}
             </p>
           </div>
         </button>

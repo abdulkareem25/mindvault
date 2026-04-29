@@ -4,7 +4,8 @@ import MarkdownMessage from './MarkdownMessage';
 const ChatMessages = ({
   isLoadingHistory,
   activeChatId,
-  messageHistory
+  messageHistory,
+  user
 }) => {
   if (isLoadingHistory) {
     return (
@@ -28,7 +29,7 @@ const ChatMessages = ({
             lineHeight: 1.15,
           }}
         >
-          Hey Rahul, welcome back!
+          Hey {user.name}, welcome back!
         </h1>
         <p
           className="text-claude-text-on-dark-soft text-center max-w-sm"
