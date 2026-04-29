@@ -55,10 +55,24 @@ export const useChat = () => {
     }
   };
 
+  const createChat = async (category, initialMessage) => {
+    try {
+      dispatch(setLoading(true));
+      await createChat(category, initialMessage);
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message || "Failed to create chat";
+      dispatch(setError(errorMessage));
+      showToast(errorMessage, "error");
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+
   return {
     initSocketConnection,
     loadChats,
     loadMessageHistory,
-    sendMessageToChat
+    sendMessageToChat,
+    createChat
   };
 };
