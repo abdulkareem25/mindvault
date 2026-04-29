@@ -77,21 +77,15 @@ export const getUserController = asyncHandler(async (req, res) => {
     });
 });
 
+export const logoutController = asyncHandler(async (req, res) => {
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+    }); 
 
-
-
-// export const updatePreferences = asyncHandler(async (req, res) => {
-//   const user = await User.findById(req.user._id);
-
-//   user.preferences = {
-//     defaultCategory: req.body.defaultCategory,
-//     aiTone: req.body.aiTone,
-//   };
-
-//   await user.save();
-
-//   res.json({
-//     success: true,
-//     message: "Preferences updated",
-//   });
-// });
+    res.status(200).json({
+        success: true,
+        message: "Logout successful",
+    });
+});

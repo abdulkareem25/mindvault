@@ -1,10 +1,13 @@
 import {
+  LogOut,
   MessageSquare,
   MessagesSquareIcon,
   Plus,
   Search,
   SidebarCloseIcon
 } from "lucide-react";
+import { useRef, useState } from "react";
+import useAuth from "../../auth/hooks/useAuth";
 
 const NAV_ITEMS = [
   { id: "new", label: "New chat", icon: Plus },
@@ -21,6 +24,22 @@ const ChatSidebar = ({
   activeNav,
   user
 }) => {
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const profileSectionRef = useRef(null);
+  const { logoutUser } = useAuth();
+
+  const handleProfileClick = () => {
+    setProfileModalOpen(!profileModalOpen);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      setProfileModalOpen(false);
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
   return (
     <aside
       className={`
@@ -104,12 +123,63 @@ const ChatSidebar = ({
       </div>
 
       {/* Profile section */}
-      <div className="w-full px-4 py-3 border-t border-claude-border-subtle-dark">
-        <button className="
-          flex items-center gap-5 px-4 py-1.5 w-full rounded-base
-          hover:bg-claude-dark-surface-2 transition-all duration-150
-          border border-transparent
-        ">
+      <div className="w-full px-4 py-3 border-t border-claude-border-subtle-dark relative" ref={profileSectionRef}>
+        {/* Profile Modal */}
+        {profileModalOpen && (
+          <div className={`
+            absolute bottom-full left-4 right-4 mb-3 z-50 shadow-lg 
+
+            bg-claude-dark-surface-2 border border-claude-border-dark rounded-base
+            transition-all duration-300 ease-in-out overflow-hidden
+            ${profileModalOpen ? "translate-y-0" : "-translate-y-full"}
+          `}
+          >
+            <div className="p-4 border-b border-claude-border-dark">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="
+                  h-16 w-16 rounded-full bg-claude-terracotta
+                  flex items-center justify-center
+                  text-white font-medium text-sm
+                ">
+                  {user.name.slice(0, 2).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-claude-text-on-dark font-medium truncate text-sm">
+                    {user.name}
+                  </p>
+                  <p className="text-claude-stone truncate text-xs">
+                    {user.email}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-2">
+              <button
+                onClick={handleLogout}
+                className="
+                  flex items-center gap-3 px-3 py-2.5 rounded-base w-full text-left
+                  text-red-400 hover:bg-red-950/30
+                  transition-all duration-150 text-body-sm
+                  border border-transparent
+                "
+              >
+                <LogOut size={18} strokeWidth={1.75} />
+                <span style={{ fontSize: "15px" }}>Logout</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Profile Button */}
+        <button
+          onClick={handleProfileClick}
+          className="
+            flex items-center gap-5 px-4 py-1.5 w-full rounded-base
+            hover:bg-claude-dark-surface-2 transition-all duration-150
+            border border-transparent
+          "
+        >
           <div className="
             h-20 w-20 rounded-full bg-claude-terracotta
             flex items-center justify-center
@@ -123,7 +193,7 @@ const ChatSidebar = ({
               {user.name}
             </p>
             <p className="text-claude-stone truncate text-xs">
-              {user.email}
+              Free plan
             </p>
           </div>
         </button>

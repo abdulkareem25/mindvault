@@ -12,6 +12,7 @@ import {
   verifyEmailController,
   getUserController,
   resendEmailVerificationController,
+  logoutController
 } from "../controllers/auth.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 
@@ -77,7 +78,7 @@ router.post(
  * @route GET /api/auth/me
  * @desc Get current logged in user
  * @access Private
- * @header { Authorization: "Bearer <token>" }  
+ * @cookies { token }
  */
 
 router.get(
@@ -85,5 +86,18 @@ router.get(
   authMiddleware,
   getUserController
 );
+
+/**
+ * @route POST /api/auth/logout
+ * @desc Logout user (handled on client side by deleting token)
+ * @access Private
+ * @cookies { token }
+ */
+
+  router.post(
+    "/logout",
+    authMiddleware,
+    logoutController
+  )
 
 export default router;

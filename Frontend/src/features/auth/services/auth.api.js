@@ -40,3 +40,12 @@ export const resendVerificationEmail = async (email) => {
     throw error.response ? error.response.data : new Error('Network error');
   }
 };
+
+export const logout = async () => {
+  try {
+    const response = await api.post('/logout');
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('Network error');
+  }
+};

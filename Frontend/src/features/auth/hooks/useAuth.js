@@ -1,6 +1,6 @@
 import { useDispatch } from 'react-redux';
 import { setError, setLoading, setUser } from '../auth.slice';
-import { getCurrentUser, login, resendVerificationEmail, signup } from '../services/auth.api';
+import { getCurrentUser, login, logout, resendVerificationEmail, signup } from '../services/auth.api';
 
 
 const useAuth = () => {
@@ -46,7 +46,7 @@ const useAuth = () => {
     }
   };
 
-  const resendVerificationEmailHandler = async (email) => {
+  const resendVerificationEmail = async (email) => {
     try {
       await resendVerificationEmail(email);
     } catch (error) {
@@ -54,11 +54,21 @@ const useAuth = () => {
     }
   };
 
+  const logoutUser = async () => {
+    try {
+      await logout();
+      dispatch(setUser(null));
+    } catch (error) {
+      throw new Error(error.message || 'Logout failed');
+    }
+  };
+
   return {
     loginUser,
     signupUser,
     fetchCurrentUser,
-    resendVerificationEmail: resendVerificationEmailHandler,
+    resendVerificationEmail,
+    logoutUser
   };
 };
 
