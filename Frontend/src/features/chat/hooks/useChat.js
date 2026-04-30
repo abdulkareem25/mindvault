@@ -23,7 +23,7 @@ export const useChat = () => {
     } catch (error) {
       const errorMessage = error.response?.data?.message || error.message || "Failed to load chats";
       dispatch(setError(errorMessage));
-      showToast("error", errorMessage);
+      showToast("error");
     } finally {
       dispatch(setLoading(false));
     }
@@ -37,7 +37,7 @@ export const useChat = () => {
     } catch (error) {
       const errorMessage = error.response?.data?.message || error.message || "Failed to load messages";
       dispatch(setError(errorMessage));
-      showToast("error", errorMessage);
+      showToast("error");
     } finally {
       dispatch(setLoading(false));
     }
@@ -50,7 +50,7 @@ export const useChat = () => {
     } catch (error) {
       const errorMessage = error.response?.data?.message || error.message || "Failed to send message";
       dispatch(setError(errorMessage));
-      showToast("error", errorMessage);
+      showToast("error");
     } finally {
       dispatch(setLoading(false));
     }
@@ -64,7 +64,7 @@ export const useChat = () => {
     } catch (error) {
       const errorMessage = error.response?.data?.message || error.message || "Failed to create chat";
       dispatch(setError(errorMessage));
-      showToast("error", errorMessage);
+      showToast("error");
     } finally {
       dispatch(setLoading(false));
     }

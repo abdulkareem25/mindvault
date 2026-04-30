@@ -27,7 +27,8 @@ export const showToast = (type = "info", message) => {
       toast.success(message);
       break;
     case "error":
-      toast.error(message);
+      const errorMessage = message || "Something went wrong";
+      toast.error(errorMessage);
       break;
     case "warning":
       toast.warning(message);

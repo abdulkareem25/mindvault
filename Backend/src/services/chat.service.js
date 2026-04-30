@@ -1,6 +1,6 @@
 import Chat from "../models/chat.model.js";
 import Message from "../models/message.model.js";
-import { generateChatTitle, generateAIResponse, generateInitialAIResponse } from "./ai.service.js";
+import { generateAIResponse, generateChatTitle, generateInitialAIResponse } from "./ai.service.js";
 
 export const createChat = async (userId, category, initialMessage) => {
 
@@ -11,7 +11,7 @@ export const createChat = async (userId, category, initialMessage) => {
     category,
     title
   });
-  
+
   await addMessageToChat(chat._id, userId, "user", initialMessage);
 
   const response = await generateInitialAIResponse(initialMessage, category);
@@ -22,7 +22,7 @@ export const createChat = async (userId, category, initialMessage) => {
 };
 
 export const getChats = async (userId) => {
-  const chats = await Chat.find({ userId });
+  const chats = await Chat.find({ userId }).sort({ lastMessageAt: -1 });
   return chats;
 };
 
@@ -75,7 +75,10 @@ const addMessageToChat = async (chatId, userId, sender, content) => {
     content,
   });
 
-  await Chat.findByIdAndUpdate(chatId, { $push: { messages: message._id } });
-  
+  await Chat.findByIdAndUpdate(chatId, {
+    $push: { messages: message._id },
+    lastMessageAt: new Date()
+  });
+
   return message;
 };

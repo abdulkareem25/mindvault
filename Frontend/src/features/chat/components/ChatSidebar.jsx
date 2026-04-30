@@ -55,7 +55,7 @@ const ChatSidebar = ({
       `}
     >
       {/* Sidebar header */}
-      <div className="flex items-center justify-between p-6">
+      <div className="flex items-center justify-between p-6 border-b border-claude-border-dark">
         <span
           className="text-claude-text-on-dark font-medium text-2xl tracking-tight"
           style={{ fontFamily: "var(--font-serif)" }}
@@ -115,7 +115,7 @@ const ChatSidebar = ({
               transition-all duration-150 border border-transparent
               truncate shrink-0"
             >
-              <MessageSquare size={16} strokeWidth={1.75} className="text-claude-stone group-active:text-claude-coral shrink-0" />
+              <MessageSquare size={16} strokeWidth={1.75} className="text-claude-stone group-hover:text-claude-coral shrink-0" />
               <span className="truncate" style={{ fontSize: "15px" }}>{chat.title}</span>
             </button>
           ))}
