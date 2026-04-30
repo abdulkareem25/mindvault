@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:3000/api/chats",
+  baseURL: "http://localhost:3000/api/chats" || "https://mindvault-6exy.onrender.com/api/chats",
   withCredentials: true
 });
 
