@@ -1,8 +1,19 @@
 import express from "express";
-import { createChatController, getChatByIdController, getChatsController, getMessageHistoryController, sendMessageAndGetResponseController } from "../controllers/chat.controller.js";
+import {
+  createChatController,
+  deleteChatController,
+  getChatByIdController,
+  getChatsController,
+  getMessageHistoryController,
+  sendMessageAndGetResponseController
+} from "../controllers/chat.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import validateMiddleware from "../middlewares/validate.middleware.js";
-import { createChatValidator, idValidator, sendMessageValidator } from "../validators/chat.validator.js";
+import {
+  createChatValidator,
+  idValidator,
+  sendMessageValidator
+} from "../validators/chat.validator.js";
 
 const router = express.Router();
 
@@ -82,6 +93,22 @@ router.post(
   sendMessageValidator,
   validateMiddleware,
   sendMessageAndGetResponseController
+);
+
+/**
+ * @route DELETE /api/chats/:id
+ * @desc Delete a specific chat by ID
+ * @access Private
+ * @param { id } - Chat ID
+ * @returns { success: Boolean, message: String }
+ */
+
+router.delete(
+  "/:id",
+  authMiddleware,
+  idValidator,
+  validateMiddleware,
+  deleteChatController
 );
 
 export default router;

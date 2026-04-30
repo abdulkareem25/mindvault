@@ -5,7 +5,8 @@ import {
   fetchChats,
   fetchMessageHistory,
   sendMessage,
-  createChat
+  createChat,
+  deleteChat
 } from "../services/chat.api";
 import { initSocketConnection } from "../services/chat.socket";
 
@@ -21,8 +22,7 @@ export const useChat = () => {
       const chats = await fetchChats();
       dispatch(setChats(chats.data));
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || "Failed to load chats";
-      dispatch(setError(errorMessage));
+      console.log("Load chats failed:", error);
       showToast("error");
     } finally {
       dispatch(setLoading(false));
@@ -35,8 +35,7 @@ export const useChat = () => {
       const messages = await fetchMessageHistory(chatId);
       dispatch(setMessageHistory(messages.data));
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || "Failed to load messages";
-      dispatch(setError(errorMessage));
+      console.log("Load message history failed:", error);
       showToast("error");
     } finally {
       dispatch(setLoading(false));
@@ -48,8 +47,7 @@ export const useChat = () => {
       dispatch(setLoading(true));
       await sendMessage(chatId, message);
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || "Failed to send message";
-      dispatch(setError(errorMessage));
+      console.log("Send message failed:", error);
       showToast("error");
     } finally {
       dispatch(setLoading(false));
@@ -62,8 +60,22 @@ export const useChat = () => {
       const chat = await createChat(category, initialMessage);
       return chat;
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || "Failed to create chat";
-      dispatch(setError(errorMessage));
+      console.log("Create chat failed:", error);
+      showToast("error");
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+
+  const handleDeleteChat = async (chatId) => {
+    try {
+      dispatch(setLoading(true));
+      const response = await deleteChat(chatId);
+      showToast("success", response.message);
+      initialState();
+      loadChats();
+    } catch (error) {
+      console.log("Delete chat failed:", error);
       showToast("error");
     } finally {
       dispatch(setLoading(false));
@@ -81,6 +93,7 @@ export const useChat = () => {
     loadMessageHistory,
     sendMessageToChat,
     handleCreateChat,
-    initialState
+    initialState,
+    handleDeleteChat
   };
 };

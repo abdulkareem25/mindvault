@@ -2,11 +2,17 @@ import {
   LogOut,
   MessageSquare,
   MessagesSquareIcon,
+  MoreHorizontal,
+  Pencil,
   Plus,
-  SidebarCloseIcon
+  SidebarCloseIcon,
+  Star,
+  Trash2
 } from "lucide-react";
 import { useRef, useState } from "react";
 import useAuth from "../../auth/hooks/useAuth";
+import { showToast } from "../../shared/components/Toast";
+import { useChat } from "../hooks/useChat";
 
 const NAV_ITEMS = [
   { id: "new", label: "New chat", icon: Plus },
@@ -24,8 +30,10 @@ const ChatSidebar = ({
   user
 }) => {
   const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [chatMenuOpen, setChatMenuOpen] = useState(null);
   const profileSectionRef = useRef(null);
   const { logoutUser } = useAuth();
+  const { handleDeleteChat } = useChat();
 
   const handleProfileClick = () => {
     setProfileModalOpen(!profileModalOpen);
@@ -39,6 +47,16 @@ const ChatSidebar = ({
       console.error("Logout failed:", error);
     }
   };
+
+  const handleDelete = async (chatId) => {
+    try {
+      await handleDeleteChat(chatId);
+      setChatMenuOpen(null);
+    } catch (error) {
+      console.log("Delete chat failed:", error);
+    }
+  };
+
   return (
     <aside
       className={`
@@ -98,19 +116,66 @@ const ChatSidebar = ({
         </p>
         <div className="flex-1 flex flex-col gap-1.5 overflow-y-auto py-2.5 pr-1">
           {chats.map((chat) => (
-            <button
+            <div
               key={chat._id}
-              onClick={() => onChatSelect(chat)}
-              className="group
-              flex items-center gap-2.5 px-3 py-2.5 rounded-base w-full text-left
-              text-claude-text-on-dark-soft
-              hover:bg-claude-dark-surface-3 hover:text-claude-text-on-dark
-              transition-all duration-150 border border-transparent
-              truncate shrink-0"
+              className="group relative flex items-center gap-2.5 px-3 py-2.5 rounded-base hover:bg-claude-dark-surface-3 transition-all duration-150 border border-transparent"
             >
-              <MessageSquare size={16} strokeWidth={1.75} className="text-claude-stone group-hover:text-claude-coral shrink-0" />
-              <span className="truncate" style={{ fontSize: "15px" }}>{chat.title}</span>
-            </button>
+              <button
+                onClick={() => onChatSelect(chat)}
+                className="flex items-center gap-2.5 flex-1 text-left
+                text-claude-text-on-dark-soft
+                group-hover:text-claude-text-on-dark
+                transition-all duration-150"
+              >
+                <MessageSquare size={16} strokeWidth={1.75} className="text-claude-stone group-hover:text-claude-coral shrink-0" />
+                <span className="truncate" style={{ fontSize: "15px" }}>{chat.title}</span>
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setChatMenuOpen(chatMenuOpen === chat._id ? null : chat._id);
+                }}
+                className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 rounded hover:bg-claude-dark-surface-2 text-claude-stone hover:text-claude-coral shrink-0"
+              >
+                <MoreHorizontal size={18} strokeWidth={2} />
+              </button>
+
+              {/* Chat Menu Modal */}
+              {chatMenuOpen === chat._id && (
+                <div className="absolute top-full right-0 mt-1 bg-claude-dark-surface-2 border border-claude-border-dark rounded-lg shadow-lg z-50 p-5 w-fit">
+                  <button
+                    onClick={() => {
+                      showToast("info", "Feature coming soon!");
+                      setChatMenuOpen(null);
+                    }}
+                    className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-claude-text-on-dark-soft hover:bg-claude-dark-surface-3 hover:text-claude-text-on-dark transition-all duration-150 rounded-base "
+                  >
+                    <Star size={16} strokeWidth={1.75} className="text-claude-stone" />
+                    <span style={{ fontSize: "14px" }}>Star</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      showToast("info", "Feature coming soon!");
+                      setChatMenuOpen(null);
+                    }}
+                    className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-claude-text-on-dark-soft hover:bg-claude-dark-surface-3 hover:text-claude-text-on-dark transition-all duration-150 rounded-base"
+                  >
+                    <Pencil size={16} strokeWidth={1.75} className="text-claude-stone" />
+                    <span style={{ fontSize: "14px" }}>Rename</span>
+                  </button>
+
+                  <div className="border-t border-claude-border-dark my-2" />
+
+                  <button
+                    onClick={() => handleDelete(chat._id)}
+                    className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-red-400 hover:bg-red-950/30 transition-all duration-150 rounded-base"
+                  >
+                    <Trash2 size={16} strokeWidth={1.75} />
+                    <span style={{ fontSize: "14px" }}>Delete</span>
+                  </button>
+                </div>
+              )}
+            </div>
           ))}
         </div>
       </div>
