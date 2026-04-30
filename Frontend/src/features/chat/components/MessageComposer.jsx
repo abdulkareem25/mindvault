@@ -1,4 +1,5 @@
 import { ArrowUp, Loader, Plus } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 const MessageComposer = ({
   inputValue,
@@ -10,36 +11,70 @@ const MessageComposer = ({
   onShowCategoryModal,
   hasMessages
 }) => {
+  const textareaRef = useRef(null);
+
+  // Auto-expand textarea height based on content
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "auto";
+      const newHeight = Math.min(textarea.scrollHeight, 192); // 192px = max-h-48
+      textarea.style.height = `${newHeight}px`;
+    }
+  }, [inputValue]);
+
+  const handleInputChange = (e) => {
+    onInputChange(e);
+  };
+
+  const handleKeyDown = (e) => {
+    onKeyDown(e);
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "auto";
+      const newHeight = Math.min(textarea.scrollHeight, 192);
+      textarea.style.height = `${newHeight}px`;
+    }
+  };
+
   return (
-    <div className="px-4 py-6 flex justify-center">
+    <div className="px-6 py-5 flex justify-center">
       <div
         className="
-          w-full max-w-190 p-6
-          bg-claude-dark-surface/90 backdrop-blur-md
+          w-full max-w-4xl p-5
+          bg-claude-dark-surface
           border border-claude-border-dark
-          rounded-3xl
+          rounded-2xl
           shadow-whisper
           flex flex-col
           transition-all duration-200
+          focus-within:border-claude-terracotta/50 focus-within:shadow-lg
         "
       >
         {/* Textarea row */}
         <textarea
+          ref={textareaRef}
           value={inputValue}
-          onChange={onInputChange}
-          onKeyDown={onKeyDown}
-          rows={1}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
           placeholder="Type your message here..."
           className="
-            flex-1 bg-transparent outline-none border-none 
+            bg-transparent outline-none border-none 
             resize-none focus-visible:ring-0 text-md
-            text-claude-text-on-dark placeholder:text-claude-stone
-            leading-relaxed h-auto max-h-50 overflow-y-auto
+            text-claude-text-on-dark placeholder:text-claude-stone/70
+            leading-relaxed min-h-6 max-h-48 overflow-y-auto
+            transition-colors duration-200
           "
+          style={{
+            height: "auto",
+            maxHeight: "192px"
+          }}
+          spellCheck="true"
+          aria-label="Message input"
         />
 
         {/* Action buttons row */}
-        <div className="flex items-center justify-between gap-2 px-6 py-4">
+        <div className="flex items-center justify-between gap-2 pt-3 px-1">
           {/* Category button */}
 
           {category ? (

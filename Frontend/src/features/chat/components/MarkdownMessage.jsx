@@ -159,7 +159,7 @@ const MarkdownMessage = ({ content, isUserMessage }) => {
     <div className={`
       px-4 py-3 rounded-lg
       ${isUserMessage
-        ? "bg-claude-terracotta/90 text-white max-w-[80%]"
+        ? "bg-claude-terracotta/85 text-white max-w-[85%] shadow-sm"
         : "text-claude-text-on-dark max-w-[90%]"
       }
     `}>

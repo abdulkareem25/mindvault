@@ -42,7 +42,7 @@ const ChatMessages = ({
   }
 
   return (
-    <div className="flex flex-col gap-6 w-full">
+    <div className="flex flex-col gap-5 w-full">
       {messageHistory.map(({ _id, sender, content }) => (
         <div
           key={_id}

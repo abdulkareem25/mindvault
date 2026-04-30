@@ -3,7 +3,6 @@ import {
   MessageSquare,
   MessagesSquareIcon,
   Plus,
-  Search,
   SidebarCloseIcon
 } from "lucide-react";
 import { useRef, useState } from "react";
@@ -47,7 +46,7 @@ const ChatSidebar = ({
         flex flex-col
         ${sidebarOpen ? "w-70" : "w-0 md:w-0"}
         shrink-0
-        bg-claude-dark-surface
+        bg-claude-dark-surface-2
         border-r border-claude-border-subtle-dark
         transition-all duration-300 ease-in-out
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
@@ -55,41 +54,35 @@ const ChatSidebar = ({
       `}
     >
       {/* Sidebar header */}
-      <div className="flex items-center justify-between p-6 border-b border-claude-border-dark">
+      <div className="flex items-center justify-between px-6 py-5 border-b border-claude-border-subtle-dark">
         <span
-          className="text-claude-text-on-dark font-medium text-2xl tracking-tight"
-          style={{ fontFamily: "var(--font-serif)" }}
+          className="text-claude-text-on-dark font-medium tracking-tight"
+          style={{ fontFamily: "var(--font-serif)", fontSize: "18px" }}
         >
           MindVault
         </span>
         <button
           onClick={onCloseSidebar}
-          className="
-            flex items-center justify-center
-            w-15 h-15 rounded-base
-            text-claude-stone hover:text-claude-text-on-dark-soft
-            transition-all duration-150
-          "
+          className="flex items-center justify-center w-10 h-10 rounded-lg text-claude-stone hover:text-claude-coral transition-all duration-150"
         >
-          <SidebarCloseIcon />
+          <SidebarCloseIcon size={20} />
         </button>
       </div>
 
       {/* Nav items */}
-      <nav className="flex flex-col gap-0.5 px-4">
+      <nav className="flex flex-col gap-1 px-4 py-3">
         {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             onClick={() => onNavClick(id)}
             className={`group
-              flex items-center gap-3 px-3 py-2.5 rounded-base w-full text-left
+              flex items-center gap-3 px-3 py-2.5 rounded-lg w-full text-left
               transition-all duration-150 text-body-sm
-              active:bg-claude-dark-surface-2 active:border active:border-claude-border-dark active:text-claude-text-on-dark
-              text-claude-text-on-dark-soft hover:bg-claude-dark-surface-2 hover:text-claude-text-on-dark border border-transparent
-              "active:bg-claude-dark-surface-2 active:text-claude-text-on-dark"
+              text-claude-text-on-dark-soft hover:bg-claude-dark-surface-3 hover:text-claude-text-on-dark
+              border border-transparent hover:border-claude-border-subtle-dark
             `}
           >
-            <Icon size={20} strokeWidth={1.75} className="group-hover:text-claude-coral text-claude-stone" />
+            <Icon size={20} strokeWidth={1.5} className="group-hover:text-claude-coral text-claude-stone" />
             <span style={{ fontSize: "15px" }}>{label}</span>
           </button>
         ))}
@@ -111,7 +104,7 @@ const ChatSidebar = ({
               className="group
               flex items-center gap-2.5 px-3 py-2.5 rounded-base w-full text-left
               text-claude-text-on-dark-soft
-              hover:bg-claude-dark-surface-2 hover:text-claude-text-on-dark
+              hover:bg-claude-dark-surface-3 hover:text-claude-text-on-dark
               transition-all duration-150 border border-transparent
               truncate shrink-0"
             >
@@ -128,10 +121,7 @@ const ChatSidebar = ({
         {profileModalOpen && (
           <div className={`
             absolute bottom-full left-4 right-4 mb-3 z-50 shadow-lg 
-
             bg-claude-dark-surface-2 border border-claude-border-dark rounded-base
-            transition-all duration-300 ease-in-out overflow-hidden
-            ${profileModalOpen ? "translate-y-0" : "-translate-y-full"}
           `}
           >
             <div className="p-4 border-b border-claude-border-dark">

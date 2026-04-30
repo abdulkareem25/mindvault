@@ -164,8 +164,8 @@ const Dashboard = () => {
         />
 
         {/* ── Chat Messages Area ── */}
-        <div className="flex-1 p-6 overflow-y-auto">
-          <div className="flex flex-col gap-6 max-w-3xl mx-auto justify-bottom h-full">
+        <div className="flex-1 overflow-y-auto">
+          <div className="flex flex-col gap-6 px-6 py-6 max-w-4xl mx-auto h-full">
             <ChatMessages
               isLoadingHistory={isLoadingHistory}
               activeChatId={activeChatId}
