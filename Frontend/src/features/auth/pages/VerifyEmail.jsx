@@ -1,26 +1,36 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
+import {
+  MailIcon,
+  Loader
+} from 'lucide-react';
+import { showToast } from '../../shared/components/Toast';
 
 const VerifyEmail = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, loading } = useSelector((state) => state.auth);
-  const { resendVerificationEmail } = useAuth();
+  const { handleResendVerificationEmail } = useAuth();
 
   const [resendLoading, setResendLoading] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const [userEmail, setUserEmail] = useState('');
+  const emailFromState = location.state?.email;
 
   useEffect(() => {
-    // If no user, redirect to signup
-    if (!user) {
-      navigate('/signup');
+
+
+    if (emailFromState) {
+      setUserEmail(emailFromState);
+    } else if (user?.email) {
+      setUserEmail(user.email);
     } else {
-      setUserEmail(user.email || '');
+      navigate('/signup');
     }
-  }, [user, navigate]);
+  }, [user, location, navigate]);
 
   // Cooldown timer
   useEffect(() => {
@@ -34,8 +44,9 @@ const VerifyEmail = () => {
     setResendLoading(true);
     setResendSuccess(false);
     try {
-      await resendVerificationEmail(userEmail);
+      await handleResendVerificationEmail(emailFromState);
       setResendSuccess(true);
+      showToast('success', 'Verification email resent! Please check your inbox.');
       setCooldown(60); // 60 second cooldown
       setTimeout(() => setResendSuccess(false), 3000); // Hide success message after 3 seconds
     } catch (error) {
@@ -92,28 +103,10 @@ const VerifyEmail = () => {
 
           {/* Instructions */}
           <div className="bg-claude-dark-surface border border-claude-border-dark rounded-base p-4 mb-6">
-            <p className="text-claude-warm-silver text-sm leading-relaxed">
+            <p className="text-claude-warm-silver text-sm leading-relaxed text-center">
               Please check your email and click the verification link to activate your account. The link will expire in 24 hours.
             </p>
           </div>
-
-          {/* Success Message */}
-          {resendSuccess && (
-            <div className="mb-6 p-4 bg-green-100 border border-green-300 rounded-base flex items-start gap-3 animate-in fade-in">
-              <svg
-                className="w-5 h-5 text-green-600 mt-0.5 shrink-0"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <p className="text-green-700 text-sm">Verification email resent successfully!</p>
-            </div>
-          )}
 
           {/* Resend Button */}
           <div className="space-y-3">
@@ -128,40 +121,16 @@ const VerifyEmail = () => {
             >
               {resendLoading ? (
                 <>
-                  <svg
-                    className="w-4 h-4 animate-spin"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                    />
-                  </svg>
+                  <Loader size={25} strokeWidth={2} className="animate-spin" />
                   Resending...
                 </>
               ) : cooldown > 0 ? (
                 `Resend in ${cooldown}s`
               ) : (
-                <>
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                    />
-                  </svg>
-                  Resend Verification Email
-                </>
+                <div className="flex items-center justify-center gap-2">
+                  <MailIcon className="h-10 w-10"/>
+                  <span>Resend Verification Email</span>
+                </div>
               )}
             </button>
 

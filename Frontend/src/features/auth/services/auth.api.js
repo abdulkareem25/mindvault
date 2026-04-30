@@ -19,7 +19,19 @@ export const signup = async (name, email, password, confirmPassword) => {
     const response = await api.post('/signup', { name, email, password, confirmPassword });
     return response.data;
   } catch (error) {
-    throw error.response ? error.response.data : new Error('Network error');
+    const errorData = error.response?.data;
+    if (errorData) {
+      // Handle validation errors (422) - extract from errors array
+      if (errorData.errors && Array.isArray(errorData.errors)) {
+        const message = errorData.errors.map((e) => e.message).join(', ');
+        throw new Error(message);
+      }
+      // Handle other error responses
+      if (errorData.message) {
+        throw new Error(errorData.message);
+      }
+    }
+    throw new Error('Network error');
   }
 };
 

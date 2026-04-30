@@ -1,6 +1,7 @@
 import { useDispatch } from 'react-redux';
 import { setError, setLoading, setUser } from '../auth.slice';
 import { getCurrentUser, login, logout, resendVerificationEmail, signup } from '../services/auth.api';
+import { showToast } from '../../shared/components/Toast';
 
 
 const useAuth = () => {
@@ -22,12 +23,12 @@ const useAuth = () => {
   const signupUser = async (name, email, password, confirmPassword) => {
     dispatch(setLoading(true));
     try {
-      await signup(name, email, password, confirmPassword);
+      const response = await signup(name, email, password, confirmPassword);
       dispatch(setError(null));
-      return true;
+      showToast('success', response.message || 'Signup successful! Please verify your email.');
+      return response.success;
     } catch (error) {
       dispatch(setError(error.message || 'Signup failed'));
-      return false;
     } finally {
       dispatch(setLoading(false));
     }
@@ -46,7 +47,7 @@ const useAuth = () => {
     }
   };
 
-  const resendVerificationEmail = async (email) => {
+  const handleResendVerificationEmail = async (email) => {
     try {
       await resendVerificationEmail(email);
     } catch (error) {
@@ -67,7 +68,7 @@ const useAuth = () => {
     loginUser,
     signupUser,
     fetchCurrentUser,
-    resendVerificationEmail,
+    handleResendVerificationEmail,
     logoutUser
   };
 };

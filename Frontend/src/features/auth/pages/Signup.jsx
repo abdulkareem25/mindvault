@@ -24,17 +24,23 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (formData.password !== formData.confirmPassword) {
+      return;
+    }
+
     const success = await signupUser(formData.name, formData.email, formData.password, formData.confirmPassword);
-  
+
     if (success) {
       navigate('/verify-email', { state: { email: formData.email } });
     }
+    
   };
 
   return (
     <div className="min-h-screen bg-claude-deep-dark flex items-center justify-center p-4">
       {/* Form Container */}
-      <div className="w-full max-w-md max-h-screen overflow-y-auto">
+      <div className="w-full max-w-md max-h-screen overflow-y-auto px-6 py-8">
         <div className="card">
           {/* Header */}
           <div className="text-center mb-8">
@@ -123,23 +129,41 @@ const Signup = () => {
               <label htmlFor="confirmPassword" className="block text-claude-warm-silver text-sm font-medium mb-2">
                 Confirm Password
               </label>
-              <input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                required
-                onChange={handleChange}
-                placeholder="••••••••"
-                disabled={loading}
-                className='w-full px-3 py-2 rounded-lg bg-claude-dark-surface border border-claude-border-dark transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-claude-focus focus:border-claude-focus text-claude-ivory placeholder-claude-stone disabled:opacity-50 disabled:cursor-not-allowed'
-              />
+              <div className="relative">
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  required
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                  disabled={loading}
+                  className='w-full px-3 py-2 rounded-lg bg-claude-dark-surface border border-claude-border-dark transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-claude-focus focus:border-claude-focus text-claude-ivory placeholder-claude-stone disabled:opacity-50 disabled:cursor-not-allowed'
+                />
+                {formData.confirmPassword && formData.password && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    {formData.password === formData.confirmPassword ? (
+                      <svg className="w-10 h-10 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      <svg className="w-10 h-10 text-claude-error" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </div>
+                )}
+              </div>
+              {formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword && (
+                <p className="text-claude-error text-xs mt-1">Passwords do not match</p>
+              )}
             </div>
 
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || (formData.password !== formData.confirmPassword && formData.confirmPassword !== '')}
               className="btn-primary w-full mt-6 flex items-center justify-center gap-2"
             >
               {loading ? (
