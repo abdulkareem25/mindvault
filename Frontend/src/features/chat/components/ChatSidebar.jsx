@@ -27,13 +27,13 @@ const ChatSidebar = ({
   chats,
   onChatSelect,
   activeNav,
-  user
+  user,
+  onChatDelete
 }) => {
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [chatMenuOpen, setChatMenuOpen] = useState(null);
   const profileSectionRef = useRef(null);
   const { logoutUser } = useAuth();
-  const { handleDeleteChat } = useChat();
 
   const handleProfileClick = () => {
     setProfileModalOpen(!profileModalOpen);
@@ -45,15 +45,6 @@ const ChatSidebar = ({
       setProfileModalOpen(false);
     } catch (error) {
       console.error("Logout failed:", error);
-    }
-  };
-
-  const handleDelete = async (chatId) => {
-    try {
-      await handleDeleteChat(chatId);
-      setChatMenuOpen(null);
-    } catch (error) {
-      console.log("Delete chat failed:", error);
     }
   };
 
@@ -148,7 +139,7 @@ const ChatSidebar = ({
                       showToast("info", "Feature coming soon!");
                       setChatMenuOpen(null);
                     }}
-                    className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-claude-text-on-dark-soft hover:bg-claude-dark-surface-3 hover:text-claude-text-on-dark transition-all duration-150 rounded-base "
+                    className="w-full flex items-center gap-3 pl-1.5 pr-5 py-2.5 text-left text-claude-text-on-dark-soft hover:bg-claude-dark-surface-3 hover:text-claude-text-on-dark transition-all duration-150 rounded-base "
                   >
                     <Star size={16} strokeWidth={1.75} className="text-claude-stone" />
                     <span style={{ fontSize: "14px" }}>Star</span>
@@ -167,8 +158,8 @@ const ChatSidebar = ({
                   <div className="border-t border-claude-border-dark my-2" />
 
                   <button
-                    onClick={() => handleDelete(chat._id)}
-                    className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-red-400 hover:bg-red-950/30 transition-all duration-150 rounded-base"
+                    onClick={() => onChatDelete(chat._id)}
+                    className="w-full flex items-center gap-3 pl-1.5 pr-5 py-2.5 text-left text-red-400 hover:bg-red-950/30 transition-all duration-150 rounded-base"
                   >
                     <Trash2 size={16} strokeWidth={1.75} />
                     <span style={{ fontSize: "14px" }}>Delete</span>
@@ -231,7 +222,7 @@ const ChatSidebar = ({
           onClick={handleProfileClick}
           className="
             flex items-center gap-5 px-4 py-1.5 w-full rounded-base
-            hover:bg-claude-dark-surface-2 transition-all duration-150
+            hover:bg-claude-dark-surface-3 transition-all duration-150
             border border-transparent
           "
         >

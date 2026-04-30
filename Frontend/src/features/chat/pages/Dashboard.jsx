@@ -14,7 +14,7 @@ import { useChat } from '../hooks/useChat';
 
 const Dashboard = () => {
 
-  const { initSocketConnection, loadChats, loadMessageHistory, handleCreateChat, sendMessageToChat, initialState } = useChat();
+  const { initSocketConnection, loadChats, loadMessageHistory, handleCreateChat, sendMessageToChat, initialState, handleDeleteChat } = useChat();
   const { chats, messageHistory, loading, activeChatId } = useSelector((state) => state.chat);
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
@@ -105,6 +105,15 @@ const Dashboard = () => {
     setInputValue(e.target.value);
   };
 
+  const handleDelete = async (chatId) => {
+    try {
+      await handleDeleteChat(chatId);
+      setChatMenuOpen(null);
+    } catch (error) {
+      console.log("Delete chat failed:", error);
+    }
+  };
+
   return (
     <div
       className="flex h-screen overflow-hidden bg-claude-deep-dark"
@@ -124,6 +133,7 @@ const Dashboard = () => {
           initialState();
           setShowChatsModal(false);
         }}
+        onChatDelete={handleDelete}
       />
 
       {/* ── Category Modal ── */}
@@ -150,6 +160,7 @@ const Dashboard = () => {
         onChatSelect={handleChat}
         activeNav={activeNav}
         user={user}
+        onChatDelete={handleDelete}
       />
 
       {/* MAIN CONTENT */}

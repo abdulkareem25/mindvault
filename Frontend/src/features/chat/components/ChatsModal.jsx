@@ -1,9 +1,17 @@
-import { MessageSquare, Plus, Search, X } from "lucide-react";
+import { Check, Inbox, MessageSquare, MoreHorizontal, Pencil, Plus, Search, Star, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { showToast } from "../../shared/components/Toast";
 
-const ChatsModal = ({ isOpen, onClose, chats, onChatSelect, onNewChat }) => {
+const ChatsModal = ({ 
+  isOpen, 
+  onClose, 
+  chats, 
+  onChatSelect, 
+  onNewChat,
+  onChatDelete
+}) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [chatMenuOpen, setChatMenuOpen] = useState(null);
 
   if (!isOpen) return null;
 
@@ -137,7 +145,7 @@ const ChatsModal = ({ isOpen, onClose, chats, onChatSelect, onNewChat }) => {
                   </span>
                   {filteredChats.length > 0 && (
                     <button
-                      onClick={() => showToast("info", "Search functionality coming soon!")}
+                      onClick={() => showToast("info", "Select functionality coming soon!")}
                       className="
                       px-3 py-1 text-xs rounded
                       text-claude-coral hover:bg-claude-coral/10
@@ -151,31 +159,81 @@ const ChatsModal = ({ isOpen, onClose, chats, onChatSelect, onNewChat }) => {
                 {/* Chat Items */}
                 <div className="divide-y divide-claude-border-subtle-dark">
                   {filteredChats.map((chat) => (
-                    <button
-                      key={chat._id}
-                      onClick={() => handleChatSelect(chat)}
-                      className="
-                        w-full px-6 py-4
-                        hover:bg-claude-dark-surface-2
-                        transition-all duration-150
-                        text-left group
-                      "
-                    >
-                      <div className="flex items-start gap-3">
-                        <MessageSquare
-                          size={18}
-                          className="text-claude-stone group-hover:text-claude-text-on-dark mt-0.5 shrink-0"
-                        />
+                    <div key={chat._id} className="relative">
+                      <button
+                        onClick={() => handleChatSelect(chat)}
+                        className="
+                          w-full px-6 py-4
+                          hover:bg-claude-dark-surface-2
+                          transition-all duration-150
+                          text-left group flex items-center gap-3
+                        "
+                      >
                         <div className="flex-1 min-w-0">
                           <p className="text-claude-text-on-dark font-medium truncate group-hover:text-claude-coral transition-colors">
                             {chat.title}
                           </p>
                           <p className="text-claude-stone text-xs mt-1">
-                            Last message {formatDate(chat.updatedAt || chat.createdAt)}
+                            Last message {formatDate(chat.lastMessageAt)}
                           </p>
                         </div>
-                      </div>
-                    </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setChatMenuOpen(chatMenuOpen === chat._id ? null : chat._id);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1.5 rounded hover:bg-claude-dark-surface-3 text-claude-stone hover:text-claude-coral shrink-0"
+                        >
+                          <MoreHorizontal size={18} strokeWidth={2} />
+                        </button>
+                      </button>
+
+                      {/* Chat Context Menu */}
+                      {chatMenuOpen === chat._id && (
+                        <div className="absolute top-full right-1 mt-1 bg-claude-dark-surface-2 border border-claude-border-dark rounded-lg shadow-lg z-50 p-5 w-fit">
+                          <button
+                            onClick={() => {
+                              showToast("info", "Feature coming soon!");
+                              setChatMenuOpen(null);
+                            }}
+                            className="w-full flex items-center gap-3 pl-1.5 pr-5 py-2.5 text-left text-claude-text-on-dark-soft hover:bg-claude-dark-surface-3 hover:text-claude-text-on-dark transition-all duration-150 rounded-base"
+                          >
+                            <Check size={16} strokeWidth={1.75} className="text-claude-stone" />
+                            <span style={{ fontSize: "14px" }}>Select</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              showToast("info", "Feature coming soon!");
+                              setChatMenuOpen(null);
+                            }}
+                            className="w-full flex items-center gap-3 pl-1.5 pr-5 py-2.5 text-left text-claude-text-on-dark-soft hover:bg-claude-dark-surface-3 hover:text-claude-text-on-dark transition-all duration-150 rounded-base"
+                          >
+                            <Star size={16} strokeWidth={1.75} className="text-claude-stone" />
+                            <span style={{ fontSize: "14px" }}>Star</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              showToast("info", "Rename functionality coming soon!");
+                              setChatMenuOpen(null);
+                            }}
+                            className="w-full flex items-center gap-3 pl-1.5 pr-5 py-2.5 text-left text-claude-text-on-dark-soft hover:bg-claude-dark-surface-3 hover:text-claude-text-on-dark transition-all duration-150 rounded-base"
+                          >
+                            <Pencil size={16} strokeWidth={1.75} className="text-claude-stone" />
+                            <span style={{ fontSize: "14px" }}>Rename</span>
+                          </button>
+
+                          <div className="border-t border-claude-border-dark my-1" />
+
+                          <button
+                            onClick={() => onChatDelete(chat._id)}
+                            className="w-full flex items-center gap-3 pl-1.5 pr-5 py-2.5 text-left text-red-400 hover:bg-red-950/30 transition-all duration-150 rounded-base"
+                          >
+                            <Trash2 size={16} strokeWidth={1.75} />
+                            <span style={{ fontSize: "14px" }}>Delete</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>
