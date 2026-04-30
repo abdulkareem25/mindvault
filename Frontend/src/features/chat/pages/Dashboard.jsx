@@ -6,6 +6,7 @@ import CategoryModal from '../components/CategoryModal';
 import ChatMessages from '../components/ChatMessages';
 import ChatSidebar from '../components/ChatSidebar';
 import ChatTopBar from '../components/ChatTopBar';
+import ChatsModal from '../components/ChatsModal';
 import MessageComposer from '../components/MessageComposer';
 import SidebarToggle from '../components/SidebarToggle';
 import { useChat } from '../hooks/useChat';
@@ -25,6 +26,7 @@ const Dashboard = () => {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [showChatsModal, setShowChatsModal] = useState(false);
 
   useEffect(() => {
     initSocketConnection();
@@ -48,8 +50,10 @@ const Dashboard = () => {
       setCategory(null);
       setInputValue("");
       initialState();
+      setShowChatsModal(false);
     } else if (id === "chats") {
       setActiveChatId(null);
+      setShowChatsModal(true);
     } else if (id === "search") {
       // Implement search functionality here
     } else {
@@ -61,7 +65,7 @@ const Dashboard = () => {
   const handleSend = async () => {
     const message = inputValue.trim();
     if (!message || !category) {
-      return showToast("Please enter a message and select a category before sending.", "error");
+      return showToast("error", "Please enter a message and select a category before sending.");
     };
     setIsSendingMessage(true);
     try {
@@ -106,6 +110,21 @@ const Dashboard = () => {
       className="flex h-screen overflow-hidden bg-claude-deep-dark"
       style={{ fontFamily: "var(--font-sans)" }}
     >
+
+      {/* ── Chats Modal ── */}
+      <ChatsModal
+        isOpen={showChatsModal}
+        onClose={() => setShowChatsModal(false)}
+        chats={chats}
+        onChatSelect={handleChat}
+        onNewChat={() => {
+          setActiveNav("new");
+          setCategory(null);
+          setInputValue("");
+          initialState();
+          setShowChatsModal(false);
+        }}
+      />
 
       {/* ── Category Modal ── */}
       <CategoryModal

@@ -21,7 +21,7 @@ const Toast = () => {
 
 export default Toast;
 
-export const showToast = (message, type = "info") => {
+export const showToast = (type = "info", message) => {
   switch (type) {
     case "success":
       toast.success(message);

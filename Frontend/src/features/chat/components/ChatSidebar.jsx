@@ -11,7 +11,7 @@ import useAuth from "../../auth/hooks/useAuth";
 
 const NAV_ITEMS = [
   { id: "new", label: "New chat", icon: Plus },
-  { id: "search", label: "Search", icon: Search },
+  // { id: "search", label: "Search", icon: Search }, // Uncomment when search functionality is implemented
   { id: "chats", label: "Chats", icon: MessagesSquareIcon }
 ];
 
@@ -86,10 +86,10 @@ const ChatSidebar = ({
               transition-all duration-150 text-body-sm
               active:bg-claude-dark-surface-2 active:border active:border-claude-border-dark active:text-claude-text-on-dark
               text-claude-text-on-dark-soft hover:bg-claude-dark-surface-2 hover:text-claude-text-on-dark border border-transparent
-              ${activeNav === id ? "bg-claude-dark-surface-2 text-claude-text-on-dark" : ""}
+              "active:bg-claude-dark-surface-2 active:text-claude-text-on-dark"
             `}
           >
-            <Icon size={20} strokeWidth={1.75} className="group-active:text-claude-coral text-claude-stone" />
+            <Icon size={20} strokeWidth={1.75} className="group-hover:text-claude-coral text-claude-stone" />
             <span style={{ fontSize: "15px" }}>{label}</span>
           </button>
         ))}
