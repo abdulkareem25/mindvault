@@ -18,6 +18,7 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }));
+
 app.use(express.static('./public'));
 
 app.use('/api/auth', authRouter);
@@ -25,6 +26,10 @@ app.use('/api/chats', chatRouter);
 
 app.get('/', (req, res) => {
   res.send('Welcome to the MindVault API!');
+});
+
+app.get("*", (req, res) => {
+  res.sendFile("./public/index.html", { root: "./" });
 });
 
 app.use(notFoundMiddleware);
