@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: 'https://mindvault-6exy.onrender.com/api/auth' || 'http://localhost:3000/api/auth',
+  baseURL: 'https://mindvault-6exy.onrender.com/api/auth',
   withCredentials: true
 });
 

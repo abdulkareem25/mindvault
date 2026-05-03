@@ -47,7 +47,7 @@ export const verifyEmailController = asyncHandler(async (req, res) => {
     const { token } = req.query;
 
     const result = await authService.verifyEmail(token);
-    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    const clientUrl = process.env.CLIENT_URL;
 
     if (result.isAlreadyVerified) {
         return res.redirect(`${clientUrl}/already-verified`);

@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 
 export const initSocketConnection = () => {
-  const socket = io("http://localhost:3000", {
+  const socket = io("https://mindvault-6exy.onrender.com", {
     withCredentials: true,
   });
 
