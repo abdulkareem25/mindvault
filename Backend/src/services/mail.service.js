@@ -29,7 +29,7 @@ export const sendEmail = async ( to, subject, html ) => {
     const response = await brevoClient.post("", {
       sender: {
         name: "MindVault",
-        email: process.env.EMAIL_USER,
+        email: process.env.SENDER_EMAIL,
       },
       to: [{ email: to }],
       subject,
