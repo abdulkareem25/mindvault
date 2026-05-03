@@ -22,7 +22,6 @@ const VerifyEmail = () => {
 
   useEffect(() => {
 
-
     if (emailFromState) {
       setUserEmail(emailFromState);
     } else if (user?.email) {
@@ -44,7 +43,7 @@ const VerifyEmail = () => {
     setResendLoading(true);
     setResendSuccess(false);
     try {
-      await handleResendVerificationEmail(emailFromState);
+      await handleResendVerificationEmail(userEmail);
       setResendSuccess(true);
       showToast('success', 'Verification email resent! Please check your inbox.');
       setCooldown(60); // 60 second cooldown
