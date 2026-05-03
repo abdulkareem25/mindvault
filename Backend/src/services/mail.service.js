@@ -1,39 +1,48 @@
-import nodeMailer from 'nodemailer';
+import axios from "axios";
 
-const transporter = nodeMailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  family: 4,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },  
+const BREVO_URL = "https://api.brevo.com/v3/smtp/email";
 
+const brevoClient = axios.create({
+  baseURL: BREVO_URL,
+  headers: {
+    "api-key": process.env.BREVO_API_KEY,
+    "Content-Type": "application/json",
+  },
+  timeout: 10000,
 });
 
-transporter.verify((error, success) => {
-  if (error) {
-    console.error('Error connecting to email service:', error);
-  } else {
-    console.log('Email service is ready to send messages');
-  }
-});
-
-
-export const sendEmail = async (to, subject, html) => {
-
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to,
-    subject,
-    html
-  };
-
+export const verifyEmailService = async () => {
   try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent:', info.response);
+    if (!process.env.BREVO_API_KEY) {
+      throw new Error("BREVO_API_KEY missing in env");
+    }
+
+    console.log("Brevo email service ready");
+  } catch (err) {
+    console.error("Email service config error:", err.message);
+  }
+};
+
+
+export const sendEmail = async ( to, subject, html ) => {
+  try {
+    const response = await brevoClient.post("", {
+      sender: {
+        name: "MindVault",
+        email: process.env.EMAIL_USER,
+      },
+      to: [{ email: to }],
+      subject,
+      htmlContent: html,
+    });
+
+    console.log("Email sent:", response.data.messageId);
+    return true;
   } catch (error) {
-    console.error('Error sending email:', error.message);
+    console.error(
+      "Brevo send error:",
+      error.response?.data || error.message
+    );
+    return false;
   }
 };
