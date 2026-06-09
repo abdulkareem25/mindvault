@@ -42,6 +42,16 @@ const chatSchema = new mongoose.Schema(
       default: Date.now,
       index: true,
     },
+    injectedMemoryIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Memory' }],
+    extractionStatus: {
+      type: String,
+      enum: ['pending', 'processing', 'completed', 'failed', 'skipped'],
+      default: 'pending'
+    },
+    extractionAttempts: { type: Number, default: 0 },
+    extractionCompletedAt: { type: Date, default: null },
+    messageCount: { type: Number, default: 0 },
+    extractionPromptVersion: { type: Number, default: 1 }
   },
   {
     timestamps: true,
@@ -52,5 +62,7 @@ const chatSchema = new mongoose.Schema(
 chatSchema.index({ userId: 1, lastMessageAt: -1 });
 chatSchema.index({ userId: 1, category: 1 });
 chatSchema.index({ userId: 1, status: 1 });
+chatSchema.index({ userId: 1, createdAt: -1 });
+chatSchema.index({ extractionStatus: 1, createdAt: -1 });
 
 export default mongoose.model("Chat", chatSchema);

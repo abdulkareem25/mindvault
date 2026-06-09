@@ -1,6 +1,8 @@
 import { ChatMistralAI } from '@langchain/mistralai';
 import { HumanMessage, SystemMessage } from 'langchain';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { EXTRACTION } from '../utils/prompts.js';
+import logger from '../utils/logger.js';
 
 // Initialize clients
 const geminiApiKey = process.env.GEMINI_API_KEY;
@@ -130,48 +132,46 @@ Tags should be 2–3 short lowercase topic words.`;
 };
 
 /**
- * Extracts memory nodes from a conversation using Mistral Large
+ * Extracts memory nodes from a conversation using Google Gemini 2.5 Flash Lite
  */
-export const extractMemories = async (conversationText) => {
-  const systemPrompt = `You are a memory extraction system. Your task is to read a conversation
-between a user and an AI assistant and extract structured memory nodes about the USER.
-
-A memory node represents something specific and personal about the user:
-- A decision they made about their work, life, or projects
-- A preference or opinion they expressed
-- A fact about their situation (tech stack, life circumstances, etc.)
-- A goal or intention they stated
-- Something they learned or understood in this conversation
-
-Rules:
-1. Extract ONLY information about the user — not general knowledge, not AI explanations
-2. Write each node in first person: "Prefer X over Y" not "The user prefers X over Y"
-3. Be specific: "Using Supabase for auth + DB on the MindVault project" not "Uses a database"
-4. Extract 1–4 nodes per conversation. Quality over quantity.
-5. If the conversation is too short, generic, or contains no user-specific information, return []
-6. Return ONLY a valid JSON array. No preamble, no explanation, no markdown fences.
-
-JSON structure:
-[
-  {
-    "content": "string (max 100 words, first person, specific)",
-    "category": "coding" | "deen" | "admin" | "life",
-    "type": "decision" | "preference" | "learning" | "goal" | "fact",
-    "confidence": "high" | "medium" | "low",
-    "tags": ["tag1", "tag2"]
+export const extractMemories = async ({ messages }) => {
+  if (!genAI) {
+    throw new Error('GEMINI_API_KEY is not configured, cannot extract memories.');
   }
-]`;
+
+  if (!messages || messages.length === 0) {
+    logger.extraction.info('No messages provided for memory extraction.');
+    return [];
+  }
+
+  // Format the conversation history as a text log
+  const conversationText = messages
+    .map((msg) => `${msg.sender === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
+    .join('\n');
 
   try {
-    const response = await mistralLargeModel.invoke([
-      new SystemMessage(systemPrompt),
-      new HumanMessage(conversationText)
-    ]);
-    const responseText = response.text.trim();
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash-lite',
+      systemInstruction: EXTRACTION
+    });
+
+    const result = await model.generateContent(conversationText);
+    const responseText = result.response.text().trim();
+    
+    // Clean response to parse JSON
     const cleanText = responseText.replace(/```json|```/g, '').trim();
-    return JSON.parse(cleanText);
+    
+    try {
+      return JSON.parse(cleanText);
+    } catch (e) {
+      logger.extraction.error('Failed to parse extraction JSON response', {
+        error: e.message,
+        responseText
+      });
+      return [];
+    }
   } catch (error) {
-    console.error('Failed to extract memories from conversation:', error);
-    return [];
+    logger.extraction.error('Gemini memory extraction call failed', { error: error.message });
+    throw error; // Rethrow to trigger Agenda job retry
   }
 };

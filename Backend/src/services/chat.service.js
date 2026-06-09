@@ -75,10 +75,16 @@ const addMessageToChat = async (chatId, userId, sender, content) => {
     content,
   });
 
-  await Chat.findByIdAndUpdate(chatId, {
+  const updateFields = {
     $push: { messages: message._id },
     lastMessageAt: new Date()
-  });
+  };
+
+  if (sender === "user") {
+    updateFields.$inc = { messageCount: 1 };
+  }
+
+  await Chat.findByIdAndUpdate(chatId, updateFields);
 
   return message;
 };

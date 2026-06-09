@@ -10,9 +10,11 @@ import ChatsModal from '../components/ChatsModal';
 import MessageComposer from '../components/MessageComposer';
 import SidebarToggle from '../components/SidebarToggle';
 import { useChat } from '../hooks/useChat';
-;
+import { useSocket } from '../hooks/useSocket';
+import { getSocket } from '../services/chat.socket';
 
 const Dashboard = () => {
+  useSocket();
 
   const { initSocketConnection, loadChats, loadMessageHistory, handleCreateChat, sendMessageToChat, initialState, handleDeleteChat } = useChat();
   const { chats, messageHistory, loading, activeChatId } = useSelector((state) => state.chat);
@@ -32,6 +34,17 @@ const Dashboard = () => {
     initSocketConnection();
     loadChats();
   }, []);
+
+  useEffect(() => {
+    const socket = getSocket();
+    const currentChatId = activeChatId;
+
+    return () => {
+      if (currentChatId && socket) {
+        socket.emit('chat:closed', { chatId: currentChatId });
+      }
+    };
+  }, [activeChatId]);
 
   const handleChat = async (chat) => {
     dispatch(setActiveChatId(chat._id));
