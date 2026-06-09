@@ -1,8 +1,7 @@
 export const CHAT_SYSTEM = (category) => `You are a helpful AI assistant in the ${category} domain.
 Be concise and practical. Respond in markdown.`;
 
-export const CONTEXT_PREFIX = (memories) => `[User context — use this to personalise responses but do not
-explicitly mention that you have this context unless asked]
+export const CONTEXT_PREFIX = (memories) => `[User context — use this to personalise responses but do not explicitly mention that you have this context unless asked]
 What you know about this user:
 ${memories.map(m => `- [${m.type.toUpperCase()}] ${m.content}`).join('\n')}
 [End context]

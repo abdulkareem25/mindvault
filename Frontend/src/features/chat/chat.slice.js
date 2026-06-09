@@ -7,7 +7,8 @@ const chatSlice = createSlice({
     activeChatId: null,
     messageHistory: [],
     loading: false,
-    error: null
+    error: null,
+    injectedMemories: {}
   },
   reducers: {
     setChats(state, action) {

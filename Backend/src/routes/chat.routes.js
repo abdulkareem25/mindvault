@@ -9,6 +9,7 @@ import {
 } from "../controllers/chat.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import validate from "../middlewares/validate.middleware.js";
+import contextInjection from "../middlewares/contextInjection.middleware.js";
 import {
   createChatSchema,
   idSchema,
@@ -89,6 +90,7 @@ router.post(
   authMiddleware,
   validate(idSchema, 'params'),
   validate(sendMessageSchema),
+  contextInjection,
   sendMessageAndGetResponseController
 );
 
