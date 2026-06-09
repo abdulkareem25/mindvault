@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import { showToast } from "../../shared/components/Toast";
-import { setActiveChatId, setChats, setError, setLoading, setMessageHistory } from "../chat.slice";
+import { setActiveChatId, setChats, setError, setLoading, setMessageHistory, setInjectedMemories } from "../chat.slice";
 import {
   fetchChats,
   fetchMessageHistory,
@@ -45,7 +45,10 @@ export const useChat = () => {
   const sendMessageToChat = async (chatId, message) => {
     try {
       dispatch(setLoading(true));
-      await sendMessage(chatId, message);
+      const response = await sendMessage(chatId, message);
+      if (response && response.injectedMemories) {
+        dispatch(setInjectedMemories({ chatId, memories: response.injectedMemories }));
+      }
     } catch (error) {
       console.log("Send message failed:", error);
       showToast("error");

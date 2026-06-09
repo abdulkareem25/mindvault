@@ -1,5 +1,7 @@
 import * as chatService from "../services/chat.service.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import Chat from "../models/chat.model.js";
+import { generateAIResponse, generateChatTitle } from "../services/ai.service.js";
 
 export const createChatController = asyncHandler(async (req, res) => {
 
@@ -119,18 +121,52 @@ export const sendMessageAndGetResponseController = asyncHandler(async (req, res)
     });
   }
 
-  const response = await chatService.sendMessage(chatId, req.user._id, content);
-
-  if (!response) {
-    return res.status(500).json({
+  const chat = await Chat.findOne({ _id: chatId, userId: req.user._id });
+  if (!chat) {
+    return res.status(404).json({
       success: false,
-      message: "Failed to send message",
+      message: "Chat not found",
     });
   }
 
-  res.status(200).json({
-    success: true,
-    message: "Message sent and response received successfully",
-    data: response,
+  const isFirstMessage = (chat.messageCount === 0);
+
+  // After saving user message:
+  await chatService.addMessageToChat(chatId, req.user._id, "user", content);
+  await Chat.findByIdAndUpdate(chatId, { $inc: { messageCount: 1 } });
+
+  // Get updated chat history to pass to AI
+  const updatedChat = await Chat.findById(chatId).populate("messages");
+
+  // Accept optional contextPrefix from req.contextPrefix
+  const contextPrefix = req.contextPrefix || null;
+  const aiResponseText = await generateAIResponse(updatedChat.messages, chat.category, contextPrefix);
+
+  // Save AI message:
+  const savedAiMessage = await chatService.addMessageToChat(chatId, req.user._id, "assistant", aiResponseText);
+  await Chat.findByIdAndUpdate(chatId, { $inc: { messageCount: 1 } });
+
+  // Asynchronously generate chat title (first message only):
+  if (isFirstMessage) {
+    generateChatTitle({ firstMessage: content, category: chat.category })
+      .then(async (title) => {
+        await Chat.findByIdAndUpdate(chatId, { title });
+      })
+      .catch((err) => {
+        console.error("Failed to generate chat title asynchronously:", err);
+      });
+  }
+
+  // After AI responds (first message only):
+  if (req.injectedMemoryIds && req.injectedMemoryIds.length > 0) {
+    await Chat.findByIdAndUpdate(chatId, {
+      injectedMemoryIds: req.injectedMemoryIds
+    });
+  }
+
+  // Response format (first message/all):
+  return res.json({
+    message: savedAiMessage,
+    injectedMemories: req.injectedMemories || []
   });
 });

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { showToast } from '../../shared/components/Toast';
-import { setActiveChatId } from '../chat.slice';
+import { setActiveChatId, incrementMessageCount } from '../chat.slice';
 import CategoryModal from '../components/CategoryModal';
 import ChatMessages from '../components/ChatMessages';
 import ChatSidebar from '../components/ChatSidebar';
@@ -89,6 +89,7 @@ const Dashboard = () => {
         dispatch(setActiveChatId(currentChatId));
         await loadChats();
       } else {
+        dispatch(incrementMessageCount({ chatId: activeChatId, amount: 2 }));
         await sendMessageToChat(activeChatId, message);
       }
       if (currentChatId) {

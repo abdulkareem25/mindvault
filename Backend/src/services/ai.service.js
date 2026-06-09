@@ -1,12 +1,19 @@
 import { ChatMistralAI } from '@langchain/mistralai';
 import { HumanMessage, SystemMessage } from 'langchain';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { EXTRACTION } from '../utils/prompts.js';
+import Groq from 'groq-sdk';
+import * as prompts from '../utils/prompts.js';
 import logger from '../utils/logger.js';
+
+const { EXTRACTION } = prompts;
 
 // Initialize clients
 const geminiApiKey = process.env.GEMINI_API_KEY;
 const genAI = geminiApiKey ? new GoogleGenerativeAI(geminiApiKey) : null;
+
+const groqApiKey = process.env.GROQ_API_KEY;
+const groq = groqApiKey ? new Groq({ apiKey: groqApiKey }) : null;
+const CHAT_MODEL = 'llama-3.3-70b-versatile';
 
 const mistralModel = new ChatMistralAI({
   model: 'mistral-small-latest'
@@ -17,10 +24,38 @@ const mistralLargeModel = new ChatMistralAI({
 });
 
 /**
+ * Core chat completion function using Groq llama-3.3-70b-versatile
+ */
+export const chatCompletion = async ({ messages, category, contextPrefix = null }) => {
+  if (!groq) {
+    throw new Error('GROQ_API_KEY is not configured.');
+  }
+
+  const baseSystem = prompts.CHAT_SYSTEM(category);
+  const fullSystem = contextPrefix ? `${contextPrefix}${baseSystem}` : baseSystem;
+
+  const formattedMessages = [
+    { role: 'system', content: fullSystem },
+    ...messages.map(m => ({ role: m.role, content: m.content }))
+  ];
+
+  const response = await groq.chat.completions.create({
+    model: CHAT_MODEL,
+    max_tokens: 2048,
+    messages: formattedMessages
+  });
+
+  return response.choices[0].message.content;
+};
+
+/**
  * Generates a concise title (no more than 5 words) for a new chat using Mistral
  */
-export const generateChatTitle = async (initialMessage) => {
-  const systemPrompt = `You are a helpful assistant that creates concise and descriptive titles for user conversations. The title should capture the main topic or theme of the conversation in a few words. Avoid generic titles and focus on the specific content of the initial message.`;
+export const generateChatTitle = async (params) => {
+  const initialMessage = typeof params === 'string' ? params : params.firstMessage;
+  const category = typeof params === 'object' ? params.category : null;
+
+  const systemPrompt = `You are a helpful assistant that creates concise and descriptive titles for user conversations. The title should capture the main topic or theme of the conversation in a few words. Avoid generic titles and focus on the specific content of the initial message.${category ? ` The conversation is categorized as "${category}".` : ''}`;
 
   const humanPrompt = `Based on the following initial message, generate a concise and descriptive title for the conversation:\n\n"${initialMessage}"\n\nThe title should be no more than 5 words, and it should not include any quotation marks.`;
 
@@ -33,44 +68,28 @@ export const generateChatTitle = async (initialMessage) => {
 };
 
 /**
- * Generates initial AI response when starting a chat using Mistral
+ * Generates initial AI response when starting a chat using Groq
  */
 export const generateInitialAIResponse = async (initialMessage, category) => {
-  const systemPrompt = `You are a helpful assistant that provides thoughtful and relevant responses to user messages. The conversation is categorized as "${category}", so tailor your response to fit that context. Based on the initial message, provide a meaningful reply that encourages further conversation.`;
-
-  const humanPrompt = `Here is the initial message:\n\n"${initialMessage}"\n\nBased on this message, provide a helpful and relevant response that encourages further conversation.`;
-
-  const response = await mistralModel.invoke([
-    new SystemMessage(systemPrompt),
-    new HumanMessage(humanPrompt)
-  ]);
-
-  return response.text.trim();
+  const messages = [{ role: 'user', content: initialMessage }];
+  return await chatCompletion({ messages, category });
 };
 
 /**
- * Generates subsequent AI responses in an ongoing chat using Mistral Large
+ * Generates subsequent AI responses in an ongoing chat using Groq
  */
-export const generateAIResponse = async (conversationHistory, category) => {
-  const systemPrompt = `You are a helpful assistant that provides thoughtful and relevant responses to user messages. The conversation is categorized as "${category}", so tailor your response to fit that context. Use the conversation history to understand the user's needs and provide a meaningful reply.`;
-
-  let historyText = '';
+export const generateAIResponse = async (conversationHistory, category, contextPrefix = null) => {
+  let messages = [];
   if (Array.isArray(conversationHistory)) {
-    historyText = conversationHistory
-      .map((msg) => `${msg.sender === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
-      .join('\n');
+    messages = conversationHistory.map((msg) => ({
+      role: msg.sender === 'user' ? 'user' : 'assistant',
+      content: msg.content
+    }));
   } else {
-    historyText = conversationHistory;
+    messages = [{ role: 'user', content: conversationHistory }];
   }
 
-  const humanPrompt = `Here is the conversation history:\n\n${historyText}\n\nBased on this conversation, provide a helpful and relevant response to the user's latest message.`;
-
-  const response = await mistralLargeModel.invoke([
-    new SystemMessage(systemPrompt),
-    new HumanMessage(humanPrompt)
-  ]);
-
-  return response.text.trim();
+  return await chatCompletion({ messages, category, contextPrefix });
 };
 
 /**
