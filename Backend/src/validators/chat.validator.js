@@ -1,5 +1,7 @@
 import { body, param } from "express-validator";
+import Joi from 'joi';
 
+// Original validators (express-validator) - Kept to avoid breaking existing routes
 export const createChatValidator = [
   body("category")
     .isString()
@@ -37,3 +39,17 @@ export const sendMessageValidator = [
     .notEmpty()
     .withMessage("Message is required"),
 ];
+
+// New Joi Schemas for MindVault v2 (to be integrated in subsequent tickets)
+export const createChatSchema = Joi.object({
+  category: Joi.string().valid('coding', 'deen', 'admin', 'life').required(),
+  title: Joi.string().max(100).optional(),
+});
+
+export const sendMessageSchema = Joi.object({
+  content: Joi.string().min(1).max(10000).required(),
+});
+
+export const updateChatSchema = Joi.object({
+  title: Joi.string().max(100).required(),
+});
