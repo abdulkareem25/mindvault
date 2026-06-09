@@ -8,11 +8,11 @@ import {
   sendMessageAndGetResponseController
 } from "../controllers/chat.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
-import validateMiddleware from "../middlewares/validate.middleware.js";
+import validate from "../middlewares/validate.middleware.js";
 import {
-  createChatValidator,
-  idValidator,
-  sendMessageValidator
+  createChatSchema,
+  idSchema,
+  sendMessageSchema
 } from "../validators/chat.validator.js";
 
 const router = express.Router();
@@ -28,8 +28,7 @@ const router = express.Router();
 router.post(
   "/",
   authMiddleware,
-  createChatValidator,
-  validateMiddleware,
+  validate(createChatSchema),
   createChatController
 );
 
@@ -57,8 +56,7 @@ router.get(
 router.get(
   "/:id",
   authMiddleware,
-  idValidator,
-  validateMiddleware,
+  validate(idSchema, 'params'),
   getChatByIdController
 );
 
@@ -73,8 +71,7 @@ router.get(
 router.get(
   "/:id/messages",
   authMiddleware,
-  idValidator,
-  validateMiddleware,
+  validate(idSchema, 'params'),
   getMessageHistoryController
 );
 
@@ -90,8 +87,8 @@ router.get(
 router.post(
   "/:id/messages",
   authMiddleware,
-  sendMessageValidator,
-  validateMiddleware,
+  validate(idSchema, 'params'),
+  validate(sendMessageSchema),
   sendMessageAndGetResponseController
 );
 
@@ -106,8 +103,7 @@ router.post(
 router.delete(
   "/:id",
   authMiddleware,
-  idValidator,
-  validateMiddleware,
+  validate(idSchema, 'params'),
   deleteChatController
 );
 

@@ -1,12 +1,12 @@
 import express from "express";
 import {
-  signupValidator,
-  loginValidator,
-  emailValidator,
-  tokenValidator,
-  resetPasswordValidator,
+  signupSchema,
+  loginSchema,
+  resetPasswordSchema,
+  emailSchema,
+  verifyEmailSchema,
 } from "../validators/auth.validator.js";
-import validateMiddleware from "../middlewares/validate.middleware.js";
+import validate from "../middlewares/validate.middleware.js";
 import {
   signupController,
   loginController,
@@ -31,8 +31,7 @@ const router = express.Router();
 
 router.post(
   "/signup",
-  signupValidator,
-  validateMiddleware,
+  validate(signupSchema),
   signupController
 );
 
@@ -45,8 +44,7 @@ router.post(
 
 router.post(
   "/login",
-  loginValidator,
-  validateMiddleware,
+  validate(loginSchema),
   loginController
 );
 
@@ -70,8 +68,7 @@ router.post(
 
 router.get(
   "/verify-email",
-  tokenValidator,
-  validateMiddleware,
+  validate(verifyEmailSchema, 'query'),
   verifyEmailController
 );
 
@@ -84,8 +81,7 @@ router.get(
 
 router.post(
   "/resend-verification",
-  emailValidator,
-  validateMiddleware,
+  validate(emailSchema),
   resendEmailVerificationController
 );
 
@@ -98,8 +94,7 @@ router.post(
 
 router.post(
   "/forgot-password",
-  emailValidator,
-  validateMiddleware,
+  validate(emailSchema),
   forgotPasswordController
 );
 
@@ -112,8 +107,7 @@ router.post(
 
 router.post(
   "/reset-password",
-  resetPasswordValidator,
-  validateMiddleware,
+  validate(resetPasswordSchema),
   resetPasswordController
 );
 

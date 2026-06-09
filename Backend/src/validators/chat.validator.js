@@ -44,6 +44,7 @@ export const sendMessageValidator = [
 export const createChatSchema = Joi.object({
   category: Joi.string().valid('coding', 'deen', 'admin', 'life').required(),
   title: Joi.string().max(100).optional(),
+  initialMessage: Joi.string().required(),
 });
 
 export const sendMessageSchema = Joi.object({
@@ -52,4 +53,11 @@ export const sendMessageSchema = Joi.object({
 
 export const updateChatSchema = Joi.object({
   title: Joi.string().max(100).required(),
+});
+
+export const idSchema = Joi.object({
+  id: Joi.string().hex().length(24).required().messages({
+    'string.length': 'Invalid ID format',
+    'string.hex': 'Invalid ID format',
+  }),
 });

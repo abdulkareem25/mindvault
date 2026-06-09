@@ -111,15 +111,15 @@ export const deleteChatController = asyncHandler(async (req, res) => {
 export const sendMessageAndGetResponseController = asyncHandler(async (req, res) => {
 
   const chatId = req.params.id;
-  const { message } = req.body;
-  if (!message) {
+  const { content } = req.body;
+  if (!content) {
     return res.status(400).json({
       success: false,
-      message: "Message is required",
+      message: "Content is required",
     });
   }
 
-  const response = await chatService.sendMessage(chatId, req.user._id, message);
+  const response = await chatService.sendMessage(chatId, req.user._id, content);
 
   if (!response) {
     return res.status(500).json({

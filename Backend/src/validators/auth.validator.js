@@ -117,8 +117,12 @@ const passwordSchema = Joi.string()
   }, "Common Password Check");
 
 export const signupSchema = Joi.object({
+  name: Joi.string().min(3).required(),
   email: Joi.string().email().required(),
   password: passwordSchema,
+  confirmPassword: Joi.string().required().valid(Joi.ref('password')).messages({
+    'any.only': 'Passwords do not match'
+  })
 });
 
 export const loginSchema = Joi.object({
@@ -128,4 +132,13 @@ export const loginSchema = Joi.object({
 
 export const resetPasswordSchema = Joi.object({
   password: passwordSchema,
+  token: Joi.string().optional(),
+});
+
+export const emailSchema = Joi.object({
+  email: Joi.string().email().required(),
+});
+
+export const verifyEmailSchema = Joi.object({
+  token: Joi.string().required(),
 });

@@ -6,6 +6,14 @@ import { verifyEmailService } from "./src/services/mail.service.js";
 import agenda from "./src/config/agenda.js";
 import logger from "./src/utils/logger.js";
 
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled rejection', { reason, promise });
+});
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught exception', { error });
+  process.exit(1);
+});
+
 const port = process.env.PORT;
 
 const httpServer = http.createServer(app);

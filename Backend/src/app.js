@@ -4,7 +4,7 @@ import express from 'express';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import './config/env.js';
-import errorMiddleware from './middlewares/error.middleware.js';
+import errorHandler from './middlewares/errorHandler.middleware.js';
 import notFoundMiddleware from './middlewares/notFound.middleware.js';
 import authRouter from './routes/auth.routes.js';
 import chatRouter from './routes/chat.routes.js';
@@ -33,8 +33,12 @@ app.use('/api/auth/signup', signupLimiter);
 app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth/forgot-password', forgotPasswordLimiter);
 
-app.use(express.json());
-app.use(morgan('dev'));
+app.use(express.json({ limit: '50kb' }));
+if (process.env.NODE_ENV === 'production') {
+  app.use(morgan('combined'));
+} else {
+  app.use(morgan('dev'));
+}
 app.use(cookieParser());
 app.use(cors({
   origin: process.env.CLIENT_URL,
@@ -52,7 +56,7 @@ app.get(/.*/, (req, res) => {
 });
 
 app.use(notFoundMiddleware);
-app.use(errorMiddleware);
+app.use(errorHandler);
 
 
 export default app;

@@ -60,7 +60,7 @@ export const fetchMessageHistory = async (chatId) => {
 }
 
 export const sendMessage = async (chatId, message) => {
-  const response = await api.post(`/${chatId}/messages`, { message });
+  const response = await api.post(`/${chatId}/messages`, { content: message });
   return response.data;
 };
 
