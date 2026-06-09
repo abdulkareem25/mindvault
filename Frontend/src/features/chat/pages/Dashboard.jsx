@@ -9,6 +9,7 @@ import ChatSidebar from '../components/ChatSidebar';
 import ChatTopBar from '../components/ChatTopBar';
 import ChatsModal from '../components/ChatsModal';
 import MessageComposer from '../components/MessageComposer';
+import ContextPillsBar from '../components/ContextPillsBar';
 import SidebarToggle from '../components/SidebarToggle';
 import QuickCaptureModal from '../../capture/QuickCaptureModal';
 import { useChat } from '../hooks/useChat';
@@ -200,6 +201,11 @@ const Dashboard = () => {
           messageHistory={messageHistory}
           chats={chats}
         />
+
+        {/* ── Context Pills (feature-flagged) ── */}
+        {import.meta.env.VITE_ENABLE_CONTEXT_PILLS === 'true' && (
+          <ContextPillsBar />
+        )}
 
         {/* ── Chat Messages Area ── */}
         <div className="flex-1 overflow-y-auto">

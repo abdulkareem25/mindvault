@@ -8,7 +8,8 @@ const chatSlice = createSlice({
     messageHistory: [],
     loading: false,
     error: null,
-    injectedMemories: {}
+    injectedMemories: {},
+    removedPillIds: {}
   },
   reducers: {
     setChats(state, action) {
@@ -41,6 +42,15 @@ const chatSlice = createSlice({
       state.chats = state.chats.map(chat => 
         chat._id === chatId ? { ...chat, messageCount: (chat.messageCount || 0) + amount } : chat
       );
+    },
+    removePill(state, action) {
+      const { chatId, memoryId } = action.payload;
+      if (!state.removedPillIds[chatId]) {
+        state.removedPillIds[chatId] = [];
+      }
+      if (!state.removedPillIds[chatId].includes(memoryId)) {
+        state.removedPillIds[chatId].push(memoryId);
+      }
     }
   }
 });
@@ -52,6 +62,7 @@ export const {
   setError, 
   setLoading,
   setInjectedMemories,
-  incrementMessageCount
+  incrementMessageCount,
+  removePill
 } = chatSlice.actions;
 export default chatSlice.reducer;
