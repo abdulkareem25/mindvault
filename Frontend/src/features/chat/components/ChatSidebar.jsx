@@ -49,6 +49,72 @@ const ChatSidebar = ({
     }
   };
 
+  const renderChatItem = (chat) => (
+    <div
+      key={chat._id}
+      className="group relative flex items-center gap-2.5 px-3 py-2.5 rounded-base hover:bg-vault-dark-surface-3 transition-all duration-150 border border-transparent"
+    >
+      <button
+        onClick={() => onChatSelect(chat)}
+        className="flex items-center gap-2.5 flex-1 text-left
+        text-vault-text-on-dark-soft
+        group-hover:text-vault-text-on-dark
+        transition-all duration-150"
+      >
+        <MessageSquare size={16} strokeWidth={1.75} className="text-vault-stone group-hover:text-vault-coral shrink-0" />
+        <span className="truncate" style={{ fontSize: "15px" }}>{chat.title}</span>
+      </button>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setChatMenuOpen(chatMenuOpen === chat._id ? null : chat._id);
+        }}
+        className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 rounded hover:bg-vault-dark-surface-2 text-vault-stone hover:text-vault-coral shrink-0"
+      >
+        <MoreHorizontal size={18} strokeWidth={2} />
+      </button>
+
+      {/* Chat Menu Modal */}
+      {chatMenuOpen === chat._id && (
+        <div className="absolute top-full right-0 mt-1 bg-vault-dark-surface-2 border border-vault-border-dark rounded-lg shadow-lg z-50 p-5 w-fit">
+          <button
+            onClick={() => {
+              showToast("info", "Feature coming soon!");
+              setChatMenuOpen(null);
+            }}
+            className="w-full flex items-center gap-3 pl-1.5 pr-5 py-2.5 text-left text-vault-text-on-dark-soft hover:bg-vault-dark-surface-3 hover:text-vault-text-on-dark transition-all duration-150 rounded-base "
+          >
+            <Star size={16} strokeWidth={1.75} className="text-vault-stone" />
+            <span style={{ fontSize: "14px" }}>Star</span>
+          </button>
+          <button
+            onClick={() => {
+              showToast("info", "Feature coming soon!");
+              setChatMenuOpen(null);
+            }}
+            className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-vault-text-on-dark-soft hover:bg-vault-dark-surface-3 hover:text-vault-text-on-dark transition-all duration-150 rounded-base"
+          >
+            <Pencil size={16} strokeWidth={1.75} className="text-vault-stone" />
+            <span style={{ fontSize: "14px" }}>Rename</span>
+          </button>
+
+          <div className="border-t border-vault-border-dark my-2" />
+
+          <button
+            onClick={() => onChatDelete(chat._id)}
+            className="w-full flex items-center gap-3 pl-1.5 pr-5 py-2.5 text-left text-red-400 hover:bg-red-950/30 transition-all duration-150 rounded-base"
+          >
+            <Trash2 size={16} strokeWidth={1.75} />
+            <span style={{ fontSize: "14px" }}>Delete</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  const globalChats = chats.filter((chat) => chat.category === "global");
+  const recentChats = chats.filter((chat) => chat.category !== "global");
+
   return (
     <aside
       className={`
@@ -120,78 +186,38 @@ const ChatSidebar = ({
         ))}
       </nav>
 
-      {/* Recents section */}
-      <div className="mt-6 px-4 flex flex-col flex-1 overflow-hidden">
-        <p
-          className="px-3 mb-1 text-vault-stone uppercase"
-          style={{ fontSize: "11px", letterSpacing: "0.06em", fontWeight: 500 }}
-        >
-          Recents
-        </p>
-        <div className="flex-1 flex flex-col gap-1.5 overflow-y-auto py-2.5 pr-1">
-          {chats.map((chat) => (
-            <div
-              key={chat._id}
-              className="group relative flex items-center gap-2.5 px-3 py-2.5 rounded-base hover:bg-vault-dark-surface-3 transition-all duration-150 border border-transparent"
-            >
-              <button
-                onClick={() => onChatSelect(chat)}
-                className="flex items-center gap-2.5 flex-1 text-left
-                text-vault-text-on-dark-soft
-                group-hover:text-vault-text-on-dark
-                transition-all duration-150"
-              >
-                <MessageSquare size={16} strokeWidth={1.75} className="text-vault-stone group-hover:text-vault-coral shrink-0" />
-                <span className="truncate" style={{ fontSize: "15px" }}>{chat.title}</span>
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setChatMenuOpen(chatMenuOpen === chat._id ? null : chat._id);
-                }}
-                className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 rounded hover:bg-vault-dark-surface-2 text-vault-stone hover:text-vault-coral shrink-0"
-              >
-                <MoreHorizontal size={18} strokeWidth={2} />
-              </button>
-
-              {/* Chat Menu Modal */}
-              {chatMenuOpen === chat._id && (
-                <div className="absolute top-full right-0 mt-1 bg-vault-dark-surface-2 border border-vault-border-dark rounded-lg shadow-lg z-50 p-5 w-fit">
-                  <button
-                    onClick={() => {
-                      showToast("info", "Feature coming soon!");
-                      setChatMenuOpen(null);
-                    }}
-                    className="w-full flex items-center gap-3 pl-1.5 pr-5 py-2.5 text-left text-vault-text-on-dark-soft hover:bg-vault-dark-surface-3 hover:text-vault-text-on-dark transition-all duration-150 rounded-base "
-                  >
-                    <Star size={16} strokeWidth={1.75} className="text-vault-stone" />
-                    <span style={{ fontSize: "14px" }}>Star</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      showToast("info", "Feature coming soon!");
-                      setChatMenuOpen(null);
-                    }}
-                    className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-vault-text-on-dark-soft hover:bg-vault-dark-surface-3 hover:text-vault-text-on-dark transition-all duration-150 rounded-base"
-                  >
-                    <Pencil size={16} strokeWidth={1.75} className="text-vault-stone" />
-                    <span style={{ fontSize: "14px" }}>Rename</span>
-                  </button>
-
-                  <div className="border-t border-vault-border-dark my-2" />
-
-                  <button
-                    onClick={() => onChatDelete(chat._id)}
-                    className="w-full flex items-center gap-3 pl-1.5 pr-5 py-2.5 text-left text-red-400 hover:bg-red-950/30 transition-all duration-150 rounded-base"
-                  >
-                    <Trash2 size={16} strokeWidth={1.75} />
-                    <span style={{ fontSize: "14px" }}>Delete</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
+      {/* Scrollable chat list container */}
+      <div className="mt-6 px-4 flex-1 overflow-y-auto space-y-6">
+        {/* Recents section */}
+        <div>
+          <p
+            className="px-3 mb-1.5 text-vault-stone uppercase"
+            style={{ fontSize: "11px", letterSpacing: "0.06em", fontWeight: 500 }}
+          >
+            Recents
+          </p>
+          <div className="flex flex-col gap-1.5 py-1">
+            {recentChats.map((chat) => renderChatItem(chat))}
+            {recentChats.length === 0 && (
+              <p className="px-3 text-vault-stone/50 text-xs italic py-2">No recent chats</p>
+            )}
+          </div>
         </div>
+
+        {/* Global section */}
+        {globalChats.length > 0 && (
+          <div>
+            <p
+              className="px-3 mb-1.5 text-vault-stone uppercase"
+              style={{ fontSize: "11px", letterSpacing: "0.06em", fontWeight: 500 }}
+            >
+              Global
+            </p>
+            <div className="flex flex-col gap-1.5 py-1">
+              {globalChats.map((chat) => renderChatItem(chat))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Profile section */}

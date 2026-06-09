@@ -11,6 +11,17 @@ import Memory from '../models/Memory.js';
  * @returns {Promise<Array>} List of relevant memories
  */
 export async function getRelevantMemories({ userId, category, limit = 5, maxTokens = 1000 }) {
+  if (category === 'global') {
+    const allCategories = ['coding', 'deen', 'admin', 'life'];
+    const results = [];
+    for (const cat of allCategories) {
+      const mems = await Memory.find({ userId, category: cat, isArchived: false })
+        .sort({ createdAt: -1 }).limit(2);
+      results.push(...mems);
+    }
+    return results;
+  }
+
   // Phase 1: Recency-based retrieval (semantic ranking is Phase 2)
   const memories = await Memory.find({
     userId,

@@ -6,7 +6,7 @@ export const createChatValidator = [
   body("category")
     .isString()
     .withMessage("Category must be a string")
-    .isIn(["development", "career", "life", "admin", "deen"])
+    .isIn(["coding", "deen", "admin", "life", "global"])
     .withMessage("Invalid category")
     .notEmpty()
     .withMessage("Category is required"), 
@@ -42,7 +42,7 @@ export const sendMessageValidator = [
 
 // New Joi Schemas for MindVault v2 (to be integrated in subsequent tickets)
 export const createChatSchema = Joi.object({
-  category: Joi.string().valid('coding', 'deen', 'admin', 'life').required(),
+  category: Joi.string().valid('coding', 'deen', 'admin', 'life', 'global').required(),
   title: Joi.string().max(100).optional(),
   initialMessage: Joi.string().required(),
 });

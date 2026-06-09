@@ -1,9 +1,9 @@
 const CATEGORIES = [
-  "development",
-  "career",
+  "coding",
+  "deen",
   "admin",
   "life",
-  "deen"
+  "global"
 ];
 
 const CategoryModal = ({ isOpen, onClose, selectedCategory, onSelectCategory }) => {
@@ -42,7 +42,7 @@ const CategoryModal = ({ isOpen, onClose, selectedCategory, onSelectCategory }) 
                 key={cat}
                 onClick={() => onSelectCategory(cat)}
                 className={`
-                  w-full flex items-center gap-3 px-4 py-3 rounded-lg
+                  w-full flex flex-col items-start px-4 py-2.5 rounded-lg
                   transition-all duration-150
                   ${selectedCategory === cat
                     ? "bg-vault-terracotta/20 border border-vault-terracotta text-vault-terracotta"
@@ -50,7 +50,12 @@ const CategoryModal = ({ isOpen, onClose, selectedCategory, onSelectCategory }) 
                   }
                 `}
               >
-                <span className="font-medium w-full capitalize">{cat}</span>
+                <span className="font-medium w-full text-left capitalize">{cat}</span>
+                {cat === 'global' && (
+                  <span className="text-left text-xs font-normal normal-case opacity-80 mt-1 block">
+                    Draws context from all four areas of your vault.
+                  </span>
+                )}
               </button>
             ))}
           </div>

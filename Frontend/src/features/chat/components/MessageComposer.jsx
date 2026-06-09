@@ -84,9 +84,13 @@ const MessageComposer = ({
               title={hasMessages ? "Category cannot be changed after sending a message" : "Click to change category"}
               className={`
                 flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-150
-                ${hasMessages
-                  ? "bg-vault-dark-surface-2/50 border border-vault-border-dark text-vault-stone cursor-not-allowed opacity-50"
-                  : "bg-vault-terracotta/20 border border-vault-terracotta text-vault-terracotta hover:bg-vault-terracotta/30"
+                ${category === 'global'
+                  ? hasMessages
+                    ? "bg-vault-stone/5 border border-vault-border-dark text-vault-stone/50 cursor-not-allowed opacity-50"
+                    : "bg-vault-stone/10 border border-vault-stone/30 text-vault-stone hover:bg-vault-stone/20"
+                  : hasMessages
+                    ? "bg-vault-dark-surface-2/50 border border-vault-border-dark text-vault-stone cursor-not-allowed opacity-50"
+                    : "bg-vault-terracotta/20 border border-vault-terracotta text-vault-terracotta hover:bg-vault-terracotta/30"
                 }
               `}
             >
