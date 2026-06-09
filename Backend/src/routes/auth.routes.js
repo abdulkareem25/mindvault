@@ -68,7 +68,7 @@ router.post(
 
 router.get(
   "/verify-email",
-  validate(verifyEmailSchema, 'query'),
+  validate(verifyEmailSchema),
   verifyEmailController
 );
 

@@ -9,7 +9,6 @@ export const signupController = asyncHandler(async (req, res) => {
         name,
         email,
         password,
-        confirmPassword,
     } = req.body;
 
     await authService.signup({
@@ -101,6 +100,7 @@ export const refreshController = asyncHandler(async (req, res) => {
 
 export const verifyEmailController = asyncHandler(async (req, res) => {
     const { token } = req.query;
+    console.log(token)
 
     const result = await authService.verifyEmail(token);
     const clientUrl = process.env.CLIENT_URL;
