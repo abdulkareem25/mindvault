@@ -1,6 +1,6 @@
 import { useDispatch } from 'react-redux';
-import { setError, setLoading, setUser } from '../auth.slice';
-import { getCurrentUser, login, logout, resendVerificationEmail, signup } from '../services/auth.api';
+import { setError, setLoading, setUser, setToken, clearAuth } from '../auth.slice';
+import { getCurrentUser, login, logout, resendVerificationEmail, signup, refreshToken } from '../services/auth.api';
 import { showToast } from '../../shared/components/Toast';
 
 
@@ -12,6 +12,7 @@ const useAuth = () => {
     try {
       const data = await login(email, password);
       dispatch(setUser(data.user));
+      dispatch(setToken(data.accessToken));
       dispatch(setError(null));
     } catch (error) {
       dispatch(setError(error.message || 'Login failed'));
@@ -37,11 +38,13 @@ const useAuth = () => {
   const fetchCurrentUser = async () => {
     dispatch(setLoading(true));
     try {
-      const data = await getCurrentUser();
+      // Silently restore session on app load if refresh token cookie exists
+      const data = await refreshToken();
       dispatch(setUser(data.user));
+      dispatch(setToken(data.accessToken));
       dispatch(setError(null));
     } catch (error) {
-      dispatch(setUser(null));
+      dispatch(clearAuth());
     } finally {
       dispatch(setLoading(false));
     }
@@ -58,7 +61,7 @@ const useAuth = () => {
   const logoutUser = async () => {
     try {
       await logout();
-      dispatch(setUser(null));
+      dispatch(clearAuth());
     } catch (error) {
       throw new Error(error.message || 'Logout failed');
     }

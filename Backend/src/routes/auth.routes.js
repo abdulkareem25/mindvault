@@ -4,6 +4,7 @@ import {
   loginValidator,
   emailValidator,
   tokenValidator,
+  resetPasswordValidator,
 } from "../validators/auth.validator.js";
 import validateMiddleware from "../middlewares/validate.middleware.js";
 import {
@@ -12,7 +13,10 @@ import {
   verifyEmailController,
   getUserController,
   resendEmailVerificationController,
-  logoutController
+  logoutController,
+  refreshController,
+  forgotPasswordController,
+  resetPasswordController
 } from "../controllers/auth.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 
@@ -47,6 +51,17 @@ router.post(
 );
 
 /**
+ * @route POST /api/auth/refresh
+ * @desc Refresh access token using HttpOnly refresh token cookie
+ * @access Public
+ */
+
+router.post(
+  "/refresh",
+  refreshController
+);
+
+/**
  * @route GET /api/auth/verify-email
  * @desc Verify user's email address
  * @access Public
@@ -75,6 +90,34 @@ router.post(
 );
 
 /**
+ * @route POST /api/auth/forgot-password
+ * @desc Request password reset link
+ * @access Public
+ * @body { email }
+ */
+
+router.post(
+  "/forgot-password",
+  emailValidator,
+  validateMiddleware,
+  forgotPasswordController
+);
+
+/**
+ * @route POST /api/auth/reset-password
+ * @desc Reset password using token
+ * @access Public
+ * @body { password, token }
+ */
+
+router.post(
+  "/reset-password",
+  resetPasswordValidator,
+  validateMiddleware,
+  resetPasswordController
+);
+
+/**
  * @route GET /api/auth/me
  * @desc Get current logged in user
  * @access Private
@@ -94,10 +137,10 @@ router.get(
  * @cookies { token }
  */
 
-  router.post(
-    "/logout",
-    authMiddleware,
-    logoutController
-  )
+router.post(
+  "/logout",
+  authMiddleware,
+  logoutController
+);
 
 export default router;

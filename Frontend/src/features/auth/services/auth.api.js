@@ -1,9 +1,48 @@
 import axios from "axios";
+import { API_BASE_URL } from "../../../constants";
+import store from "../../../app/app.store";
+import { setToken, clearAuth } from "../auth.slice";
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000/api/auth',
+  baseURL: `${API_BASE_URL}/auth`,
   withCredentials: true
 });
+
+api.interceptors.request.use((config) => {
+  const token = store.getState().auth?.token;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    if (
+      error.response?.status === 401 && 
+      !originalRequest._retry && 
+      originalRequest.url !== '/refresh' &&
+      originalRequest.url !== '/login'
+    ) {
+      originalRequest._retry = true;
+      try {
+        const refreshResponse = await axios.post(`${API_BASE_URL}/auth/refresh`, {}, { withCredentials: true });
+        const { accessToken } = refreshResponse.data;
+        store.dispatch(setToken(accessToken));
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        store.dispatch(clearAuth());
+        return Promise.reject(refreshError);
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const login = async (email, password) => {
   try {
@@ -56,6 +95,15 @@ export const resendVerificationEmail = async (email) => {
 export const logout = async () => {
   try {
     const response = await api.post('/logout');
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : new Error('Network error');
+  }
+};
+
+export const refreshToken = async () => {
+  try {
+    const response = await api.post('/refresh');
     return response.data;
   } catch (error) {
     throw error.response ? error.response.data : new Error('Network error');
