@@ -20,6 +20,22 @@ export const vaultApi = createApi({
       },
       providesTags: ['Memory'],
     }),
+    searchMemories: builder.query({
+      query: ({ q, category, type, isArchived } = {}) => {
+        const isSemantic = import.meta.env.VITE_ENABLE_SEMANTIC_SEARCH === 'true';
+        const basePath = isSemantic ? '/memories/semantic' : '/memories/search';
+        
+        const params = new URLSearchParams();
+        if (q) params.append('q', q);
+        if (category && category !== 'all') params.append('category', category);
+        if (type && type !== 'all') params.append('type', type);
+        if (isArchived !== undefined) params.append('isArchived', isArchived);
+        
+        const queryString = params.toString();
+        return `${basePath}${queryString ? `?${queryString}` : ''}`;
+      },
+      providesTags: ['Memory'],
+    }),
     createMemory: builder.mutation({
       query: (memoryData) => ({
         url: '/memories/capture',
@@ -34,6 +50,60 @@ export const vaultApi = createApi({
         method: 'PATCH',
         body: fields,
       }),
+      async onQueryStarted({ id, ...fields }, { dispatch, queryFulfilled, getState }) {
+        const state = getState();
+        const activeFilters = state.vault?.activeFilters || { category: 'all', type: 'all', isArchived: false };
+        const searchQuery = state.vault?.searchQuery || '';
+
+        const patches = [];
+
+        // Optimistic update for getMemories
+        const getMemoriesArgs = {
+          category: activeFilters.category,
+          type: activeFilters.type,
+          isArchived: activeFilters.isArchived,
+        };
+
+        const getMemoriesPatch = dispatch(
+          vaultApi.util.updateQueryData('getMemories', getMemoriesArgs, (draft) => {
+            if (draft && draft.memories) {
+              const memory = draft.memories.find((m) => m._id === id);
+              if (memory) {
+                Object.assign(memory, fields);
+              }
+            }
+          })
+        );
+        patches.push(getMemoriesPatch);
+
+        // Optimistic update for searchMemories
+        if (searchQuery) {
+          const searchMemoriesArgs = {
+            q: searchQuery,
+            category: activeFilters.category,
+            type: activeFilters.type,
+            isArchived: activeFilters.isArchived,
+          };
+          const searchMemoriesPatch = dispatch(
+            vaultApi.util.updateQueryData('searchMemories', searchMemoriesArgs, (draft) => {
+              if (draft) {
+                const memory = draft.find((m) => m._id === id);
+                if (memory) {
+                  Object.assign(memory, fields);
+                }
+              }
+            })
+          );
+          patches.push(searchMemoriesPatch);
+        }
+
+        try {
+          await queryFulfilled;
+        } catch {
+          // Rollback patches if failed
+          patches.forEach((patch) => patch.undo());
+        }
+      },
       invalidatesTags: ['Memory', 'Stats'],
     }),
     deleteMemory: builder.mutation({
@@ -60,6 +130,7 @@ export const vaultApi = createApi({
 
 export const {
   useGetMemoriesQuery,
+  useSearchMemoriesQuery,
   useCreateMemoryMutation,
   useUpdateMemoryMutation,
   useDeleteMemoryMutation,
