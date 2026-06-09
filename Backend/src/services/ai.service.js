@@ -151,6 +151,27 @@ Tags should be 2–3 short lowercase topic words.`;
 };
 
 /**
+ * Classifies a quick-capture thought into category, type, and tags using gemini-2.5-flash-lite
+ */
+export const classifyCapture = async ({ content }) => {
+  if (!genAI) throw new Error('GEMINI_API_KEY is not configured, cannot classify capture.');
+
+  try {
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash-lite',
+      systemInstruction: prompts.CLASSIFY
+    });
+    const result = await model.generateContent(content);
+    const responseText = result.response.text().trim();
+    const cleanText = responseText.replace(/```json|```/g, '').trim();
+    return JSON.parse(cleanText);
+  } catch (error) {
+    logger.extraction.error('Failed to classify capture, returning defaults', { error: error.message });
+    return { category: 'life', type: 'fact', tags: [] };
+  }
+};
+
+/**
  * Extracts memory nodes from a conversation using Google Gemini 2.5 Flash Lite
  */
 export const extractMemories = async ({ messages }) => {

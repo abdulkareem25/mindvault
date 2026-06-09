@@ -4,6 +4,7 @@ export const captureSchema = Joi.object({
   content: Joi.string().min(1).max(500).required(),
   category: Joi.string().valid('coding', 'deen', 'admin', 'life').optional(),
   type: Joi.string().valid('decision', 'preference', 'learning', 'goal', 'fact').optional(),
+  tags: Joi.array().items(Joi.string()).optional(),
 });
 
 export const updateMemorySchema = Joi.object({

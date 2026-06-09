@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
+import { useLocation } from 'react-router-dom';
 import { showToast } from '../../shared/components/Toast';
 import { setActiveChatId, incrementMessageCount } from '../chat.slice';
 import CategoryModal from '../components/CategoryModal';
@@ -9,12 +10,14 @@ import ChatTopBar from '../components/ChatTopBar';
 import ChatsModal from '../components/ChatsModal';
 import MessageComposer from '../components/MessageComposer';
 import SidebarToggle from '../components/SidebarToggle';
+import QuickCaptureModal from '../../capture/QuickCaptureModal';
 import { useChat } from '../hooks/useChat';
 import { useSocket } from '../hooks/useSocket';
 import { getSocket } from '../services/chat.socket';
 
 const Dashboard = () => {
   useSocket();
+  const location = useLocation();
 
   const { initSocketConnection, loadChats, loadMessageHistory, handleCreateChat, sendMessageToChat, initialState, handleDeleteChat } = useChat();
   const { chats, messageHistory, loading, activeChatId } = useSelector((state) => state.chat);
@@ -34,6 +37,13 @@ const Dashboard = () => {
     initSocketConnection();
     loadChats();
   }, []);
+
+  useEffect(() => {
+    if (location.state?.prefillContent) {
+      setInputValue(location.state.prefillContent);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     const socket = getSocket();
@@ -133,6 +143,9 @@ const Dashboard = () => {
       className="flex h-screen overflow-hidden bg-vault-deep-dark"
       style={{ fontFamily: "var(--font-sans)" }}
     >
+
+      {/* ── Quick Capture Modal ── */}
+      <QuickCaptureModal />
 
       {/* ── Chats Modal ── */}
       <ChatsModal

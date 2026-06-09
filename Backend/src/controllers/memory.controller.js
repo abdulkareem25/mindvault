@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Memory from "../models/Memory.js";
 import User from "../models/user.model.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import { classifyCapture } from "../services/ai.service.js";
 
 /**
  * Updates the user's memory summary by grouping all non-archived memories
@@ -80,6 +81,11 @@ export const getMemories = asyncHandler(async (req, res) => {
  */
 export const captureMemory = asyncHandler(async (req, res) => {
   const { content, category, type, tags, source, confidence } = req.body;
+
+  if (!category) {
+    const classification = await classifyCapture({ content });
+    return res.status(200).json({ classification });
+  }
 
   const memory = await Memory.create({
     userId: req.user._id,
