@@ -48,6 +48,13 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+
+    memorySummary: {
+      coding: { type: Number, default: 0 },
+      deen:   { type: Number, default: 0 },
+      admin:  { type: Number, default: 0 },
+      life:   { type: Number, default: 0 },
+    },
   },
   {
     timestamps: true,
