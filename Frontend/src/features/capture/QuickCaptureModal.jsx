@@ -125,14 +125,19 @@ const QuickCaptureModal = () => {
     if (!content.trim()) return;
     dispatch(setIsSaving(true));
     try {
-      await createMemory({
+      const result = await createMemory({
         content,
         category: localCategory || classification?.category || 'life',
         type: localType || classification?.type || 'fact',
         tags: classification?.tags || [],
         source: 'quick_capture',
       }).unwrap();
-      showToast('success', `Saved to ${CATEGORY_LABELS[localCategory || classification?.category || 'life']} vault`);
+      
+      if (result && result.merged) {
+        showToast('success', 'This memory already exists');
+      } else {
+        showToast('success', `Saved to ${CATEGORY_LABELS[localCategory || classification?.category || 'life']} vault`);
+      }
       dispatch(closeModal());
     } catch {
       showToast('error', 'Failed to save memory. Please try again.');

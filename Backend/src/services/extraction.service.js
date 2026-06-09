@@ -3,6 +3,7 @@ import Message from '../models/message.model.js';
 import Memory from '../models/Memory.js';
 import * as aiService from './ai.service.js';
 import * as embeddingService from './embedding.service.js';
+import * as searchService from './search.service.js';
 import { updateUserMemorySummary } from '../controllers/memory.controller.js';
 import * as vaultSocket from '../socket/vault.socket.js';
 import agenda from '../config/agenda.js';
@@ -75,28 +76,67 @@ export async function extractFromChat({ chatId, userId }) {
     // 6. Write valid nodes to the vault database
     const createdMemories = [];
     for (const node of validNodes) {
-      const memory = await Memory.create({
-        userId,
-        content: node.content,
-        category: node.category,
-        type: node.type,
-        confidence: node.confidence,
-        tags: node.tags || [],
-        sourceChatId: chatId,
-        source: 'extraction'
-      });
-      createdMemories.push(memory);
+      let embedding = null;
+      try {
+        embedding = await embeddingService.generateEmbedding(node.content);
+      } catch (err) {
+        logger.error('Embedding generation failed during extraction, skipping similarity check', { content: node.content, error: err.message });
+      }
 
-      // Fire async embedding generation (non-blocking)
-      setImmediate(async () => {
-        try {
-          const embedding = await embeddingService.generateEmbedding(memory.content);
-          await Memory.findByIdAndUpdate(memory._id, { embedding });
-          logger.extraction.info('Embedding generated for memory', { memoryId: memory._id });
-        } catch (err) {
-          logger.error('Embedding generation failed', { memoryId: memory._id, error: err.message });
+      if (embedding) {
+        const similarMemories = await searchService.findSimilar({
+          userId,
+          embedding,
+          category: node.category,
+          threshold: parseFloat(process.env.SIMILARITY_WARN_THRESHOLD) || 0.75
+        });
+
+        const mergeThreshold = parseFloat(process.env.SIMILARITY_MERGE_THRESHOLD) || 0.90;
+        const topSimilar = similarMemories[0];
+
+        if (topSimilar && topSimilar.score >= mergeThreshold) {
+          // Merge: increment reinforcement count, do not create new
+          await Memory.findByIdAndUpdate(topSimilar.memory._id, {
+            $inc: { reinforcementCount: 1 },
+            updatedAt: new Date()
+          });
+          logger.extraction.info('Memory reinforced', { memoryId: topSimilar.memory._id, score: topSimilar.score });
+          continue;
         }
-      });
+
+        const isPossibleDuplicate = topSimilar && topSimilar.score >= 0.75;
+
+        const memory = await Memory.create({
+          userId,
+          content: node.content,
+          category: node.category,
+          type: node.type,
+          confidence: node.confidence,
+          tags: node.tags || [],
+          sourceChatId: chatId,
+          source: 'extraction',
+          embedding,
+          isPossibleDuplicate,
+          possibleDuplicateOf: isPossibleDuplicate ? topSimilar.memory._id : null
+        });
+        createdMemories.push(memory);
+      } else {
+        // No embedding: skip similarity check and create memory
+        const memory = await Memory.create({
+          userId,
+          content: node.content,
+          category: node.category,
+          type: node.type,
+          confidence: node.confidence,
+          tags: node.tags || [],
+          sourceChatId: chatId,
+          source: 'extraction',
+          embedding: null,
+          isPossibleDuplicate: false,
+          possibleDuplicateOf: null
+        });
+        createdMemories.push(memory);
+      }
     }
 
     // 7. Update user memorySummary statistics

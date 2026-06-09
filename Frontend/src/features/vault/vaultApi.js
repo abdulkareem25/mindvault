@@ -34,6 +34,7 @@ export const vaultApi = createApi({
         const queryString = params.toString();
         return `${basePath}${queryString ? `?${queryString}` : ''}`;
       },
+      transformResponse: (response) => response.memories || [],
       providesTags: ['Memory'],
     }),
     createMemory: builder.mutation({

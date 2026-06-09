@@ -12,6 +12,8 @@ export const updateMemorySchema = Joi.object({
   category: Joi.string().valid('coding', 'deen', 'admin', 'life').optional(),
   type: Joi.string().valid('decision', 'preference', 'learning', 'goal', 'fact').optional(),
   tags: Joi.array().items(Joi.string()).optional(),
+  isPossibleDuplicate: Joi.boolean().optional(),
+  possibleDuplicateOf: Joi.string().allow(null).optional(),
 });
 
 export const deleteMemorySchema = Joi.object({

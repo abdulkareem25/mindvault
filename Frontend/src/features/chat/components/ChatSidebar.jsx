@@ -1,4 +1,5 @@
 import {
+  Database,
   LogOut,
   MessageSquare,
   MessagesSquareIcon,
@@ -16,7 +17,7 @@ import { useChat } from "../hooks/useChat";
 
 const NAV_ITEMS = [
   { id: "new", label: "New chat", icon: Plus },
-  // { id: "search", label: "Search", icon: Search }, // Uncomment when search functionality is implemented
+  { id: "vault", label: "Vault", icon: Database },
   { id: "chats", label: "Chats", icon: MessagesSquareIcon }
 ];
 

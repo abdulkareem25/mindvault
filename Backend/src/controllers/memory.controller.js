@@ -64,6 +64,7 @@ export const getMemories = asyncHandler(async (req, res) => {
 
   const total = await Memory.countDocuments(filter);
   const memories = await Memory.find(filter)
+    .populate("possibleDuplicateOf", "content")
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limitNum);
@@ -89,29 +90,74 @@ export const captureMemory = asyncHandler(async (req, res) => {
     return res.status(200).json({ classification });
   }
 
-  const memory = await Memory.create({
-    userId: req.user._id,
-    content,
-    category: category || "life",
-    type: type || "fact",
-    tags: tags || [],
-    source: source || "quick_capture",
-    confidence: confidence || "medium",
-  });
+  let embedding = null;
+  try {
+    embedding = await embeddingService.generateEmbedding(content);
+  } catch (err) {
+    console.error('Embedding generation failed for quick capture:', err.message);
+  }
 
-  await updateUserMemorySummary(req.user._id);
+  if (embedding) {
+    const similarMemories = await searchService.findSimilar({
+      userId: req.user._id,
+      embedding,
+      category,
+      threshold: parseFloat(process.env.SIMILARITY_WARN_THRESHOLD) || 0.75
+    });
 
-  // Fire async embedding generation (non-blocking)
-  setImmediate(async () => {
-    try {
-      const embedding = await embeddingService.generateEmbedding(memory.content);
-      await Memory.findByIdAndUpdate(memory._id, { embedding });
-    } catch (err) {
-      console.error('Embedding generation failed for quick capture:', { memoryId: memory._id, error: err.message });
+    const mergeThreshold = parseFloat(process.env.SIMILARITY_MERGE_THRESHOLD) || 0.90;
+    const topSimilar = similarMemories[0];
+
+    if (topSimilar && topSimilar.score >= mergeThreshold) {
+      await Memory.findByIdAndUpdate(topSimilar.memory._id, {
+        $inc: { reinforcementCount: 1 },
+        updatedAt: new Date()
+      });
+      await updateUserMemorySummary(req.user._id);
+      return res.status(200).json({
+        merged: true,
+        existingMemory: {
+          _id: topSimilar.memory._id,
+          content: topSimilar.memory.content
+        }
+      });
     }
-  });
 
-  res.status(201).json(memory);
+    const isPossibleDuplicate = topSimilar && topSimilar.score >= 0.75;
+
+    const memory = await Memory.create({
+      userId: req.user._id,
+      content,
+      category: category || "life",
+      type: type || "fact",
+      tags: tags || [],
+      source: source || "quick_capture",
+      confidence: confidence || "medium",
+      embedding,
+      isPossibleDuplicate,
+      possibleDuplicateOf: isPossibleDuplicate ? topSimilar.memory._id : null
+    });
+
+    await updateUserMemorySummary(req.user._id);
+    return res.status(201).json(memory);
+  } else {
+    // Embedding failed: gracefully skip similarity check and save memory
+    const memory = await Memory.create({
+      userId: req.user._id,
+      content,
+      category: category || "life",
+      type: type || "fact",
+      tags: tags || [],
+      source: source || "quick_capture",
+      confidence: confidence || "medium",
+      embedding: null,
+      isPossibleDuplicate: false,
+      possibleDuplicateOf: null
+    });
+
+    await updateUserMemorySummary(req.user._id);
+    return res.status(201).json(memory);
+  }
 });
 
 /**
@@ -160,7 +206,7 @@ export const getStats = asyncHandler(async (req, res) => {
  * Retrieves a single memory by ID for the authenticated user.
  */
 export const getMemoryById = asyncHandler(async (req, res) => {
-  const memory = await Memory.findOne({ _id: req.params.id, userId: req.user._id });
+  const memory = await Memory.findOne({ _id: req.params.id, userId: req.user._id }).populate("possibleDuplicateOf", "content");
   if (!memory) {
     return res.status(404).json({ success: false, message: "Memory not found" });
   }
@@ -175,7 +221,7 @@ export const updateMemory = asyncHandler(async (req, res) => {
     { _id: req.params.id, userId: req.user._id },
     req.body,
     { new: true, runValidators: true }
-  );
+  ).populate("possibleDuplicateOf", "content");
   if (!memory) {
     return res.status(404).json({ success: false, message: "Memory not found" });
   }

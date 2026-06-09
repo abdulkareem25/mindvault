@@ -4,6 +4,28 @@ import cosineSimilarity from '../utils/cosineSimilarity.js';
 import logger from '../utils/logger.js';
 
 /**
+ * Finds memories similar to a given embedding, filtering by user, category and active status.
+ * @param {Object} params - Search parameters
+ * @param {string} params.userId - User ID
+ * @param {number[]} params.embedding - Target embedding vector
+ * @param {string} params.category - Memory category
+ * @param {number} params.threshold - Minimum cosine similarity threshold (default: 0.75)
+ * @returns {Promise<Array>} - Array of scored memory objects
+ */
+export async function findSimilar({ userId, embedding, category, threshold = 0.75 }) {
+  const memories = await Memory.find({ userId, category, isArchived: false, embedding: { $ne: null } });
+
+  const scored = memories.map(m => ({
+    memory: m,
+    score: cosineSimilarity(embedding, m.embedding)
+  }));
+
+  return scored
+    .filter(s => s.score >= threshold)
+    .sort((a, b) => b.score - a.score);
+}
+
+/**
  * Performs semantic search using vector embeddings and cosine similarity.
  * @param {Object} params - Search parameters
  * @param {string} params.userId - User ID to search memories for
@@ -22,7 +44,7 @@ export async function semanticSearch({ userId, query, limit = 10, category = nul
   if (category && category !== 'all') filter.category = category;
   if (type && type !== 'all') filter.type = type;
 
-  const memories = await Memory.find(filter);
+  const memories = await Memory.find(filter).populate('possibleDuplicateOf', 'content');
 
   // 3. Handle case where no memories with embeddings exist
   if (memories.length === 0) {
@@ -60,5 +82,5 @@ export async function keywordSearch({ userId, query, category = null, type = nul
   if (category && category !== 'all') filter.category = category;
   if (type && type !== 'all') filter.type = type;
 
-  return Memory.find(filter).sort({ createdAt: -1 }).limit(20);
+  return Memory.find(filter).populate('possibleDuplicateOf', 'content').sort({ createdAt: -1 }).limit(20);
 }

@@ -6,12 +6,18 @@ import Signup from "../features/auth/pages/Signup";
 import VerifyEmail from "../features/auth/pages/VerifyEmail";
 import VerifySuccess from "../features/auth/pages/VerifySuccess";
 import Dashboard from "../features/chat/pages/Dashboard";
+import VaultPage from "../features/vault/components/VaultPage";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Protected>
       <Dashboard />
+    </Protected>
+  }, {
+    path: "/vault",
+    element: <Protected>
+      <VaultPage />
     </Protected>
   }, {
     path: "/login",

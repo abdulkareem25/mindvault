@@ -50,6 +50,15 @@ const memorySchema = new mongoose.Schema(
       type: Number,
       default: 1,
     },
+    isPossibleDuplicate: {
+      type: Boolean,
+      default: false,
+    },
+    possibleDuplicateOf: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Memory",
+      default: null,
+    },
     source: {
       type: String,
       enum: ["extraction", "quick_capture", "manual"],

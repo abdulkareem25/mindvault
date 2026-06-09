@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { showToast } from '../../shared/components/Toast';
 import { setActiveChatId, incrementMessageCount } from '../chat.slice';
 import CategoryModal from '../components/CategoryModal';
@@ -19,6 +19,7 @@ import { getSocket } from '../services/chat.socket';
 const Dashboard = () => {
   useSocket();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const { initSocketConnection, loadChats, loadMessageHistory, handleCreateChat, sendMessageToChat, initialState, handleDeleteChat } = useChat();
   const { chats, messageHistory, loading, activeChatId } = useSelector((state) => state.chat);
@@ -44,7 +45,18 @@ const Dashboard = () => {
       setInputValue(location.state.prefillContent);
       window.history.replaceState({}, document.title);
     }
-  }, [location.state]);
+    if (location.state?.activeNav) {
+      handleNavClick(location.state.activeNav);
+      window.history.replaceState({}, document.title);
+    }
+    if (location.state?.activeChatId && chats.length > 0) {
+      const chat = chats.find(c => c._id === location.state.activeChatId);
+      if (chat) {
+        handleChat(chat);
+      }
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, chats]);
 
   useEffect(() => {
     const socket = getSocket();
@@ -78,6 +90,8 @@ const Dashboard = () => {
     } else if (id === "chats") {
       setActiveChatId(null);
       setShowChatsModal(true);
+    } else if (id === "vault") {
+      navigate('/vault');
     } else if (id === "search") {
       // Implement search functionality here
     } else {
