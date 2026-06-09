@@ -7,6 +7,7 @@ import VerifyEmail from "../features/auth/pages/VerifyEmail";
 import VerifySuccess from "../features/auth/pages/VerifySuccess";
 import Dashboard from "../features/chat/pages/Dashboard";
 import VaultPage from "../features/vault/components/VaultPage";
+import DigestArchivePage from "../features/digest/pages/DigestArchivePage";
 
 const router = createBrowserRouter([
   {
@@ -20,9 +21,15 @@ const router = createBrowserRouter([
       <VaultPage />
     </Protected>
   }, {
+    path: "/digests",
+    element: <Protected>
+      <DigestArchivePage />
+    </Protected>
+  }, {
     path: "/login",
     element: <Login />,
-  }, {
+  },
+ {
     path: "/signup",
     element: <Signup />,
   }, {

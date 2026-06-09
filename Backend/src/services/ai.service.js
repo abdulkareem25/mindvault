@@ -215,3 +215,23 @@ export const extractMemories = async ({ messages }) => {
     throw error; // Rethrow to trigger Agenda job retry
   }
 };
+
+/**
+ * Generates a weekly digest from recent memories and chat topics using Groq
+ */
+export const generateDigest = async ({ recentMemories, recentChats }) => {
+  const prompt = `Generate a brief weekly knowledge digest (max 200 words).
+Review the user's recent activity and summarize:
+- Key decisions made this week
+- Recurring themes or topics
+- Notable progress toward goals
+
+Be conversational, insightful, and specific. Reference actual content.
+Recent memories: ${JSON.stringify(recentMemories.map(m => m.content))}
+Recent chat topics: ${recentChats.map(c => c.title).join(', ')}`;
+
+  return await chatCompletion({
+    messages: [{ role: 'user', content: prompt }],
+    category: 'life'
+  });
+};

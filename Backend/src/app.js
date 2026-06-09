@@ -9,6 +9,8 @@ import notFoundMiddleware from './middlewares/notFound.middleware.js';
 import authRouter from './routes/auth.routes.js';
 import chatRouter from './routes/chat.routes.js';
 import memoryRouter from './routes/memory.routes.js';
+import digestRouter from './routes/digest.routes.js';
+
 
 const app = express();
 
@@ -52,6 +54,8 @@ app.use(express.static('./public'));
 app.use('/api/auth', authRouter);
 app.use('/api/chats', chatRouter);
 app.use('/api/memories', memoryRouter);
+app.use('/api/digest', digestRouter);
+
 
 app.get(/.*/, (req, res) => {
   res.sendFile('index.html', { root: './public' });

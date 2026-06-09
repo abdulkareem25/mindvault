@@ -2,6 +2,7 @@ import * as authService from "../services/auth.service.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
+import { checkAndScheduleDigest } from "../services/digest.service.js";
 
 export const signupController = asyncHandler(async (req, res) => {
     const {
@@ -36,6 +37,11 @@ export const loginController = asyncHandler(async (req, res) => {
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    });
+
+    // Trigger digest check asynchronously on successful login
+    checkAndScheduleDigest(user.id).catch((err) => {
+        console.error(`Failed to check/schedule digest for user ${user.id}:`, err);
     });
 
     res.status(200).json({

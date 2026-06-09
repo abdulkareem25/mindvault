@@ -1,8 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Plus, MessageSquare, FolderOpen, ArrowRight, Database } from 'lucide-react';
 import { useGetStatsQuery, useGetMemoriesQuery } from '../../features/vault/vaultApi';
+import { useGetLatestDigestQuery, useDismissDigestMutation } from '../../features/digest/digestApi';
+import DigestCard from '../../features/digest/components/DigestCard';
+
 import { openModal } from '../../features/capture/captureSlice';
 import MemoryCard from '../../features/vault/components/MemoryCard';
 import VaultStats from '../../features/vault/components/VaultStats';
@@ -89,6 +92,39 @@ const DashboardView = ({ onStartChat }) => {
   // Parallel fetches via RTK Query
   const { data: stats, isLoading: isStatsLoading } = useGetStatsQuery();
   const { data: memoriesData, isLoading: isMemoriesLoading } = useGetMemoriesQuery({ limit: 5, isArchived: false });
+  const { data: digestData } = useGetLatestDigestQuery();
+  const [dismissDigest] = useDismissDigestMutation();
+  const [showDigestCard, setShowDigestCard] = useState(false);
+
+  const digest = digestData?.digest;
+
+  useEffect(() => {
+    if (digest) {
+      const isSeenInSession = sessionStorage.getItem(`seen_digest_${digest._id}`) === 'true';
+      if (!digest.isDismissed && (!digest.isRead || isSeenInSession)) {
+        setShowDigestCard(true);
+        if (!digest.isRead) {
+          sessionStorage.setItem(`seen_digest_${digest._id}`, 'true');
+        }
+      } else {
+        setShowDigestCard(false);
+      }
+    } else {
+      setShowDigestCard(false);
+    }
+  }, [digest]);
+
+  const handleDismissDigest = async () => {
+    if (digest) {
+      try {
+        await dismissDigest(digest._id).unwrap();
+        setShowDigestCard(false);
+      } catch (err) {
+        console.error('Failed to dismiss digest:', err);
+      }
+    }
+  };
+
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -152,9 +188,13 @@ const DashboardView = ({ onStartChat }) => {
           <div className="flex flex-col lg:flex-row gap-8 w-full items-start">
             {/* Left side: Recent Memories */}
             <div className="w-full lg:w-[65%] shrink-0 space-y-4">
+              {showDigestCard && (
+                <DigestCard digest={digest} onDismiss={handleDismissDigest} />
+              )}
               <h2 className="text-[11px] font-bold text-vault-stone uppercase tracking-wider block font-sans border-b border-vault-border-cream pb-2">
                 Recent Memories
               </h2>
+
 
               {isMemoriesLoading ? (
                 <div className="grid grid-cols-1 gap-4">
