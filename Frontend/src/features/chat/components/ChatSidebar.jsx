@@ -55,24 +55,24 @@ const ChatSidebar = ({
         flex flex-col
         ${sidebarOpen ? "w-70" : "w-0 md:w-0"}
         shrink-0
-        bg-claude-dark-surface-2
-        border-r border-claude-border-subtle-dark
+        bg-vault-dark-surface-2
+        border-r border-vault-border-subtle-dark
         transition-all duration-300 ease-in-out
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
         overflow-hidden
       `}
     >
       {/* Sidebar header */}
-      <div className="flex items-center justify-between px-6 py-5 border-b border-claude-border-subtle-dark">
+      <div className="flex items-center justify-between px-6 py-5 border-b border-vault-border-subtle-dark">
         <span
-          className="text-claude-text-on-dark font-medium tracking-tight"
+          className="text-vault-text-on-dark font-medium tracking-tight"
           style={{ fontFamily: "var(--font-serif)", fontSize: "18px" }}
         >
           MindVault
         </span>
         <button
           onClick={onCloseSidebar}
-          className="flex items-center justify-center w-10 h-10 rounded-lg text-claude-stone hover:text-claude-coral transition-all duration-150"
+          className="flex items-center justify-center w-10 h-10 rounded-lg text-vault-stone hover:text-vault-coral transition-all duration-150"
         >
           <SidebarCloseIcon size={20} />
         </button>
@@ -87,11 +87,11 @@ const ChatSidebar = ({
             className={`group
               flex items-center gap-3 px-3 py-2.5 rounded-lg w-full text-left
               transition-all duration-150 text-body-sm
-              text-claude-text-on-dark-soft hover:bg-claude-dark-surface-3 hover:text-claude-text-on-dark
-              border border-transparent hover:border-claude-border-subtle-dark
+              text-vault-text-on-dark-soft hover:bg-vault-dark-surface-3 hover:text-vault-text-on-dark
+              border border-transparent hover:border-vault-border-subtle-dark
             `}
           >
-            <Icon size={20} strokeWidth={1.5} className="group-hover:text-claude-coral text-claude-stone" />
+            <Icon size={20} strokeWidth={1.5} className="group-hover:text-vault-coral text-vault-stone" />
             <span style={{ fontSize: "15px" }}>{label}</span>
           </button>
         ))}
@@ -100,7 +100,7 @@ const ChatSidebar = ({
       {/* Recents section */}
       <div className="mt-6 px-4 flex flex-col flex-1 overflow-hidden">
         <p
-          className="px-3 mb-1 text-claude-stone uppercase"
+          className="px-3 mb-1 text-vault-stone uppercase"
           style={{ fontSize: "11px", letterSpacing: "0.06em", fontWeight: 500 }}
         >
           Recents
@@ -109,16 +109,16 @@ const ChatSidebar = ({
           {chats.map((chat) => (
             <div
               key={chat._id}
-              className="group relative flex items-center gap-2.5 px-3 py-2.5 rounded-base hover:bg-claude-dark-surface-3 transition-all duration-150 border border-transparent"
+              className="group relative flex items-center gap-2.5 px-3 py-2.5 rounded-base hover:bg-vault-dark-surface-3 transition-all duration-150 border border-transparent"
             >
               <button
                 onClick={() => onChatSelect(chat)}
                 className="flex items-center gap-2.5 flex-1 text-left
-                text-claude-text-on-dark-soft
-                group-hover:text-claude-text-on-dark
+                text-vault-text-on-dark-soft
+                group-hover:text-vault-text-on-dark
                 transition-all duration-150"
               >
-                <MessageSquare size={16} strokeWidth={1.75} className="text-claude-stone group-hover:text-claude-coral shrink-0" />
+                <MessageSquare size={16} strokeWidth={1.75} className="text-vault-stone group-hover:text-vault-coral shrink-0" />
                 <span className="truncate" style={{ fontSize: "15px" }}>{chat.title}</span>
               </button>
               <button
@@ -126,22 +126,22 @@ const ChatSidebar = ({
                   e.stopPropagation();
                   setChatMenuOpen(chatMenuOpen === chat._id ? null : chat._id);
                 }}
-                className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 rounded hover:bg-claude-dark-surface-2 text-claude-stone hover:text-claude-coral shrink-0"
+                className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 rounded hover:bg-vault-dark-surface-2 text-vault-stone hover:text-vault-coral shrink-0"
               >
                 <MoreHorizontal size={18} strokeWidth={2} />
               </button>
 
               {/* Chat Menu Modal */}
               {chatMenuOpen === chat._id && (
-                <div className="absolute top-full right-0 mt-1 bg-claude-dark-surface-2 border border-claude-border-dark rounded-lg shadow-lg z-50 p-5 w-fit">
+                <div className="absolute top-full right-0 mt-1 bg-vault-dark-surface-2 border border-vault-border-dark rounded-lg shadow-lg z-50 p-5 w-fit">
                   <button
                     onClick={() => {
                       showToast("info", "Feature coming soon!");
                       setChatMenuOpen(null);
                     }}
-                    className="w-full flex items-center gap-3 pl-1.5 pr-5 py-2.5 text-left text-claude-text-on-dark-soft hover:bg-claude-dark-surface-3 hover:text-claude-text-on-dark transition-all duration-150 rounded-base "
+                    className="w-full flex items-center gap-3 pl-1.5 pr-5 py-2.5 text-left text-vault-text-on-dark-soft hover:bg-vault-dark-surface-3 hover:text-vault-text-on-dark transition-all duration-150 rounded-base "
                   >
-                    <Star size={16} strokeWidth={1.75} className="text-claude-stone" />
+                    <Star size={16} strokeWidth={1.75} className="text-vault-stone" />
                     <span style={{ fontSize: "14px" }}>Star</span>
                   </button>
                   <button
@@ -149,13 +149,13 @@ const ChatSidebar = ({
                       showToast("info", "Feature coming soon!");
                       setChatMenuOpen(null);
                     }}
-                    className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-claude-text-on-dark-soft hover:bg-claude-dark-surface-3 hover:text-claude-text-on-dark transition-all duration-150 rounded-base"
+                    className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-vault-text-on-dark-soft hover:bg-vault-dark-surface-3 hover:text-vault-text-on-dark transition-all duration-150 rounded-base"
                   >
-                    <Pencil size={16} strokeWidth={1.75} className="text-claude-stone" />
+                    <Pencil size={16} strokeWidth={1.75} className="text-vault-stone" />
                     <span style={{ fontSize: "14px" }}>Rename</span>
                   </button>
 
-                  <div className="border-t border-claude-border-dark my-2" />
+                  <div className="border-t border-vault-border-dark my-2" />
 
                   <button
                     onClick={() => onChatDelete(chat._id)}
@@ -172,28 +172,28 @@ const ChatSidebar = ({
       </div>
 
       {/* Profile section */}
-      <div className="w-full px-4 py-3 border-t border-claude-border-subtle-dark relative" ref={profileSectionRef}>
+      <div className="w-full px-4 py-3 border-t border-vault-border-subtle-dark relative" ref={profileSectionRef}>
         {/* Profile Modal */}
         {profileModalOpen && (
           <div className={`
             absolute bottom-full left-4 right-4 mb-3 z-50 shadow-lg 
-            bg-claude-dark-surface-2 border border-claude-border-dark rounded-base
+            bg-vault-dark-surface-2 border border-vault-border-dark rounded-base
           `}
           >
-            <div className="p-4 border-b border-claude-border-dark">
+            <div className="p-4 border-b border-vault-border-dark">
               <div className="flex items-center gap-3 mb-3">
                 <div className="
-                  h-16 w-16 rounded-full bg-claude-terracotta
+                  h-16 w-16 rounded-full bg-vault-terracotta
                   flex items-center justify-center
                   text-white font-medium text-sm
                 ">
                   {user.name.slice(0, 2).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-claude-text-on-dark font-medium truncate text-sm">
+                  <p className="text-vault-text-on-dark font-medium truncate text-sm">
                     {user.name}
                   </p>
-                  <p className="text-claude-stone truncate text-xs">
+                  <p className="text-vault-stone truncate text-xs">
                     {user.email}
                   </p>
                 </div>
@@ -222,12 +222,12 @@ const ChatSidebar = ({
           onClick={handleProfileClick}
           className="
             flex items-center gap-5 px-4 py-1.5 w-full rounded-base
-            hover:bg-claude-dark-surface-3 transition-all duration-150
+            hover:bg-vault-dark-surface-3 transition-all duration-150
             border border-transparent
           "
         >
           <div className="
-            h-20 w-20 rounded-full bg-claude-terracotta
+            h-20 w-20 rounded-full bg-vault-terracotta
             flex items-center justify-center
             text-white font-medium
           "
@@ -235,10 +235,10 @@ const ChatSidebar = ({
             {user.name.slice(0, 2).toUpperCase()}
           </div>
           <div className="text-left min-w-0">
-            <p className="text-claude-text-on-dark font-medium truncate">
+            <p className="text-vault-text-on-dark font-medium truncate">
               {user.name}
             </p>
-            <p className="text-claude-stone truncate text-xs">
+            <p className="text-vault-stone truncate text-xs">
               Free plan
             </p>
           </div>

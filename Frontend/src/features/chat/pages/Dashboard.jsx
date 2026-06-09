@@ -116,7 +116,7 @@ const Dashboard = () => {
 
   return (
     <div
-      className="flex h-screen overflow-hidden bg-claude-deep-dark"
+      className="flex h-screen overflow-hidden bg-vault-deep-dark"
       style={{ fontFamily: "var(--font-sans)" }}
     >
 
@@ -164,7 +164,7 @@ const Dashboard = () => {
       />
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 flex flex-col min-w-0 bg-claude-deep-dark relative">
+      <main className="flex-1 flex flex-col min-w-0 bg-vault-deep-dark relative">
         {/* ── Top Bar ── */}
         <ChatTopBar
           sidebarOpen={sidebarOpen}
@@ -200,7 +200,7 @@ const Dashboard = () => {
 
         {/* ── Bottom Bar ── */}
         <div className="px-4 pb-3 flex items-center justify-center">
-          <p className="text-claude-stone" style={{ fontSize: "11.5px" }}>
+          <p className="text-vault-stone" style={{ fontSize: "11.5px" }}>
             MindVault can make mistakes. Verify important info.
           </p>
         </div>

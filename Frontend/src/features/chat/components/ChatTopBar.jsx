@@ -13,15 +13,15 @@ const ChatTopBar = ({
     <>
       {/* Mobile top bar — hamburger && title */}
       {!sidebarOpen && (
-        <div className="flex items-center px-4 py-4 border-b border-claude-border-subtle-dark md:hidden bg-claude-dark-surface-2/50">
+        <div className="flex items-center px-4 py-4 border-b border-vault-border-subtle-dark md:hidden bg-vault-dark-surface-2/50">
           <button
             onClick={onOpenSidebar}
-            className="flex items-center justify-center w-10 h-10 rounded-lg text-claude-stone hover:text-claude-coral transition-all duration-150"
+            className="flex items-center justify-center w-10 h-10 rounded-lg text-vault-stone hover:text-vault-coral transition-all duration-150"
           >
             <SidebarOpenIcon size={24} />
           </button>
           <span
-            className="flex-1 text-claude-text-on-dark font-medium text-center"
+            className="flex-1 text-vault-text-on-dark font-medium text-center"
             style={{ fontFamily: "var(--font-serif)", fontSize: "16px" }}
           >
             {chatTitle}
@@ -32,9 +32,9 @@ const ChatTopBar = ({
 
       {/* Desktop top bar */}
       {activeChatId && messageHistory && (
-        <div className="hidden md:flex items-center justify-center px-6 py-5 border-b border-claude-border-subtle-dark bg-claude-dark-surface-2/30">
+        <div className="hidden md:flex items-center justify-center px-6 py-5 border-b border-vault-border-subtle-dark bg-vault-dark-surface-2/30">
           <span
-            className="text-claude-text-on-dark font-medium tracking-tight truncate"
+            className="text-vault-text-on-dark font-medium tracking-tight truncate"
             style={{ fontFamily: "var(--font-serif)", fontSize: "17px" }}
           >
             {chatTitle}

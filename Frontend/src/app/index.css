@@ -4,60 +4,60 @@
   /* =========================
      CORE BRAND COLORS
   ========================== */
-  --color-claude-black: #111111;
-  --color-claude-terracotta: #c86441;
-  --color-claude-coral: #e07a5f;
+  --color-vault-black: #111111;
+  --color-vault-terracotta: #c86441;
+  --color-vault-coral: #e07a5f;
 
-  --color-claude-error: #c24141;
-  --color-claude-focus: #4a9ff5;
+  --color-vault-error: #c24141;
+  --color-vault-focus: #4a9ff5;
 
   /* =========================
      LIGHT SURFACES
   ========================== */
-  --color-claude-parchment: #f6f3eb;
-  --color-claude-ivory: #fcfbf8;
-  --color-claude-sand: #ece7dc;
-  --color-claude-surface: #f9f7f1;
-  --color-claude-surface-2: #f1ede4;
-  --color-claude-surface-3: #e7e1d6;
+  --color-vault-parchment: #f6f3eb;
+  --color-vault-ivory: #fcfbf8;
+  --color-vault-sand: #ece7dc;
+  --color-vault-surface: #f9f7f1;
+  --color-vault-surface-2: #f1ede4;
+  --color-vault-surface-3: #e7e1d6;
 
   /* =========================
      DARK SURFACES
   ========================== */
-  --color-claude-deep-dark: #111111;
-  --color-claude-dark-surface: #1b1b1a;
-  --color-claude-dark-surface-2: #242423;
-  --color-claude-dark-surface-3: #2f2f2d;
+  --color-vault-deep-dark: #111111;
+  --color-vault-dark-surface: #1b1b1a;
+  --color-vault-dark-surface-2: #242423;
+  --color-vault-dark-surface-3: #2f2f2d;
 
   /* =========================
      TEXT / NEUTRALS
   ========================== */
-  --color-claude-charcoal: #4b4944;
-  --color-claude-olive: #66625b;
-  --color-claude-stone: #8a857c;
-  --color-claude-muted: #a8a39a;
-  --color-claude-warm-silver: #c3beb4;
-  --color-claude-text: #1d1d1b;
-  --color-claude-text-soft: #5c574f;
-  --color-claude-text-on-dark: #f4f1ea;
-  --color-claude-text-on-dark-soft: #beb8ad;
+  --color-vault-charcoal: #4b4944;
+  --color-vault-olive: #66625b;
+  --color-vault-stone: #8a857c;
+  --color-vault-muted: #a8a39a;
+  --color-vault-warm-silver: #c3beb4;
+  --color-vault-text: #1d1d1b;
+  --color-vault-text-soft: #5c574f;
+  --color-vault-text-on-dark: #f4f1ea;
+  --color-vault-text-on-dark-soft: #beb8ad;
 
   /* =========================
      BORDERS / DIVIDERS
   ========================== */
-  --color-claude-border-cream: #e8e1d5;
-  --color-claude-border-warm: #d9d2c6;
-  --color-claude-border-dark: #3c3c39;
-  --color-claude-border-dark-strong: #4a4a46;
-  --color-claude-border-subtle: #efe9de;
-  --color-claude-border-subtle-dark: #2a2a28;
+  --color-vault-border-cream: #e8e1d5;
+  --color-vault-border-warm: #d9d2c6;
+  --color-vault-border-dark: #3c3c39;
+  --color-vault-border-dark-strong: #4a4a46;
+  --color-vault-border-subtle: #efe9de;
+  --color-vault-border-subtle-dark: #2a2a28;
 
   /* =========================
      RINGS / STATES
   ========================== */
-  --color-claude-ring-warm: #c9bfae;
-  --color-claude-ring-subtle: #d8cfae;
-  --color-claude-ring-deep: #b7aea0;
+  --color-vault-ring-warm: #c9bfae;
+  --color-vault-ring-subtle: #d8cfae;
+  --color-vault-ring-deep: #b7aea0;
 
   /* =========================
      LEGACY / BASE
@@ -207,11 +207,11 @@
      SHADOWS
   ========================== */
   --shadow-flat: none;
-  --shadow-contained-light: 0px 0px 0px 1px var(--color-claude-border-cream);
-  --shadow-contained-dark: 0px 0px 0px 1px var(--color-claude-border-dark);
-  --shadow-ring-light: 0px 0px 0px 1px var(--color-claude-ring-warm);
-  --shadow-ring-subtle: 0px 0px 0px 1px var(--color-claude-ring-subtle);
-  --shadow-ring-dark: 0px 0px 0px 1px var(--color-claude-ring-deep);
+  --shadow-contained-light: 0px 0px 0px 1px var(--color-vault-border-cream);
+  --shadow-contained-dark: 0px 0px 0px 1px var(--color-vault-border-dark);
+  --shadow-ring-light: 0px 0px 0px 1px var(--color-vault-ring-warm);
+  --shadow-ring-subtle: 0px 0px 0px 1px var(--color-vault-ring-subtle);
+  --shadow-ring-dark: 0px 0px 0px 1px var(--color-vault-ring-deep);
   --shadow-whisper: rgba(17, 17, 17, 0.06) 0px 6px 24px;
   --shadow-inset-warm: inset 0px 0px 0px 1px rgba(0, 0, 0, 0.12);
 
@@ -239,13 +239,13 @@
   html {
     font-family: var(--font-sans);
     scroll-behavior: smooth;
-    background: var(--color-claude-deep-dark);
+    background: var(--color-vault-deep-dark);
   }
 
   body {
     margin: 0;
-    background-color: var(--color-claude-deep-dark);
-    color: var(--color-claude-text-on-dark);
+    background-color: var(--color-vault-deep-dark);
+    color: var(--color-vault-text-on-dark);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-size: 16px;
@@ -259,18 +259,18 @@
   }
 
   ::selection {
-    background: var(--color-claude-coral);
+    background: var(--color-vault-coral);
     color: var(--color-white);
   }
 
   a {
-    color: var(--color-claude-coral);
+    color: var(--color-vault-coral);
     text-decoration: none;
     transition: color 0.2s ease;
   }
 
   a:hover {
-    color: var(--color-claude-terracotta);
+    color: var(--color-vault-terracotta);
   }
 
   h1,
@@ -279,7 +279,7 @@
   h4,
   h5,
   h6 {
-    color: var(--color-claude-text-on-dark);
+    color: var(--color-vault-text-on-dark);
     margin: 0;
     font-family: var(--font-serif);
     font-weight: 500;
@@ -320,7 +320,7 @@
     font-family: var(--font-sans);
     font-size: 16px;
     line-height: 1.6;
-    color: var(--color-claude-text-on-dark-soft);
+    color: var(--color-vault-text-on-dark-soft);
   }
 
   code {
@@ -332,9 +332,9 @@
 
   pre {
     margin: 0;
-    background-color: var(--color-claude-dark-surface);
-    color: var(--color-claude-text-on-dark-soft);
-    border: 1px solid var(--color-claude-border-dark);
+    background-color: var(--color-vault-dark-surface);
+    color: var(--color-vault-text-on-dark-soft);
+    border: 1px solid var(--color-vault-border-dark);
     border-radius: var(--radius-lg);
     padding: 1rem;
     overflow: auto;
@@ -345,11 +345,11 @@
   select {
     font-family: var(--font-sans);
     font-weight: 400;
-    background-color: var(--color-claude-dark-surface);
-    border: 1px solid var(--color-claude-border-dark);
+    background-color: var(--color-vault-dark-surface);
+    border: 1px solid var(--color-vault-border-dark);
     border-radius: var(--radius-lg);
     padding: 0.5rem 0.75rem;
-    color: var(--color-claude-text-on-dark);
+    color: var(--color-vault-text-on-dark);
     transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
     outline: none;
   }
@@ -357,14 +357,14 @@
   input::placeholder,
   textarea::placeholder,
   select::placeholder {
-    color: var(--color-claude-stone);
+    color: var(--color-vault-stone);
   }
 
   input:focus,
   textarea:focus,
   select:focus {
-    border-color: var(--color-claude-focus);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-claude-focus) 25%, transparent);
+    border-color: var(--color-vault-focus);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-vault-focus) 25%, transparent);
   }
 
   textarea {
@@ -506,65 +506,65 @@
   }
 
   .btn-primary {
-    background-color: var(--color-claude-terracotta);
-    color: var(--color-claude-ivory);
+    background-color: var(--color-vault-terracotta);
+    color: var(--color-vault-ivory);
     padding: 0.5rem 1rem;
     border-radius: var(--radius-base);
-    border: 1px solid var(--color-claude-terracotta);
+    border: 1px solid var(--color-vault-terracotta);
     font-weight: 600;
     box-shadow: var(--shadow-flat);
   }
 
   .btn-primary:hover {
-    background-color: var(--color-claude-coral);
-    border-color: var(--color-claude-coral);
+    background-color: var(--color-vault-coral);
+    border-color: var(--color-vault-coral);
   }
 
   .btn-secondary {
-    background-color: var(--color-claude-dark-surface);
-    color: var(--color-claude-text-on-dark-soft);
+    background-color: var(--color-vault-dark-surface);
+    color: var(--color-vault-text-on-dark-soft);
     padding: 0.5rem 1rem;
     border-radius: var(--radius-base);
-    border: 1px solid var(--color-claude-border-dark);
+    border: 1px solid var(--color-vault-border-dark);
     font-weight: 600;
     box-shadow: var(--shadow-contained-dark);
   }
 
   .btn-secondary:hover {
-    background-color: var(--color-claude-dark-surface-2);
-    border-color: var(--color-claude-border-dark-strong);
+    background-color: var(--color-vault-dark-surface-2);
+    border-color: var(--color-vault-border-dark-strong);
   }
 
   .btn-tertiary {
-    background-color: var(--color-claude-dark-surface-2);
-    color: var(--color-claude-text-on-dark-soft);
+    background-color: var(--color-vault-dark-surface-2);
+    color: var(--color-vault-text-on-dark-soft);
     padding: 0.5rem 1rem;
     border-radius: var(--radius-lg);
-    border: 1px solid var(--color-claude-border-dark);
+    border: 1px solid var(--color-vault-border-dark);
     font-weight: 600;
   }
 
   .btn-tertiary:hover {
-    background-color: var(--color-claude-dark-surface-3);
-    color: var(--color-claude-text-on-dark);
+    background-color: var(--color-vault-dark-surface-3);
+    color: var(--color-vault-text-on-dark);
   }
 
   .btn-dark {
-    background-color: var(--color-claude-dark-surface);
-    color: var(--color-claude-text-on-dark-soft);
+    background-color: var(--color-vault-dark-surface);
+    color: var(--color-vault-text-on-dark-soft);
     padding: 0.5rem 1rem;
     border-radius: var(--radius-base);
-    border: 1px solid var(--color-claude-border-dark);
+    border: 1px solid var(--color-vault-border-dark);
     font-weight: 600;
   }
 
   .btn-dark:hover {
-    background-color: var(--color-claude-dark-surface-2);
+    background-color: var(--color-vault-dark-surface-2);
   }
 
   .card {
-    background-color: var(--color-claude-dark-surface);
-    border: 1px solid var(--color-claude-border-dark);
+    background-color: var(--color-vault-dark-surface);
+    border: 1px solid var(--color-vault-border-dark);
     border-radius: var(--radius-lg);
     padding: 1.5rem;
     box-shadow: var(--shadow-whisper);
@@ -573,13 +573,13 @@
 
   .card:hover {
     transform: translateY(-1px);
-    border-color: var(--color-claude-border-dark-strong);
+    border-color: var(--color-vault-border-dark-strong);
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
   }
 
   .card-dark {
-    background-color: var(--color-claude-dark-surface-2);
-    border: 1px solid var(--color-claude-border-dark);
+    background-color: var(--color-vault-dark-surface-2);
+    border: 1px solid var(--color-vault-border-dark);
     border-radius: var(--radius-lg);
     padding: 1.5rem;
   }
@@ -593,37 +593,37 @@
   }
 
   .hero {
-    background-color: var(--color-claude-deep-dark);
+    background-color: var(--color-vault-deep-dark);
     padding-top: 5rem;
     padding-bottom: 5rem;
   }
 
   .section-dark {
-    background-color: var(--color-claude-deep-dark);
-    color: var(--color-claude-text-on-dark-soft);
+    background-color: var(--color-vault-deep-dark);
+    color: var(--color-vault-text-on-dark-soft);
     padding-top: 5rem;
     padding-bottom: 5rem;
   }
 
   .text-primary {
-    color: var(--color-claude-text);
+    color: var(--color-vault-text);
   }
 
   .text-secondary {
-    color: var(--color-claude-text-soft);
+    color: var(--color-vault-text-soft);
   }
 
   .text-tertiary {
-    color: var(--color-claude-stone);
+    color: var(--color-vault-stone);
   }
 
   .text-brand {
-    color: var(--color-claude-terracotta);
+    color: var(--color-vault-terracotta);
   }
 
   .focus-ring {
     outline: none;
-    box-shadow: 0 0 0 2px var(--color-claude-focus);
+    box-shadow: 0 0 0 2px var(--color-vault-focus);
     border-radius: 4px;
   }
 
@@ -671,15 +671,15 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-claude-dark-surface-2);
+  background: var(--color-vault-dark-surface-2);
   border-radius: var(--radius-lg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-claude-border-dark);
+  background: var(--color-vault-border-dark);
   border-radius: var(--radius-lg);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-claude-border-dark-strong);
+  background: var(--color-vault-border-dark-strong);
 }

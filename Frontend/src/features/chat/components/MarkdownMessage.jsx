@@ -51,7 +51,7 @@ const MarkdownMessage = ({ content, isUserMessage }) => {
       </li>
     ),
     blockquote: ({ children }) => (
-      <blockquote className="border-l-4 border-claude-terracotta/50 pl-4 py-1 my-3 italic text-claude-text-on-dark-soft">
+      <blockquote className="border-l-4 border-vault-terracotta/50 pl-4 py-1 my-3 italic text-vault-text-on-dark-soft">
         {children}
       </blockquote>
     ),
@@ -63,15 +63,15 @@ const MarkdownMessage = ({ content, isUserMessage }) => {
 
       if (!inline) {
         return (
-          <div className="relative mb-4 rounded-lg overflow-hidden bg-[#1e1e1e] border border-claude-border-dark">
+          <div className="relative mb-4 rounded-lg overflow-hidden bg-[#1e1e1e] border border-vault-border-dark">
             {/* Language label and copy button */}
-            <div className="flex items-center justify-between px-4 py-2 bg-[#2d2d2d] border-b border-claude-border-dark">
-              <span className="text-xs font-mono text-claude-stone uppercase tracking-wide">
+            <div className="flex items-center justify-between px-4 py-2 bg-[#2d2d2d] border-b border-vault-border-dark">
+              <span className="text-xs font-mono text-vault-stone uppercase tracking-wide">
                 {language}
               </span>
               <button
                 onClick={() => copyToClipboard(codeString, codeId)}
-                className="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-[#3d3d3d] transition-colors text-claude-stone hover:text-claude-text-on-dark"
+                className="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-[#3d3d3d] transition-colors text-vault-stone hover:text-vault-text-on-dark"
                 title="Copy code"
               >
                 {copiedCode === codeId ? (
@@ -91,7 +91,7 @@ const MarkdownMessage = ({ content, isUserMessage }) => {
             {/* Code content */}
             <pre className="overflow-x-auto p-4 text-sm">
               <code
-                className={`language-${language} font-mono text-claude-text-on-dark`}
+                className={`language-${language} font-mono text-vault-text-on-dark`}
                 dangerouslySetInnerHTML={{
                   __html: hljs.highlight(codeString, {
                     language: language,
@@ -105,7 +105,7 @@ const MarkdownMessage = ({ content, isUserMessage }) => {
       }
 
       return (
-        <code className="px-2 py-1 rounded bg-[#2d2d2d] text-claude-terracotta font-mono text-sm border border-claude-border-dark">
+        <code className="px-2 py-1 rounded bg-[#2d2d2d] text-vault-terracotta font-mono text-sm border border-vault-border-dark">
           {children}
         </code>
       );
@@ -115,7 +115,7 @@ const MarkdownMessage = ({ content, isUserMessage }) => {
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-claude-coral hover:text-claude-terracotta underline transition-colors"
+        className="text-vault-coral hover:text-vault-terracotta underline transition-colors"
       >
         {children}
       </a>
@@ -136,22 +136,22 @@ const MarkdownMessage = ({ content, isUserMessage }) => {
       </tbody>
     ),
     tr: ({ children }) => (
-      <tr className="border border-claude-border-dark">
+      <tr className="border border-vault-border-dark">
         {children}
       </tr>
     ),
     td: ({ children }) => (
-      <td className="px-3 py-2 border border-claude-border-dark text-inherit">
+      <td className="px-3 py-2 border border-vault-border-dark text-inherit">
         {children}
       </td>
     ),
     th: ({ children }) => (
-      <th className="px-3 py-2 border border-claude-border-dark text-left font-semibold text-inherit">
+      <th className="px-3 py-2 border border-vault-border-dark text-left font-semibold text-inherit">
         {children}
       </th>
     ),
     hr: () => (
-      <hr className="my-4 border-t border-claude-border-dark" />
+      <hr className="my-4 border-t border-vault-border-dark" />
     ),
   };
 
@@ -159,8 +159,8 @@ const MarkdownMessage = ({ content, isUserMessage }) => {
     <div className={`
       px-4 py-3 rounded-lg
       ${isUserMessage
-        ? "bg-claude-terracotta/85 text-white max-w-[85%] shadow-sm"
-        : "text-claude-text-on-dark max-w-[90%]"
+        ? "bg-vault-terracotta/85 text-white max-w-[85%] shadow-sm"
+        : "text-vault-text-on-dark max-w-[90%]"
       }
     `}>
       <ReactMarkdown

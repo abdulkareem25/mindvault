@@ -38,23 +38,23 @@ const Login = () => {
 
 
   return (
-    <div className="min-h-screen bg-claude-deep-dark flex items-center justify-center p-4">
+    <div className="min-h-screen bg-vault-deep-dark flex items-center justify-center p-4">
       {/* Form Container */}
       <div className="w-full max-w-md">
         <div className="card">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="feature-title text-claude-terracotta mb-2">
+            <h1 className="feature-title text-vault-terracotta mb-2">
               MindVault
             </h1>
-            <p className="text-claude-warm-silver text-sm">Welcome back</p>
+            <p className="text-vault-warm-silver text-sm">Welcome back</p>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="mb-6 p-4 bg-claude-error/10 border border-claude-error rounded-base flex items-start gap-3">
+            <div className="mb-6 p-4 bg-vault-error/10 border border-vault-error rounded-base flex items-start gap-3">
               <svg
-                className="w-10 h-10 text-claude-error shrink-0"
+                className="w-10 h-10 text-vault-error shrink-0"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -64,7 +64,7 @@ const Login = () => {
                   clipRule="evenodd"
                 />
               </svg>
-              <p className="text-claude-error text-sm">{error}</p>
+              <p className="text-vault-error text-sm">{error}</p>
             </div>
           )}
 
@@ -72,7 +72,7 @@ const Login = () => {
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email Input */}
             <div>
-              <label htmlFor="email" className="block text-claude-warm-silver text-sm font-medium mb-2">
+              <label htmlFor="email" className="block text-vault-warm-silver text-sm font-medium mb-2">
                 Email
               </label>
               <input
@@ -84,13 +84,13 @@ const Login = () => {
                 onChange={handleChange}
                 placeholder="you@example.com"
                 disabled={loading}
-                className='w-full px-3 py-2 rounded-lg bg-claude-dark-surface border border-claude-border-dark transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-claude-focus focus:border-claude-focus text-claude-ivory placeholder-claude-stone disabled:opacity-50 disabled:cursor-not-allowed'
+                className='w-full px-3 py-2 rounded-lg bg-vault-dark-surface border border-vault-border-dark transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-vault-focus focus:border-vault-focus text-vault-ivory placeholder-vault-stone disabled:opacity-50 disabled:cursor-not-allowed'
               />
             </div>
 
             {/* Password Input */}
             <div>
-              <label htmlFor="password" className="block text-claude-warm-silver text-sm font-medium mb-2">
+              <label htmlFor="password" className="block text-vault-warm-silver text-sm font-medium mb-2">
                 Password
               </label>
               <input
@@ -102,13 +102,13 @@ const Login = () => {
                 onChange={handleChange}
                 placeholder="••••••••"
                 disabled={loading}
-                className='w-full px-3 py-2 rounded-lg bg-claude-dark-surface border border-claude-border-dark transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-claude-focus focus:border-claude-focus text-claude-ivory placeholder-claude-stone disabled:opacity-50 disabled:cursor-not-allowed'
+                className='w-full px-3 py-2 rounded-lg bg-vault-dark-surface border border-vault-border-dark transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-vault-focus focus:border-vault-focus text-vault-ivory placeholder-vault-stone disabled:opacity-50 disabled:cursor-not-allowed'
               />
             </div>
 
             {/* Forgot Password Link */}
             <div className="flex justify-end pt-1">
-              <Link to="#" className="text-claude-coral hover:text-claude-terracotta text-xs transition-colors">
+              <Link to="#" className="text-vault-coral hover:text-vault-terracotta text-xs transition-colors">
                 Forgot password?
               </Link>
             </div>
@@ -135,15 +135,15 @@ const Login = () => {
 
           {/* Divider */}
           <div className="my-6 flex items-center gap-3">
-            <div className="flex-1 h-px bg-claude-border-dark"></div>
-            <span className="text-claude-stone text-xs">or</span>
-            <div className="flex-1 h-px bg-claude-border-dark"></div>
+            <div className="flex-1 h-px bg-vault-border-dark"></div>
+            <span className="text-vault-stone text-xs">or</span>
+            <div className="flex-1 h-px bg-vault-border-dark"></div>
           </div>
 
           {/* Sign Up Link */}
-          <p className="text-center text-claude-olive text-sm">
+          <p className="text-center text-vault-olive text-sm">
             Don't have an account?{' '}
-            <Link to="/signup" className="text-claude-coral hover:text-claude-terracotta transition-colors font-medium">
+            <Link to="/signup" className="text-vault-coral hover:text-vault-terracotta transition-colors font-medium">
               Create one
             </Link>
           </p>

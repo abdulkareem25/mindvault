@@ -22,7 +22,7 @@ const SidebarToggle = ({
             onClick={onOpenSidebar}
             className="
               flex items-center justify-center w-15 h-15 rounded-base
-              text-claude-stone hover:text-claude-text-on-dark
+              text-vault-stone hover:text-vault-text-on-dark
               transition-all duration-150
             "
           >

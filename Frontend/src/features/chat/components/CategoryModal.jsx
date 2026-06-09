@@ -20,8 +20,8 @@ const CategoryModal = ({ isOpen, onClose, selectedCategory, onSelectCategory }) 
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="
-          bg-claude-dark-surface
-          border border-claude-border-dark
+          bg-vault-dark-surface
+          border border-vault-border-dark
           rounded-2xl
           shadow-lg
           w-full max-w-xs
@@ -29,8 +29,8 @@ const CategoryModal = ({ isOpen, onClose, selectedCategory, onSelectCategory }) 
           animate-in fade-in zoom-in duration-200
         ">
           {/* Modal Header */}
-          <div className="px-6 py-4 border-b border-claude-border-subtle-dark text-center">
-            <h2 className="text-claude-text-on-dark font-medium text-lg">
+          <div className="px-6 py-4 border-b border-vault-border-subtle-dark text-center">
+            <h2 className="text-vault-text-on-dark font-medium text-lg">
               Select Category
             </h2>
           </div>
@@ -45,8 +45,8 @@ const CategoryModal = ({ isOpen, onClose, selectedCategory, onSelectCategory }) 
                   w-full flex items-center gap-3 px-4 py-3 rounded-lg
                   transition-all duration-150
                   ${selectedCategory === cat
-                    ? "bg-claude-terracotta/20 border border-claude-terracotta text-claude-terracotta"
-                    : "border border-transparent text-claude-text-on-dark-soft hover:bg-claude-dark-surface-2 hover:text-claude-text-on-dark"
+                    ? "bg-vault-terracotta/20 border border-vault-terracotta text-vault-terracotta"
+                    : "border border-transparent text-vault-text-on-dark-soft hover:bg-vault-dark-surface-2 hover:text-vault-text-on-dark"
                   }
                 `}
               >
@@ -56,14 +56,14 @@ const CategoryModal = ({ isOpen, onClose, selectedCategory, onSelectCategory }) 
           </div>
 
           {/* Modal Footer */}
-          <div className="px-6 py-4 border-t border-claude-border-subtle-dark flex gap-3">
+          <div className="px-6 py-4 border-t border-vault-border-subtle-dark flex gap-3">
             <button
               onClick={onClose}
               className="
                 flex-1 px-4 py-2 rounded-lg
-                border border-claude-border-dark
-                text-claude-text-on-dark-soft
-                hover:bg-claude-dark-surface-2
+                border border-vault-border-dark
+                text-vault-text-on-dark-soft
+                hover:bg-vault-dark-surface-2
                 transition-all duration-150
               "
             >

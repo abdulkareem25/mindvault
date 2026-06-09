@@ -56,23 +56,23 @@ const VerifyEmail = () => {
   };
 
   return (
-    <div className="min-h-screen bg-claude-deep-dark flex items-center justify-center p-4">
+    <div className="min-h-screen bg-vault-deep-dark flex items-center justify-center p-4">
       {/* Content Container */}
       <div className="w-full max-w-md">
         <div className="card">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="feature-title text-claude-terracotta mb-2">
+            <h1 className="feature-title text-vault-terracotta mb-2">
               MindVault
             </h1>
-            <p className="text-claude-warm-silver text-sm">Verify your email</p>
+            <p className="text-vault-warm-silver text-sm">Verify your email</p>
           </div>
 
           {/* Email Icon */}
           <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 bg-claude-terracotta/10 rounded-full flex items-center justify-center border border-claude-terracotta/30">
+            <div className="w-16 h-16 bg-vault-terracotta/10 rounded-full flex items-center justify-center border border-vault-terracotta/30">
               <svg
-                className="w-8 h-8 text-claude-terracotta"
+                className="w-8 h-8 text-vault-terracotta"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -89,20 +89,20 @@ const VerifyEmail = () => {
 
           {/* Main Message */}
           <div className="text-center mb-6">
-            <h2 className="feature-title text-claude-ivory mb-3">
+            <h2 className="feature-title text-vault-ivory mb-3">
               Verification email sent!
             </h2>
-            <p className="text-claude-warm-silver text-sm mb-2">
+            <p className="text-vault-warm-silver text-sm mb-2">
               We've sent a verification link to:
             </p>
-            <p className="text-claude-terracotta font-medium text-sm break-all">
+            <p className="text-vault-terracotta font-medium text-sm break-all">
               {userEmail}
             </p>
           </div>
 
           {/* Instructions */}
-          <div className="bg-claude-dark-surface border border-claude-border-dark rounded-base p-4 mb-6">
-            <p className="text-claude-warm-silver text-sm leading-relaxed text-center">
+          <div className="bg-vault-dark-surface border border-vault-border-dark rounded-base p-4 mb-6">
+            <p className="text-vault-warm-silver text-sm leading-relaxed text-center">
               Please check your email and click the verification link to activate your account. The link will expire in 24 hours.
             </p>
           </div>
@@ -133,24 +133,24 @@ const VerifyEmail = () => {
               )}
             </button>
 
-            <p className="text-center text-claude-stone text-xs">
+            <p className="text-center text-vault-stone text-xs">
               Didn't receive the email? Check your spam folder or try resending.
             </p>
           </div>
 
           {/* Divider */}
           <div className="my-6 flex items-center gap-3">
-            <div className="flex-1 h-px bg-claude-border-dark"></div>
-            <span className="text-claude-stone text-xs">or</span>
-            <div className="flex-1 h-px bg-claude-border-dark"></div>
+            <div className="flex-1 h-px bg-vault-border-dark"></div>
+            <span className="text-vault-stone text-xs">or</span>
+            <div className="flex-1 h-px bg-vault-border-dark"></div>
           </div>
 
           {/* Help Text */}
-          <p className="text-center text-claude-warm-silver text-xs">
+          <p className="text-center text-vault-warm-silver text-xs">
             Already verified?{' '}
             <button
               onClick={() => navigate('/login')}
-              className="text-claude-terracotta hover:text-claude-coral transition-colors font-medium"
+              className="text-vault-terracotta hover:text-vault-coral transition-colors font-medium"
             >
               Go to login
             </button>
@@ -158,7 +158,7 @@ const VerifyEmail = () => {
         </div>
 
         {/* Footer Info */}
-        <p className="text-center text-claude-stone text-xs mt-6">
+        <p className="text-center text-vault-stone text-xs mt-6">
           This page automatically updates when you verify your email
         </p>
       </div>

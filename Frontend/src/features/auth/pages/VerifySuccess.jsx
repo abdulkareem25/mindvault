@@ -14,23 +14,23 @@ const VerifySuccess = () => {
   // }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-claude-deep-dark flex items-center justify-center p-4">
+    <div className="min-h-screen bg-vault-deep-dark flex items-center justify-center p-4">
       {/* Content Container */}
       <div className="w-full max-w-md">
         <div className="card">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="feature-title text-claude-terracotta mb-2">
+            <h1 className="feature-title text-vault-terracotta mb-2">
               MindVault
             </h1>
-            <p className="text-claude-warm-silver text-sm">Email verification</p>
+            <p className="text-vault-warm-silver text-sm">Email verification</p>
           </div>
 
           {/* Checkmark Icon */}
           <div className="flex justify-center mb-8">
-            <div className="w-20 h-20 bg-claude-terracotta/20 rounded-full flex items-center justify-center border border-claude-terracotta/40 animate-pulse">
+            <div className="w-20 h-20 bg-vault-terracotta/20 rounded-full flex items-center justify-center border border-vault-terracotta/40 animate-pulse">
               <svg
-                className="w-10 h-10 text-claude-terracotta"
+                className="w-10 h-10 text-vault-terracotta"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -47,10 +47,10 @@ const VerifySuccess = () => {
 
           {/* Success Message */}
           <div className="text-center mb-8">
-            <h2 className="feature-title text-claude-ivory mb-3">
+            <h2 className="feature-title text-vault-ivory mb-3">
               Email Verified Successfully!
             </h2>
-            <p className="text-claude-warm-silver text-sm mb-4">
+            <p className="text-vault-warm-silver text-sm mb-4">
               Congratulations! Your email has been verified. You can now access all features of MindVault and start organizing your thoughts with AI-powered assistance.
             </p>
           </div>
@@ -77,15 +77,15 @@ const VerifySuccess = () => {
           </button>
 
           {/* Footer Info */}
-          <div className="mt-6 p-4 bg-claude-dark-surface border border-claude-border-dark rounded-base">
-            <p className="text-claude-warm-silver text-xs text-center leading-relaxed">
+          <div className="mt-6 p-4 bg-vault-dark-surface border border-vault-border-dark rounded-base">
+            <p className="text-vault-warm-silver text-xs text-center leading-relaxed">
               Your account is ready to use. Sign in with your credentials to access MindVault's features.
             </p>
           </div>
         </div>
 
         {/* Bottom Footer */}
-        <p className="text-center text-claude-stone text-xs mt-8">
+        <p className="text-center text-vault-stone text-xs mt-8">
           © 2026 MindVault - Your AI-Powered Mind Mapping Companion
         </p>
       </div>

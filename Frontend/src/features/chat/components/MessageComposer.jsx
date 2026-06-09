@@ -42,13 +42,13 @@ const MessageComposer = ({
       <div
         className="
           w-full max-w-4xl p-5
-          bg-claude-dark-surface
-          border border-claude-border-dark
+          bg-vault-dark-surface
+          border border-vault-border-dark
           rounded-2xl
           shadow-whisper
           flex flex-col
           transition-all duration-200
-          focus-within:border-claude-terracotta/50 focus-within:shadow-lg
+          focus-within:border-vault-terracotta/50 focus-within:shadow-lg
         "
       >
         {/* Textarea row */}
@@ -61,7 +61,7 @@ const MessageComposer = ({
           className="
             bg-transparent outline-none border-none 
             resize-none focus-visible:ring-0 text-md
-            text-claude-text-on-dark placeholder:text-claude-stone/70
+            text-vault-text-on-dark placeholder:text-vault-stone/70
             leading-relaxed min-h-6 max-h-48 overflow-y-auto
             transition-colors duration-200
           "
@@ -85,8 +85,8 @@ const MessageComposer = ({
               className={`
                 flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-150
                 ${hasMessages
-                  ? "bg-claude-dark-surface-2/50 border border-claude-border-dark text-claude-stone cursor-not-allowed opacity-50"
-                  : "bg-claude-terracotta/20 border border-claude-terracotta text-claude-terracotta hover:bg-claude-terracotta/30"
+                  ? "bg-vault-dark-surface-2/50 border border-vault-border-dark text-vault-stone cursor-not-allowed opacity-50"
+                  : "bg-vault-terracotta/20 border border-vault-terracotta text-vault-terracotta hover:bg-vault-terracotta/30"
                 }
               `}
             >
@@ -100,8 +100,8 @@ const MessageComposer = ({
               className={`
                 flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-150
                 ${hasMessages
-                  ? "border border-claude-border-dark text-claude-stone cursor-not-allowed opacity-50"
-                  : "border border-claude-dark-surface-2 text-claude-stone hover:bg-claude-dark-surface-2 hover:text-claude-text-on-dark"
+                  ? "border border-vault-border-dark text-vault-stone cursor-not-allowed opacity-50"
+                  : "border border-vault-dark-surface-2 text-vault-stone hover:bg-vault-dark-surface-2 hover:text-vault-text-on-dark"
                 }
               `}
             >
@@ -120,8 +120,8 @@ const MessageComposer = ({
             className={`
               flex items-center justify-center w-15 h-15 rounded-full shrink-0 transition-all duration-150
               ${inputValue.trim() && !isSendingMessage
-                ? "bg-claude-terracotta hover:bg-claude-coral hover:scale-105 text-white"
-                : "bg-claude-dark-surface-2 text-claude-stone cursor-not-allowed"
+                ? "bg-vault-terracotta hover:bg-vault-coral hover:scale-105 text-white"
+                : "bg-vault-dark-surface-2 text-vault-stone cursor-not-allowed"
               }
             `}
           >
