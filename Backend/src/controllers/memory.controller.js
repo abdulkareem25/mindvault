@@ -3,6 +3,7 @@ import Memory from "../models/Memory.js";
 import User from "../models/user.model.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { classifyCapture } from "../services/ai.service.js";
+import * as embeddingService from "../services/embedding.service.js";
 
 /**
  * Updates the user's memory summary by grouping all non-archived memories
@@ -98,6 +99,16 @@ export const captureMemory = asyncHandler(async (req, res) => {
   });
 
   await updateUserMemorySummary(req.user._id);
+
+  // Fire async embedding generation (non-blocking)
+  setImmediate(async () => {
+    try {
+      const embedding = await embeddingService.generateEmbedding(memory.content);
+      await Memory.findByIdAndUpdate(memory._id, { embedding });
+    } catch (err) {
+      console.error('Embedding generation failed for quick capture:', { memoryId: memory._id, error: err.message });
+    }
+  });
 
   res.status(201).json(memory);
 });

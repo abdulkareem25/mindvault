@@ -2,6 +2,7 @@ import Chat from '../models/chat.model.js';
 import Message from '../models/message.model.js';
 import Memory from '../models/Memory.js';
 import * as aiService from './ai.service.js';
+import * as embeddingService from './embedding.service.js';
 import { updateUserMemorySummary } from '../controllers/memory.controller.js';
 import * as vaultSocket from '../socket/vault.socket.js';
 import agenda from '../config/agenda.js';
@@ -85,6 +86,17 @@ export async function extractFromChat({ chatId, userId }) {
         source: 'extraction'
       });
       createdMemories.push(memory);
+
+      // Fire async embedding generation (non-blocking)
+      setImmediate(async () => {
+        try {
+          const embedding = await embeddingService.generateEmbedding(memory.content);
+          await Memory.findByIdAndUpdate(memory._id, { embedding });
+          logger.extraction.info('Embedding generated for memory', { memoryId: memory._id });
+        } catch (err) {
+          logger.error('Embedding generation failed', { memoryId: memory._id, error: err.message });
+        }
+      });
     }
 
     // 7. Update user memorySummary statistics
