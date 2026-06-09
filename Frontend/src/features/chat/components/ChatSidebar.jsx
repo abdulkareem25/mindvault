@@ -8,7 +8,8 @@ import {
   Plus,
   SidebarCloseIcon,
   Star,
-  Trash2
+  Trash2,
+  ArrowRight
 } from "lucide-react";
 import { useRef, useState } from "react";
 import useAuth from "../../auth/hooks/useAuth";
@@ -17,7 +18,6 @@ import { useChat } from "../hooks/useChat";
 
 const NAV_ITEMS = [
   { id: "new", label: "New chat", icon: Plus },
-  { id: "vault", label: "Vault", icon: Database },
   { id: "chats", label: "Chats", icon: MessagesSquareIcon }
 ];
 
@@ -79,17 +79,39 @@ const ChatSidebar = ({
         </button>
       </div>
 
+      {/* Prominent Vault link */}
+      <div className="px-4 pt-4 pb-1">
+        <button
+          onClick={() => onNavClick("vault")}
+          className={`group flex items-center justify-between px-4 py-3 rounded-lg w-full text-left
+            transition-all duration-150 text-body-sm border cursor-pointer
+            ${activeNav === "vault"
+              ? "bg-vault-terracotta text-vault-ivory border-vault-terracotta shadow-md"
+              : "bg-vault-dark-surface-3 text-vault-text-on-dark hover:bg-vault-dark-surface-3/80 hover:text-vault-text-on-dark border-vault-border-dark"
+            }
+          `}
+        >
+          <div className="flex items-center gap-3">
+            <Database size={18} strokeWidth={2} className={activeNav === "vault" ? "text-vault-ivory" : "text-vault-coral"} />
+            <span className="font-semibold" style={{ fontSize: "15px" }}>Knowledge Vault</span>
+          </div>
+          <ArrowRight size={14} className={`opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-150 ${activeNav === "vault" ? "text-vault-ivory" : "text-vault-stone"}`} />
+        </button>
+      </div>
+
       {/* Nav items */}
-      <nav className="flex flex-col gap-1 px-4 py-3">
+      <nav className="flex flex-col gap-1 px-4 py-2">
         {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             onClick={() => onNavClick(id)}
             className={`group
-              flex items-center gap-3 px-3 py-2.5 rounded-lg w-full text-left
+              flex items-center gap-3 px-3 py-2.5 rounded-lg w-full text-left cursor-pointer
               transition-all duration-150 text-body-sm
-              text-vault-text-on-dark-soft hover:bg-vault-dark-surface-3 hover:text-vault-text-on-dark
-              border border-transparent hover:border-vault-border-subtle-dark
+              ${activeNav === id
+                ? "bg-vault-dark-surface-3 text-vault-text-on-dark border-vault-border-subtle-dark"
+                : "text-vault-text-on-dark-soft hover:bg-vault-dark-surface-3 hover:text-vault-text-on-dark border border-transparent hover:border-vault-border-subtle-dark"
+              }
             `}
           >
             <Icon size={20} strokeWidth={1.5} className="group-hover:text-vault-coral text-vault-stone" />

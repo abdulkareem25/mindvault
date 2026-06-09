@@ -15,6 +15,7 @@ import QuickCaptureModal from '../../capture/QuickCaptureModal';
 import { useChat } from '../hooks/useChat';
 import { useSocket } from '../hooks/useSocket';
 import { getSocket } from '../services/chat.socket';
+import DashboardView from '../../../shared/components/Dashboard';
 
 const Dashboard = () => {
   useSocket();
@@ -147,15 +148,26 @@ const Dashboard = () => {
   const handleDelete = async (chatId) => {
     try {
       await handleDeleteChat(chatId);
-      setChatMenuOpen(null);
     } catch (error) {
-      console.log("Delete chat failed:", error);
+      console.error("Delete chat failed:", error);
     }
   };
 
+  const handleStartChat = () => {
+    setActiveNav("new");
+    setCategory(null);
+    setInputValue("");
+    initialState();
+    setShowChatsModal(false);
+  };
+
+  const showDashboard = !activeChatId && activeNav !== "new";
+
   return (
     <div
-      className="flex h-screen overflow-hidden bg-vault-deep-dark"
+      className={`flex h-screen overflow-hidden ${
+        showDashboard ? "bg-vault-parchment text-vault-charcoal" : "bg-vault-deep-dark text-vault-text-on-dark"
+      }`}
       style={{ fontFamily: "var(--font-sans)" }}
     >
 
@@ -168,13 +180,7 @@ const Dashboard = () => {
         onClose={() => setShowChatsModal(false)}
         chats={chats}
         onChatSelect={handleChat}
-        onNewChat={() => {
-          setActiveNav("new");
-          setCategory(null);
-          setInputValue("");
-          initialState();
-          setShowChatsModal(false);
-        }}
+        onNewChat={handleStartChat}
         onChatDelete={handleDelete}
       />
 
@@ -206,51 +212,59 @@ const Dashboard = () => {
       />
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 flex flex-col min-w-0 bg-vault-deep-dark relative">
-        {/* ── Top Bar ── */}
-        <ChatTopBar
-          sidebarOpen={sidebarOpen}
-          onOpenSidebar={() => setSidebarOpen(true)}
-          activeChatId={activeChatId}
-          messageHistory={messageHistory}
-          chats={chats}
-        />
-
-        {/* ── Context Pills (feature-flagged) ── */}
-        {import.meta.env.VITE_ENABLE_CONTEXT_PILLS === 'true' && (
-          <ContextPillsBar />
-        )}
-
-        {/* ── Chat Messages Area ── */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="flex flex-col gap-6 px-6 py-6 max-w-4xl mx-auto h-full">
-            <ChatMessages
-              isLoadingHistory={isLoadingHistory}
+      <main className={`flex-1 flex flex-col min-w-0 relative ${
+        showDashboard ? "bg-vault-parchment overflow-y-auto" : "bg-vault-deep-dark"
+      }`}>
+        {showDashboard ? (
+          <DashboardView onStartChat={handleStartChat} />
+        ) : (
+          <>
+            {/* ── Top Bar ── */}
+            <ChatTopBar
+              sidebarOpen={sidebarOpen}
+              onOpenSidebar={() => setSidebarOpen(true)}
               activeChatId={activeChatId}
               messageHistory={messageHistory}
-              user={user}
+              chats={chats}
             />
-          </div>
-        </div>
 
-        {/* ── Message Composer ── */}
-        <MessageComposer
-          inputValue={inputValue}
-          onInputChange={handleInput}
-          onKeyDown={handleKeyDown}
-          onSend={handleSend}
-          isSendingMessage={isSendingMessage}
-          category={category}
-          onShowCategoryModal={() => setShowCategoryModal(true)}
-          hasMessages={messageHistory.length > 0}
-        />
+            {/* ── Context Pills (feature-flagged) ── */}
+            {import.meta.env.VITE_ENABLE_CONTEXT_PILLS === 'true' && (
+              <ContextPillsBar />
+            )}
 
-        {/* ── Bottom Bar ── */}
-        <div className="px-4 pb-3 flex items-center justify-center">
-          <p className="text-vault-stone" style={{ fontSize: "11.5px" }}>
-            MindVault can make mistakes. Verify important info.
-          </p>
-        </div>
+            {/* ── Chat Messages Area ── */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="flex flex-col gap-6 px-6 py-6 max-w-4xl mx-auto h-full">
+                <ChatMessages
+                  isLoadingHistory={isLoadingHistory}
+                  activeChatId={activeChatId}
+                  messageHistory={messageHistory}
+                  user={user}
+                />
+              </div>
+            </div>
+
+            {/* ── Message Composer ── */}
+            <MessageComposer
+              inputValue={inputValue}
+              onInputChange={handleInput}
+              onKeyDown={handleKeyDown}
+              onSend={handleSend}
+              isSendingMessage={isSendingMessage}
+              category={category}
+              onShowCategoryModal={() => setShowCategoryModal(true)}
+              hasMessages={messageHistory.length > 0}
+            />
+
+            {/* ── Bottom Bar ── */}
+            <div className="px-4 pb-3 flex items-center justify-center">
+              <p className="text-vault-stone" style={{ fontSize: "11.5px" }}>
+                MindVault can make mistakes. Verify important info.
+              </p>
+            </div>
+          </>
+        )}
       </main>
     </div>
   );

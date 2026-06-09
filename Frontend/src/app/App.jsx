@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { RouterProvider } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { Toaster } from 'react-hot-toast'
@@ -9,8 +9,12 @@ import { openModal } from '../features/capture/captureSlice'
 import router from './app.routes'
 
 const App = () => {
-  useAuth();
+  const { fetchCurrentUser } = useAuth();
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    fetchCurrentUser();
+  }, []);
 
   const handleOpenCapture = useCallback(() => {
     dispatch(openModal());

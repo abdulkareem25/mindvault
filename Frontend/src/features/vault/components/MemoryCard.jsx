@@ -258,7 +258,7 @@ const MemoryCard = ({ memory, isNew }) => {
             </div>
           </div>
         ) : (
-          <p className="text-[14px] text-vault-text-on-dark-soft font-normal leading-relaxed break-words whitespace-pre-wrap">
+          <p className="text-[14px] text-vault-text-on-dark-soft font-normal leading-relaxed wrap-break-word whitespace-pre-wrap">
             {memory.content}
           </p>
         )}

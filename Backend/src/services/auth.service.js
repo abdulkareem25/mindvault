@@ -116,6 +116,7 @@ export const login = async ({ email, password }) => {
       email: user.email,
       isVerified: user.isVerified,
       preferences: user.preferences,
+      memorySummary: user.memorySummary || { coding: 0, deen: 0, admin: 0, life: 0 },
     }
   };
 };

@@ -163,7 +163,7 @@ const QuickCaptureModal = () => {
         onClick={handleBackdropClick}
       />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="bg-vault-dark-surface border border-vault-border-dark rounded-2xl shadow-lg w-full max-w-[480px] overflow-hidden">
+        <div className="bg-vault-dark-surface border border-vault-border-dark rounded-2xl shadow-lg w-full max-w-120 overflow-hidden">
           {/* Header */}
           <div className="px-5 py-4 border-b border-vault-border-subtle-dark flex items-center justify-between">
             <h2 className="text-vault-text-on-dark font-medium text-base">
