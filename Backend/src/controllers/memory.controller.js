@@ -4,6 +4,7 @@ import User from "../models/user.model.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { classifyCapture } from "../services/ai.service.js";
 import * as embeddingService from "../services/embedding.service.js";
+import * as searchService from "../services/search.service.js";
 
 /**
  * Updates the user's memory summary by grouping all non-archived memories
@@ -114,29 +115,36 @@ export const captureMemory = asyncHandler(async (req, res) => {
 });
 
 /**
- * Searches the user's memories using case-insensitive keyword regex match on the content field.
+ * Searches the user's memories using semantic or keyword search based on feature flag.
  */
 export const searchMemories = asyncHandler(async (req, res) => {
-  const { q, category, type, isArchived } = req.query;
-  const filter = { userId: req.user._id };
-
-  if (q) {
-    filter.content = { $regex: q, $options: "i" };
-  }
-  if (category && category !== "all") {
-    filter.category = category;
-  }
-  if (type && type !== "all") {
-    filter.type = type;
-  }
-  if (isArchived !== undefined) {
-    filter.isArchived = isArchived === "true" || isArchived === true;
-  } else {
-    filter.isArchived = false;
+  const { q, category, type } = req.query;
+  
+  if (!q) {
+    return res.status(200).json({ memories: [] });
   }
 
-  const memories = await Memory.find(filter).sort({ createdAt: -1 });
-  res.status(200).json(memories);
+  const useSemanticSearch = process.env.VITE_ENABLE_SEMANTIC_SEARCH === 'true';
+
+  const results = useSemanticSearch
+    ? await searchService.semanticSearch({ userId: req.user._id, query: q, category, type })
+    : await searchService.keywordSearch({ userId: req.user._id, query: q, category, type });
+
+  res.status(200).json({ memories: results });
+});
+
+/**
+ * Performs semantic search using vector embeddings and cosine similarity.
+ */
+export const semanticSearchMemories = asyncHandler(async (req, res) => {
+  const { q, category, type } = req.query;
+  
+  if (!q) {
+    return res.status(200).json({ memories: [] });
+  }
+
+  const results = await searchService.semanticSearch({ userId: req.user._id, query: q, category, type });
+  res.status(200).json({ memories: results });
 });
 
 /**

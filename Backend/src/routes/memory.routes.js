@@ -3,6 +3,7 @@ import {
   getMemories,
   captureMemory,
   searchMemories,
+  semanticSearchMemories,
   getStats,
   getMemoryById,
   updateMemory,
@@ -30,6 +31,9 @@ router.post("/capture", validate(captureSchema), captureMemory);
 
 // GET /api/memories/search - Search memories
 router.get("/search", searchMemories);
+
+// GET /api/memories/semantic - Semantic search memories
+router.get("/semantic", semanticSearchMemories);
 
 // GET /api/memories/stats - Category stats counts
 router.get("/stats", getStats);
