@@ -1,208 +1,179 @@
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
+import { Button, Input } from '../../../shared/components/ui';
 import useAuth from '../hooks/useAuth';
 
-const Signup = () => {
+const CATEGORY_DOT = {
+  coding: '#7099e8',
+  deen: '#b88cdb',
+  admin: '#d4a84c',
+  life: '#5ec98a',
+};
 
+const Signup = () => {
   const { signupUser } = useAuth();
   const navigate = useNavigate();
   const { loading, error } = useSelector((state) => state.auth);
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
-  })
+  });
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (formData.password !== formData.confirmPassword) {
-      return;
-    }
-
-    const success = await signupUser(formData.name, formData.email, formData.password, formData.confirmPassword);
-
+    if (formData.password !== formData.confirmPassword) return;
+    const success = await signupUser(
+      formData.name,
+      formData.email,
+      formData.password,
+      formData.confirmPassword,
+    );
     if (success) {
       navigate('/verify-email', { state: { email: formData.email } });
     }
-    
   };
 
+  const passwordsMatch = formData.password === formData.confirmPassword;
+  const showMatchError = formData.confirmPassword !== '' && !passwordsMatch;
+
   return (
-    <div className="min-h-screen bg-vault-deep-dark flex items-center justify-center p-4">
-      {/* Form Container */}
-      <div className="w-full max-w-md max-h-screen overflow-y-auto px-6 py-8">
-        <div className="card">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="feature-title text-vault-terracotta mb-2">
-              MindVault
-            </h1>
-            <p className="text-vault-warm-silver text-sm">Create your account</p>
+    <div className="min-h-screen flex bg-void">
+
+      {/* Left panel: form */}
+      <div className="flex-1 flex flex-col justify-center px-8 py-12">
+        <div className="max-w-100 mx-auto w-full">
+
+          {/* Logo */}
+          <div className="flex items-center gap-2 mb-10">
+            <span className="font-display text-20 text-cream">MindVault</span>
+            <span className="font-mono text-11 bg-ember text-cream px-2 py-0.5 rounded-full">v2</span>
+          </div>
+
+          {/* Page heading */}
+          <div className="mb-8">
+            <p className="font-sans text-12 font-medium uppercase tracking-[0.8px] text-ember mb-2">
+              GET STARTED
+            </p>
+            <h1 className="font-display text-32 text-cream">Create your journal</h1>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="mb-6 p-4 bg-vault-error/10 border border-vault-error rounded-base flex items-start gap-3">
-              <svg
-                className="w-10 h-10 text-vault-error shrink-0"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <p className="text-vault-error text-sm">{error}</p>
+            <div className="mb-6 p-4 bg-danger/10 border border-danger/50 rounded-md">
+              <p className="text-danger text-13 font-sans font-medium">{error}</p>
             </div>
           )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Name Input */}
-            <div>
-              <label htmlFor="name" className="block text-vault-warm-silver text-sm font-medium mb-2">
-                Full Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                required
-                onChange={handleChange}
-                placeholder="John Doe"
-                disabled={loading}
-                className='w-full px-3 py-2 rounded-lg bg-vault-dark-surface border border-vault-border-dark transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-vault-focus focus:border-vault-focus text-vault-ivory placeholder-vault-stone disabled:opacity-50 disabled:cursor-not-allowed'
-              />
-            </div>
+            <Input
+              label="Full Name"
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="John Doe"
+              required
+              disabled={loading}
+            />
 
-            {/* Email Input */}
-            <div>
-              <label htmlFor="email" className="block text-vault-warm-silver text-sm font-medium mb-2">
-                Email Address
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                required
-                onChange={handleChange}
-                placeholder="you@example.com"
-                disabled={loading}
-                className='w-full px-3 py-2 rounded-lg bg-vault-dark-surface border border-vault-border-dark transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-vault-focus focus:border-vault-focus text-vault-ivory placeholder-vault-stone disabled:opacity-50 disabled:cursor-not-allowed'
-              />
-            </div>
+            <Input
+              label="Email Address"
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="you@example.com"
+              required
+              disabled={loading}
+            />
 
-            {/* Password Input */}
-            <div>
-              <label htmlFor="password" className="block text-vault-warm-silver text-sm font-medium mb-2">
-                Password
-              </label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                required
-                onChange={handleChange}
-                placeholder="••••••••"
-                disabled={loading}
-                className='w-full px-3 py-2 rounded-lg bg-vault-dark-surface border border-vault-border-dark transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-vault-focus focus:border-vault-focus text-vault-ivory placeholder-vault-stone disabled:opacity-50 disabled:cursor-not-allowed'
-              />
-            </div>
+            <Input
+              label="Password"
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="••••••••"
+              required
+              disabled={loading}
+              helperText="Must be at least 8 characters."
+            />
 
-            {/* Confirm Password Input */}
-            <div>
-              <label htmlFor="confirmPassword" className="block text-vault-warm-silver text-sm font-medium mb-2">
-                Confirm Password
-              </label>
-              <div className="relative">
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  required
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  disabled={loading}
-                  className='w-full px-3 py-2 rounded-lg bg-vault-dark-surface border border-vault-border-dark transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-vault-focus focus:border-vault-focus text-vault-ivory placeholder-vault-stone disabled:opacity-50 disabled:cursor-not-allowed'
-                />
-                {formData.confirmPassword && formData.password && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    {formData.password === formData.confirmPassword ? (
-                      <svg className="w-10 h-10 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                    ) : (
-                      <svg className="w-10 h-10 text-vault-error" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                      </svg>
-                    )}
-                  </div>
-                )}
-              </div>
-              {formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword && (
-                <p className="text-vault-error text-xs mt-1">Passwords do not match</p>
-              )}
-            </div>
+            <Input
+              label="Confirm Password"
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              placeholder="••••••••"
+              required
+              disabled={loading}
+              error={showMatchError ? 'Passwords do not match' : null}
+            />
 
-            {/* Submit Button */}
-            <button
+            <Button
+              variant="primary"
+              size="lg"
+              loading={loading}
+              disabled={loading || showMatchError}
               type="submit"
-              disabled={loading || (formData.password !== formData.confirmPassword && formData.confirmPassword !== '')}
-              className="btn-primary w-full mt-6 flex items-center justify-center gap-2"
+              className="w-full mt-2"
             >
-              {loading ? (
-                <>
-                  <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <span className="text-sm">Creating account...</span>
-                </>
-              ) : (
-                'Create Account'
-              )}
-            </button>
+              Create Account
+            </Button>
           </form>
 
-          {/* Divider */}
-          <div className="my-6 flex items-center gap-3">
-            <div className="flex-1 h-px bg-vault-border-dark"></div>
-            <span className="text-vault-stone text-xs">or</span>
-            <div className="flex-1 h-px bg-vault-border-dark"></div>
-          </div>
-
-          {/* Login Link */}
-          <p className="text-center text-vault-warm-silver text-sm">
+          <p className="font-sans text-14 text-smoke text-center mt-6">
             Already have an account?{' '}
-            <Link to="/login" className="text-vault-coral hover:text-vault-terracotta transition-colors font-medium">
+            <Link to="/login" className="text-ember font-medium hover:underline">
               Sign in
             </Link>
           </p>
         </div>
+      </div>
 
-        {/* Footer */}
-        <p className="text-center text-vault-stone text-xs mt-8">
-          © 2026 MindVault
+      {/* Right panel: brand (hidden on mobile) */}
+      <div className="hidden lg:flex w-115 shrink-0 bg-obsidian
+        border-l border-divide flex-col justify-center px-12 py-12">
+        <p className="font-mono text-11 text-sienna uppercase tracking-wider mb-5">
+          Your knowledge, remembered
         </p>
+        <h2 className="font-display text-32 text-cream leading-snug mb-5">
+          Every conversation<br />
+          becomes a <span className="text-ember">memory</span>.
+        </h2>
+        <p className="font-sans text-14 text-mist leading-relaxed mb-10">
+          MindVault watches your conversations and quietly builds a personal knowledge
+          base — then brings that context back exactly when you need it.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {[
+            { cat: 'coding', label: 'Coding · 42' },
+            { cat: 'deen', label: 'Deen · 18' },
+            { cat: 'admin', label: 'Admin · 7' },
+            { cat: 'life', label: 'Life · 23' },
+          ].map(({ cat, label }) => (
+            <span
+              key={cat}
+              className="font-mono text-12 px-3 py-1.5 rounded-lg border border-divide bg-ink"
+              style={{ color: CATEGORY_DOT[cat] }}
+            >
+              {label}
+            </span>
+          ))}
+        </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Signup
+export default Signup;

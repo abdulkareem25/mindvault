@@ -1,273 +1,173 @@
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from "react-redux";
-import { useLocation, useNavigate } from 'react-router-dom';
-import { showToast } from '../../shared/components/Toast';
-import { setActiveChatId, incrementMessageCount } from '../chat.slice';
-import CategoryModal from '../components/CategoryModal';
-import ChatMessages from '../components/ChatMessages';
-import ChatSidebar from '../components/ChatSidebar';
-import ChatTopBar from '../components/ChatTopBar';
-import ChatsModal from '../components/ChatsModal';
-import MessageComposer from '../components/MessageComposer';
-import ContextPillsBar from '../components/ContextPillsBar';
-import SidebarToggle from '../components/SidebarToggle';
-import QuickCaptureModal from '../../capture/QuickCaptureModal';
+import { useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
+import { useGetStatsQuery, useGetMemoriesQuery } from '../../vault/vaultApi';
 import { useChat } from '../hooks/useChat';
-import { useSocket } from '../hooks/useSocket';
-import { getSocket } from '../services/chat.socket';
-import DashboardView from '../../../shared/components/Dashboard';
+import { SectionLabel, MemoryCardSkeleton } from '../../../shared/components/ui';
+import MemoryCard from '../../vault/components/MemoryCard';
 
-const Dashboard = () => {
-  useSocket();
-  const location = useLocation();
-  const navigate = useNavigate();
+const CATEGORY_DOT = {
+  coding: '#7099e8',
+  deen:   '#b88cdb',
+  admin:  '#d4a84c',
+  life:   '#5ec98a',
+};
 
-  const { initSocketConnection, loadChats, loadMessageHistory, handleCreateChat, sendMessageToChat, initialState, handleDeleteChat } = useChat();
-  const { chats, messageHistory, loading, activeChatId } = useSelector((state) => state.chat);
+const CATEGORY_LABELS = {
+  coding: 'Coding',
+  deen:   'Deen',
+  admin:  'Admin',
+  life:   'Life',
+};
+
+function formatRelativeTime(dateString) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffSecs = Math.floor(diffMs / 1000);
+  const diffMins = Math.floor(diffSecs / 60);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffSecs < 60) return 'just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays === 1) return 'yesterday';
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+export default function Dashboard() {
   const { user } = useSelector((state) => state.auth);
-  const dispatch = useDispatch();
+  const { chats } = useSelector((state) => state.chat);
+  const { loadChats } = useChat();
 
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeNav, setActiveNav] = useState("");
-  const [category, setCategory] = useState();
-  const [inputValue, setInputValue] = useState("");
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
-  const [isSendingMessage, setIsSendingMessage] = useState(false);
-  const [showCategoryModal, setShowCategoryModal] = useState(false);
-  const [showChatsModal, setShowChatsModal] = useState(false);
+  const { data: statsData } = useGetStatsQuery();
+  const { data: memoriesData, isLoading: memoriesLoading } = useGetMemoriesQuery({ limit: 5 });
+
+  const stats = statsData || { coding: 0, deen: 0, admin: 0, life: 0, total: 0 };
+  const recentMemories = memoriesData?.memories || [];
+  const recentChats = chats.slice(0, 6);
 
   useEffect(() => {
-    initSocketConnection();
     loadChats();
   }, []);
 
-  useEffect(() => {
-    if (location.state?.prefillContent) {
-      setInputValue(location.state.prefillContent);
-      window.history.replaceState({}, document.title);
-    }
-    if (location.state?.activeNav) {
-      handleNavClick(location.state.activeNav);
-      window.history.replaceState({}, document.title);
-    }
-    if (location.state?.activeChatId && chats.length > 0) {
-      const chat = chats.find(c => c._id === location.state.activeChatId);
-      if (chat) {
-        handleChat(chat);
-      }
-      window.history.replaceState({}, document.title);
-    }
-  }, [location.state, chats]);
-
-  useEffect(() => {
-    const socket = getSocket();
-    const currentChatId = activeChatId;
-
-    return () => {
-      if (currentChatId && socket) {
-        socket.emit('chat:closed', { chatId: currentChatId });
-      }
-    };
-  }, [activeChatId]);
-
-  const handleChat = async (chat) => {
-    dispatch(setActiveChatId(chat._id));
-    setCategory(chat.category);
-    setIsLoadingHistory(true);
-    try {
-      await loadMessageHistory(chat._id);
-    } finally {
-      setIsLoadingHistory(false);
-    }
-  };
-
-  const handleNavClick = (id) => {
-    setActiveNav(id);
-    if (id === "new") {
-      setCategory(null);
-      setInputValue("");
-      initialState();
-      setShowChatsModal(false);
-    } else if (id === "chats") {
-      setActiveChatId(null);
-      setShowChatsModal(true);
-    } else if (id === "vault") {
-      navigate('/vault');
-    } else if (id === "search") {
-      // Implement search functionality here
-    } else {
-      // Handle other nav items if needed
-    }
-  };
-
-
-  const handleSend = async () => {
-    const message = inputValue.trim();
-    if (!message || !category) {
-      return showToast("error", "Please enter a message and select a category before sending.");
-    };
-    setIsSendingMessage(true);
-    try {
-      let currentChatId = activeChatId;
-      if (!activeChatId) {
-        const chat = await handleCreateChat(category, message);
-        currentChatId = chat.data._id;
-        dispatch(setActiveChatId(currentChatId));
-        await loadChats();
-      } else {
-        dispatch(incrementMessageCount({ chatId: activeChatId, amount: 2 }));
-        await sendMessageToChat(activeChatId, message);
-      }
-      if (currentChatId) {
-        await loadMessageHistory(currentChatId);
-      }
-      setInputValue("");
-    } catch (error) {
-      console.error("Error sending message:", error);
-    } finally {
-      setIsSendingMessage(false);
-    }
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey && !isSendingMessage) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
-  const handleCategorySelect = (selectedCategory) => {
-    setCategory(selectedCategory);
-    setShowCategoryModal(false);
-  };
-
-  const handleInput = (e) => {
-    setInputValue(e.target.value);
-  };
-
-  const handleDelete = async (chatId) => {
-    try {
-      await handleDeleteChat(chatId);
-    } catch (error) {
-      console.error("Delete chat failed:", error);
-    }
-  };
-
-  const handleStartChat = () => {
-    setActiveNav("new");
-    setCategory(null);
-    setInputValue("");
-    initialState();
-    setShowChatsModal(false);
-  };
-
-  const showDashboard = !activeChatId && activeNav !== "new";
+  const firstName = user?.name ? user.name.split(' ')[0] : 'there';
+  const hour = new Date().getHours();
+  const timeOfDay = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
 
   return (
-    <div
-      className={`flex h-screen overflow-hidden ${
-        showDashboard ? "bg-vault-parchment text-vault-charcoal" : "bg-vault-deep-dark text-vault-text-on-dark"
-      }`}
-      style={{ fontFamily: "var(--font-sans)" }}
-    >
+    <div className="px-6 lg:px-10 py-8 max-w-225 mx-auto animate-fade-in">
 
-      {/* ── Quick Capture Modal ── */}
-      <QuickCaptureModal />
+      {/* Page header */}
+      <div className="mb-8">
+        <SectionLabel>Dashboard</SectionLabel>
+        <h1 className="font-display text-32 text-cream mt-1">
+          Good {timeOfDay}, {firstName}.
+        </h1>
+      </div>
 
-      {/* ── Chats Modal ── */}
-      <ChatsModal
-        isOpen={showChatsModal}
-        onClose={() => setShowChatsModal(false)}
-        chats={chats}
-        onChatSelect={handleChat}
-        onNewChat={handleStartChat}
-        onChatDelete={handleDelete}
-      />
+      {/* Vault stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
+        {[
+          { cat: 'coding', label: 'Coding', count: stats.coding  },
+          { cat: 'deen',   label: 'Deen',   count: stats.deen    },
+          { cat: 'admin',  label: 'Admin',  count: stats.admin   },
+          { cat: 'life',   label: 'Life',   count: stats.life    },
+        ].map(({ cat, label, count }) => (
+          <Link
+            to={`/vault?category=${cat}`}
+            key={cat}
+            className="bg-ink border border-divide rounded-lg p-5
+              hover:border-ember/50 hover:shadow-card-hover
+              transition-all duration-200 group"
+          >
+            <p className="font-display text-32 text-cream group-hover:text-ember
+              transition-colors duration-200">
+              {count ?? '—'}
+            </p>
+            <p
+              className="font-sans text-12 font-medium uppercase tracking-[0.6px] mt-1"
+              style={{ color: CATEGORY_DOT[cat] }}
+            >
+              {label}
+            </p>
+          </Link>
+        ))}
+      </div>
 
-      {/* ── Category Modal ── */}
-      <CategoryModal
-        isOpen={showCategoryModal}
-        onClose={() => setShowCategoryModal(false)}
-        selectedCategory={category}
-        onSelectCategory={handleCategorySelect}
-      />
+      {/* Two-column lower section */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8">
 
-      {/* ── Sidebar Toggle (Mobile backdrop & Desktop button) ── */}
-      <SidebarToggle
-        sidebarOpen={sidebarOpen}
-        onOpenSidebar={() => setSidebarOpen(true)}
-        onCloseSidebar={() => setSidebarOpen(false)}
-      />
-
-      {/* SIDEBAR */}
-      <ChatSidebar
-        sidebarOpen={sidebarOpen}
-        onCloseSidebar={() => setSidebarOpen(false)}
-        onNavClick={handleNavClick}
-        chats={chats}
-        onChatSelect={handleChat}
-        activeNav={activeNav}
-        user={user}
-        onChatDelete={handleDelete}
-      />
-
-      {/* MAIN CONTENT */}
-      <main className={`flex-1 flex flex-col min-w-0 relative ${
-        showDashboard ? "bg-vault-parchment overflow-y-auto" : "bg-vault-deep-dark"
-      }`}>
-        {showDashboard ? (
-          <DashboardView onStartChat={handleStartChat} />
-        ) : (
-          <>
-            {/* ── Top Bar ── */}
-            <ChatTopBar
-              sidebarOpen={sidebarOpen}
-              onOpenSidebar={() => setSidebarOpen(true)}
-              activeChatId={activeChatId}
-              messageHistory={messageHistory}
-              chats={chats}
-            />
-
-            {/* ── Context Pills (feature-flagged) ── */}
-            {import.meta.env.VITE_ENABLE_CONTEXT_PILLS === 'true' && (
-              <ContextPillsBar />
-            )}
-
-            {/* ── Chat Messages Area ── */}
-            <div className="flex-1 overflow-y-auto">
-              <div className="flex flex-col gap-6 px-6 py-6 max-w-4xl mx-auto h-full">
-                <ChatMessages
-                  isLoadingHistory={isLoadingHistory}
-                  activeChatId={activeChatId}
-                  messageHistory={messageHistory}
-                  user={user}
-                />
-              </div>
+        {/* Recent memories */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-display text-20 text-cream">Recent Memories</h2>
+            <Link to="/vault" className="font-sans text-13 text-ember hover:underline">
+              View all →
+            </Link>
+          </div>
+          {memoriesLoading ? (
+            <div className="space-y-2">
+              {[...Array(4)].map((_, i) => <MemoryCardSkeleton key={i} />)}
             </div>
-
-            {/* ── Message Composer ── */}
-            <MessageComposer
-              inputValue={inputValue}
-              onInputChange={handleInput}
-              onKeyDown={handleKeyDown}
-              onSend={handleSend}
-              isSendingMessage={isSendingMessage}
-              category={category}
-              onShowCategoryModal={() => setShowCategoryModal(true)}
-              hasMessages={messageHistory.length > 0}
-            />
-
-            {/* ── Bottom Bar ── */}
-            <div className="px-4 pb-3 flex items-center justify-center">
-              <p className="text-vault-stone" style={{ fontSize: "11.5px" }}>
-                MindVault can make mistakes. Verify important info.
+          ) : recentMemories.length === 0 ? (
+            <div className="text-center py-12 border border-dashed border-divide rounded-xl">
+              <span className="text-3xl select-none">🧠</span>
+              <h3 className="font-display text-18 text-cream mt-3 mb-1">Vault is empty</h3>
+              <p className="font-sans text-13 text-smoke">
+                Close your first chat to start building memories.
               </p>
             </div>
-          </>
-        )}
-      </main>
+          ) : (
+            <div className="space-y-2">
+              {recentMemories.map(m => (
+                <MemoryCard key={m._id} memory={m} compact />
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Recent chats */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-display text-20 text-cream">Recent Chats</h2>
+            <Link to="/chats/new" className="font-sans text-13 text-ember hover:underline">
+              New +
+            </Link>
+          </div>
+          <div className="space-y-1.5">
+            {recentChats.length === 0 ? (
+              <p className="font-sans text-13 text-smoke italic py-3">No chats yet.</p>
+            ) : (
+              recentChats.map(chat => (
+                <Link
+                  to={`/chats/${chat._id}`}
+                  key={chat._id}
+                  className="flex items-start gap-3 p-3 rounded-lg border border-divide
+                    bg-ink hover:border-ember/40 hover:shadow-card
+                    transition-all duration-200"
+                >
+                  <div
+                    className="w-2 h-2 rounded-full mt-1.25 shrink-0"
+                    style={{ backgroundColor: CATEGORY_DOT[chat.category] || '#524f4a' }}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-sans text-13 font-medium text-cream truncate">
+                      {chat.title || 'New conversation'}
+                    </p>
+                    <p className="font-mono text-11 text-smoke mt-0.5 capitalize">
+                      {CATEGORY_LABELS[chat.category] || chat.category} · {formatRelativeTime(chat.updatedAt)}
+                    </p>
+                  </div>
+                </Link>
+              ))
+            )}
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
-
-export default Dashboard

@@ -3,39 +3,18 @@ import { useDispatch } from 'react-redux';
 import { Code, BookOpen, Briefcase, Heart } from 'lucide-react';
 import { setFilters } from '../vaultSlice';
 
+const CATEGORY_DOT = {
+  coding: '#7099e8',
+  deen:   '#b88cdb',
+  admin:  '#d4a84c',
+  life:   '#5ec98a',
+};
+
 const CATEGORIES = [
-  {
-    id: 'coding',
-    label: 'Coding',
-    icon: Code,
-    textColor: 'text-vault-terracotta',
-    iconColor: 'text-vault-terracotta',
-    bgColor: 'bg-vault-terracotta/5',
-  },
-  {
-    id: 'deen',
-    label: 'Deen',
-    icon: BookOpen,
-    textColor: 'text-vault-olive',
-    iconColor: 'text-vault-olive',
-    bgColor: 'bg-vault-olive/5',
-  },
-  {
-    id: 'admin',
-    label: 'Admin',
-    icon: Briefcase,
-    textColor: 'text-vault-stone',
-    iconColor: 'text-vault-stone',
-    bgColor: 'bg-vault-stone/5',
-  },
-  {
-    id: 'life',
-    label: 'Life',
-    icon: Heart,
-    textColor: 'text-vault-coral',
-    iconColor: 'text-vault-coral',
-    bgColor: 'bg-vault-coral/5',
-  },
+  { id: 'coding', label: 'Coding', icon: Code    },
+  { id: 'deen',   label: 'Deen',   icon: BookOpen },
+  { id: 'admin',  label: 'Admin',  icon: Briefcase},
+  { id: 'life',   label: 'Life',   icon: Heart    },
 ];
 
 const VaultStats = ({ stats = {} }) => {
@@ -57,20 +36,21 @@ const VaultStats = ({ stats = {} }) => {
           <button
             key={cat.id}
             onClick={() => handleCardClick(cat.id)}
-            className="flex flex-col items-start p-5 bg-vault-ivory border border-vault-border-cream rounded-xl text-left hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 group w-full"
+            className="flex flex-col items-start p-5 bg-ink border border-divide
+              rounded-xl text-left hover:border-ember/50 hover:shadow-card-hover
+              transition-all duration-200 hover:-translate-y-0.5 group w-full cursor-pointer"
           >
-            <div className={`p-2 rounded-lg ${cat.bgColor} mb-3 transition-colors duration-200 group-hover:bg-opacity-80`}>
-              <IconComponent size={20} className={cat.iconColor} />
+            <div className="p-2 rounded-lg bg-dusk mb-3 transition-colors duration-200
+              group-hover:bg-fade">
+              <IconComponent size={20} style={{ color: CATEGORY_DOT[cat.id] }} />
             </div>
-            <span
-              className="text-vault-black text-[32px] font-medium leading-none mb-1 font-serif select-none"
-              style={{ fontFamily: 'var(--font-serif)' }}
-            >
+            <span className="font-display text-32 text-cream leading-none mb-1 select-none
+              group-hover:text-ember transition-colors duration-200">
               {count}
             </span>
             <span
-              className={`text-[12px] font-medium tracking-wider uppercase ${cat.textColor}`}
-              style={{ fontFamily: 'var(--font-sans)' }}
+              className="font-sans text-12 font-medium tracking-wider uppercase"
+              style={{ color: CATEGORY_DOT[cat.id] }}
             >
               {cat.label}
             </span>

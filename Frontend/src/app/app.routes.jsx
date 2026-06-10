@@ -6,39 +6,69 @@ import Signup from "../features/auth/pages/Signup";
 import VerifyEmail from "../features/auth/pages/VerifyEmail";
 import VerifySuccess from "../features/auth/pages/VerifySuccess";
 import Dashboard from "../features/chat/pages/Dashboard";
+import ChatPage from "../features/chat/pages/ChatPage";
 import VaultPage from "../features/vault/components/VaultPage";
 import DigestArchivePage from "../features/digest/pages/DigestArchivePage";
+import { AppLayout } from "../shared/components/layout/AppLayout";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Protected>
-      <Dashboard />
-    </Protected>
-  }, {
+    element: (
+      <Protected>
+        <AppLayout>
+          <Dashboard />
+        </AppLayout>
+      </Protected>
+    )
+  },
+  {
+    path: "/chats/:id",
+    element: (
+      <Protected>
+        <AppLayout>
+          <ChatPage />
+        </AppLayout>
+      </Protected>
+    )
+  },
+  {
     path: "/vault",
-    element: <Protected>
-      <VaultPage />
-    </Protected>
-  }, {
+    element: (
+      <Protected>
+        <AppLayout>
+          <VaultPage />
+        </AppLayout>
+      </Protected>
+    )
+  },
+  {
     path: "/digests",
-    element: <Protected>
-      <DigestArchivePage />
-    </Protected>
-  }, {
+    element: (
+      <Protected>
+        <AppLayout>
+          <DigestArchivePage />
+        </AppLayout>
+      </Protected>
+    )
+  },
+  {
     path: "/login",
     element: <Login />,
   },
- {
+  {
     path: "/signup",
     element: <Signup />,
-  }, {
+  },
+  {
     path: "/verify-email",
     element: <VerifyEmail />,
-  }, {
+  },
+  {
     path: "/verify-success",
     element: <VerifySuccess />,
-  }, {
+  },
+  {
     path: "/already-verified",
     element: <AlreadyVerified />,
   }

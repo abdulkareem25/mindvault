@@ -1,24 +1,10 @@
+import { ChevronDown, ChevronRight, X } from 'lucide-react';
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { ChevronRight, ChevronDown, Info, X } from 'lucide-react';
+import { CategoryBadge } from '../../../shared/components/ui';
 import { removePill } from '../chat.slice';
 
-const CATEGORY_COLORS = {
-  coding: { bg: 'bg-vault-terracotta/20', text: 'text-vault-terracotta', border: 'border-vault-terracotta/30' },
-  deen: { bg: 'bg-vault-olive/20', text: 'text-vault-olive', border: 'border-vault-olive/30' },
-  admin: { bg: 'bg-vault-stone/20', text: 'text-vault-stone', border: 'border-vault-stone/30' },
-  life: { bg: 'bg-vault-warm-silver/20', text: 'text-vault-warm-silver', border: 'border-vault-warm-silver/30' },
-};
-
-const TYPE_COLORS = {
-  decision: 'bg-vault-focus/15 text-vault-focus border-vault-focus/20',
-  preference: 'bg-vault-coral/15 text-vault-coral border-vault-coral/20',
-  learning: 'bg-green-600/15 text-green-600 border-green-600/20',
-  goal: 'bg-vault-terracotta/15 text-vault-terracotta border-vault-terracotta/20',
-  fact: 'bg-vault-stone/15 text-vault-stone border-vault-stone/20',
-};
-
-const ContextPillsBar = () => {
+export default function ContextPillsBar() {
   const dispatch = useDispatch();
   const [expanded, setExpanded] = useState(false);
 
@@ -30,86 +16,72 @@ const ContextPillsBar = () => {
 
   if (!activeChatId || visibleMemories.length === 0) return null;
 
-  const toggleExpanded = () => setExpanded((prev) => !prev);
-
   const handleRemove = (memoryId) => {
     dispatch(removePill({ chatId: activeChatId, memoryId }));
   };
 
-  const truncate = (text, max = 60) =>
-    text.length > max ? text.slice(0, max) + '…' : text;
+  const handleClearAll = () => {
+    visibleMemories.forEach(m => {
+      dispatch(removePill({ chatId: activeChatId, memoryId: m._id }));
+    });
+  };
+
+  const truncate = (text, max = 50) =>
+    text.length > max ? text.slice(0, max) + '...' : text;
 
   return (
-    <div className="border-b border-vault-border-subtle-dark bg-vault-dark-surface-2/20 px-6">
-      {/* Collapsed / Header row */}
-      <button
-        onClick={toggleExpanded}
-        className="flex items-center gap-1.5 py-2 w-full text-left group"
-      >
-        {expanded ? (
-          <ChevronDown size={13} className="text-vault-stone" />
-        ) : (
-          <ChevronRight size={13} className="text-vault-stone" />
-        )}
-        <span
-          className="text-vault-stone group-hover:text-vault-text-on-dark-soft transition-colors"
-          style={{ fontSize: '13px', fontFamily: 'var(--font-sans)' }}
+    <div className="border-b border-divide bg-obsidian shrink-0">
+      {/* Collapsed State Header */}
+      <div className="h-9 px-4 flex items-center justify-between select-none">
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="flex items-center gap-2 font-sans text-13 font-medium text-ember
+            hover:opacity-80 transition-opacity cursor-pointer"
         >
-          {visibleMemories.length} {visibleMemories.length === 1 ? 'memory' : 'memories'} loaded
-        </span>
-        <Info
-          size={12}
-          className="text-vault-stone/60 ml-0.5"
-          title="These memories were injected as context for the AI"
-        />
-      </button>
+          <span>⚡</span>
+          <span>{visibleMemories.length} memories loaded</span>
+          {expanded
+            ? <ChevronDown className="w-3.5 h-3.5" />
+            : <ChevronRight className="w-3.5 h-3.5" />}
+        </button>
 
-      {/* Expanded pills list */}
+        {expanded && (
+          <button
+            onClick={handleClearAll}
+            className="font-sans text-12 text-smoke hover:text-danger
+              transition-colors cursor-pointer"
+          >
+            Remove all context
+          </button>
+        )}
+      </div>
+
+      {/* Expanded State Pills Grid */}
       {expanded && (
-        <div className="pb-3 space-y-1.5">
-          {visibleMemories.map((memory) => {
-            const cat = CATEGORY_COLORS[memory.category] || CATEGORY_COLORS.life;
-            const typeCls = TYPE_COLORS[memory.type] || TYPE_COLORS.fact;
-
-            return (
-              <div
-                key={memory._id}
-                className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-vault-dark-surface-3/40 transition-colors group/pill"
+        <div className="px-4 pb-4 pt-1 flex flex-wrap gap-2 animate-fade-up">
+          {visibleMemories.map((memory) => (
+            <div
+              key={memory._id}
+              className="flex items-center gap-2 bg-ink border border-divide
+                rounded-full pl-2 pr-3 py-1 text-12"
+            >
+              <CategoryBadge category={memory.category} size="sm" />
+              <span className="font-sans text-mist font-normal leading-none
+                max-w-62.5 truncate text-13">
+                {truncate(memory.content)}
+              </span>
+              <button
+                onClick={() => handleRemove(memory._id)}
+                className="text-smoke hover:text-danger transition-colors
+                  p-0.5 rounded cursor-pointer"
+                title="Remove from context"
               >
-                {/* Category badge */}
-                <span
-                  className={`shrink-0 px-2 py-0.5 text-[11px] font-medium rounded-md border ${cat.bg} ${cat.text} ${cat.border} capitalize`}
-                >
-                  {memory.category}
-                </span>
-
-                {/* Type badge */}
-                <span
-                  className={`shrink-0 px-2 py-0.5 text-[11px] font-medium rounded-md border capitalize ${typeCls}`}
-                >
-                  {memory.type}
-                </span>
-
-                {/* Content */}
-                <span className="flex-1 text-[13px] text-vault-text-on-dark-soft truncate">
-                  &ldquo;{truncate(memory.content)}&rdquo;
-                </span>
-
-                {/* Remove button */}
-                <button
-                  onClick={() => handleRemove(memory._id)}
-                  title="Remove from AI context for this conversation only"
-                  className="shrink-0 p-0.5 rounded text-vault-stone/50 hover:text-vault-error hover:bg-vault-error/10 opacity-0 group-hover/pill:opacity-100 transition-all"
-                >
-                  <X size={13} />
-                </button>
-              </div>
-            );
-          })}
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          ))}
         </div>
       )}
     </div>
   );
-};
-
-export default ContextPillsBar;
+}

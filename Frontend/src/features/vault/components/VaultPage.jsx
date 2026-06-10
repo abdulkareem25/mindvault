@@ -1,140 +1,182 @@
-import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import ChatSidebar from '../../chat/components/ChatSidebar';
-import SidebarToggle from '../../chat/components/SidebarToggle';
-import QuickCaptureModal from '../../capture/QuickCaptureModal';
-import VaultSearchBar from './VaultSearchBar';
-import VaultFilters from './VaultFilters';
-import MemoryGrid from './MemoryGrid';
-import { useChat } from '../../chat/hooks/useChat';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Plus, Database, Search } from 'lucide-react';
+import { Button, SectionLabel, MemoryCardSkeleton } from '../../../shared/components/ui';
+import { openModal } from '../../capture/captureSlice';
 import { useGetMemoriesQuery, useSearchMemoriesQuery } from '../vaultApi';
 import { setFilters, setSearchQuery } from '../vaultSlice';
+import VaultSearchBar from './VaultSearchBar';
+import VaultFilters from './VaultFilters';
+import MemoryCard from './MemoryCard';
+import { useEffect } from 'react';
 
-const VaultPage = () => {
+export default function VaultPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const location = useLocation();
 
-  // Chat/Sidebar state
-  const { loadChats, initialState, handleDeleteChat } = useChat();
-  const { chats } = useSelector((state) => state.chat);
-  const { user } = useSelector((state) => state.auth);
+  const queryParams = new URLSearchParams(location.search);
+  const urlCategory = queryParams.get('category');
 
-  // Vault state
   const searchQuery = useSelector((state) => state.vault.searchQuery);
   const activeFilters = useSelector((state) => state.vault.activeFilters);
 
   useEffect(() => {
-    loadChats();
-  }, []);
-
-  const handleNavClick = (id) => {
-    if (id === 'new') {
-      initialState();
-      navigate('/', { state: { activeNav: 'new' } });
-    } else if (id === 'chats') {
-      navigate('/', { state: { activeNav: 'chats' } });
-    } else if (id === 'vault') {
-      handleClearFilters();
+    if (urlCategory) {
+      dispatch(setFilters({ ...activeFilters, category: urlCategory }));
     }
+  }, [urlCategory]);
+
+  const activeCategory = activeFilters.category;
+  const activeType = activeFilters.type;
+
+  const handleCategoryChange = (cat) => {
+    dispatch(setFilters({ ...activeFilters, category: cat }));
+    if (cat === 'all') navigate('/vault');
+    else navigate(`/vault?category=${cat}`);
+  };
+
+  const handleTypeChange = (t) => {
+    dispatch(setFilters({ ...activeFilters, type: t }));
+  };
+
+  const handleSearchChange = (q) => {
+    dispatch(setSearchQuery(q));
   };
 
   const handleClearFilters = () => {
     dispatch(setSearchQuery(''));
     dispatch(setFilters({ category: 'all', type: 'all', isArchived: false }));
+    navigate('/vault');
   };
 
-  // Fetch queries
   const getMemoriesArgs = {
-    category: activeFilters.category,
-    type: activeFilters.type,
+    category: activeCategory,
+    type: activeType,
     isArchived: activeFilters.isArchived,
   };
 
   const searchMemoriesArgs = {
     q: searchQuery,
-    category: activeFilters.category,
-    type: activeFilters.type,
+    category: activeCategory,
+    type: activeType,
     isArchived: activeFilters.isArchived,
   };
 
-  const {
-    data: browseData,
-    isLoading: isBrowseLoading,
-    error: browseError,
-  } = useGetMemoriesQuery(getMemoriesArgs, { skip: !!searchQuery });
+  const { data: browseData, isLoading: isBrowseLoading } =
+    useGetMemoriesQuery(getMemoriesArgs, { skip: !!searchQuery });
 
-  const {
-    data: searchData,
-    isLoading: isSearchLoading,
-    error: searchError,
-  } = useSearchMemoriesQuery(searchMemoriesArgs, { skip: !searchQuery });
+  const { data: searchData, isLoading: isSearchLoading } =
+    useSearchMemoriesQuery(searchMemoriesArgs, { skip: !searchQuery });
 
   const memories = searchQuery ? searchData : browseData?.memories;
   const isLoading = searchQuery ? isSearchLoading : isBrowseLoading;
-  const error = searchQuery ? searchError : browseError;
+  const resultCount = searchQuery ? (searchData?.length || 0) : null;
+
+  const hasActiveFilters =
+    searchQuery !== '' || activeCategory !== 'all' || activeType !== 'all';
+
+  const newMemoryIds = useSelector((state) => state.vault.newMemoryIds) || [];
 
   return (
-    <div
-      className="flex h-screen overflow-hidden bg-vault-parchment"
-      style={{ fontFamily: 'var(--font-sans)', color: 'var(--color-vault-charcoal)' }}
-    >
-      <QuickCaptureModal />
+    <div className="px-6 lg:px-10 py-8 max-w-225 mx-auto animate-fade-in">
 
-      <SidebarToggle
-        sidebarOpen={sidebarOpen}
-        onOpenSidebar={() => setSidebarOpen(true)}
-        onCloseSidebar={() => setSidebarOpen(false)}
-      />
-
-      <ChatSidebar
-        sidebarOpen={sidebarOpen}
-        onCloseSidebar={() => setSidebarOpen(false)}
-        onNavClick={handleNavClick}
-        chats={chats}
-        onChatSelect={(chat) => {
-          navigate('/', { state: { activeChatId: chat._id } });
-        }}
-        activeNav="vault"
-        user={user}
-        onChatDelete={handleDeleteChat}
-      />
-
-      {/* Main View Sheet */}
-      <main className="flex-1 flex flex-col min-w-0 bg-vault-parchment overflow-y-auto px-6 md:px-12 py-8 relative text-left">
-        <div className="max-w-6xl w-full mx-auto space-y-6">
-          
-          {/* Header */}
-          <div className="text-left">
-            <span className="text-[11px] font-bold text-vault-terracotta uppercase tracking-wider block font-sans">
-              Knowledge Vault
-            </span>
-            <h1 className="text-[32px] font-medium text-vault-black mt-1" style={{ fontFamily: 'var(--font-serif)' }}>
-              Your Vault
-            </h1>
-          </div>
-
-          {/* Search bar and Filters */}
-          <div className="bg-vault-surface border border-vault-border-cream rounded-2xl p-5 md:p-6 space-y-4 shadow-whisper">
-            <VaultSearchBar />
-            <VaultFilters />
-          </div>
-
-          {/* Memory Grid */}
-          <div className="pt-2">
-            <MemoryGrid
-              memories={memories}
-              isLoading={isLoading}
-              error={error}
-              onClearFilters={handleClearFilters}
-            />
-          </div>
-
+      {/* Page heading */}
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <SectionLabel>Knowledge Vault</SectionLabel>
+          <h1 className="font-display text-32 text-cream mt-1">Your Vault</h1>
         </div>
-      </main>
+        <Button
+          variant="secondary"
+          size="sm"
+          icon={<Plus className="w-3.5 h-3.5" />}
+          onClick={() => dispatch(openModal())}
+        >
+          Quick capture
+        </Button>
+      </div>
+
+      {/* Search bar */}
+      <VaultSearchBar
+        value={searchQuery}
+        onChange={handleSearchChange}
+        isSearching={isLoading && !!searchQuery}
+        resultCount={resultCount}
+      />
+
+      {/* Filters */}
+      <VaultFilters
+        activeCategory={activeCategory}
+        activeType={activeType}
+        onCategoryChange={handleCategoryChange}
+        onTypeChange={handleTypeChange}
+        className="mt-4 mb-6"
+      />
+
+      {/* Memory grid */}
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <MemoryCardSkeleton key={i} />
+          ))}
+        </div>
+      ) : !memories || memories.length === 0 ? (
+        <VaultEmptyState
+          hasActiveFilters={hasActiveFilters}
+          onClearFilters={handleClearFilters}
+          onNewChat={() => navigate('/chats/new')}
+        />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {memories.map((m) => (
+            <MemoryCard
+              key={m._id}
+              memory={m}
+              isNew={newMemoryIds.includes(m._id)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
-};
+}
 
-export default VaultPage;
+function VaultEmptyState({ hasActiveFilters, onClearFilters, onNewChat }) {
+  if (hasActiveFilters) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center
+        border border-dashed border-divide rounded-xl bg-ink p-6 max-w-lg mx-auto">
+        <Search className="w-10 h-10 text-smoke mb-4" />
+        <h3 className="font-display text-20 text-cream mb-2">
+          No memories match
+        </h3>
+        <p className="font-sans text-14 text-smoke mb-6">
+          Try different wording, or browse all memories.
+        </p>
+        <button
+          onClick={onClearFilters}
+          className="font-sans text-14 text-ember hover:underline cursor-pointer font-medium"
+        >
+          Clear search & filters
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-center
+      border border-dashed border-divide rounded-xl bg-ink p-6 max-w-lg mx-auto">
+      <Database className="w-12 h-12 text-smoke mb-4" />
+      <h3 className="font-display text-24 text-cream mb-2">
+        Your vault is empty
+      </h3>
+      <p className="font-sans text-14 text-smoke mb-6 leading-relaxed max-w-sm">
+        Start a conversation in any category. After you close it, the key things you decided and learned will appear here automatically.
+      </p>
+      <Button variant="primary" size="md" onClick={onNewChat}>
+        Start your first chat
+      </Button>
+    </div>
+  );
+}

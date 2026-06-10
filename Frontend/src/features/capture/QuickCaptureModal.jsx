@@ -1,7 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { X, Loader2, ChevronDown, ArrowRight, MessageSquare } from 'lucide-react';
 import { showToast } from '../shared/components/Toast';
 import { useCreateMemoryMutation } from '../vault/vaultApi';
 import {
@@ -14,6 +13,7 @@ import {
   overrideType,
 } from './captureSlice';
 import { API_BASE_URL } from '../../constants';
+import { Modal, Button, CategoryBadge, TypeBadge } from '../../shared/components/ui';
 
 const CATEGORIES = ['coding', 'deen', 'admin', 'life'];
 const MEMORY_TYPES = ['decision', 'preference', 'learning', 'goal', 'fact'];
@@ -36,7 +36,6 @@ const TYPE_LABELS = {
 const QuickCaptureModal = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const textareaRef = useRef(null);
   const debounceRef = useRef(null);
 
   const { isOpen, content, classification, isClassifying, isSaving } = useSelector(
@@ -54,25 +53,6 @@ const QuickCaptureModal = () => {
       setLocalType(classification.type);
     }
   }, [isOpen, classification]);
-
-  useEffect(() => {
-    if (isOpen && textareaRef.current) {
-      textareaRef.current.focus();
-    }
-  }, [isOpen]);
-
-  const handleClose = useCallback(() => {
-    dispatch(closeModal());
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') handleClose();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, handleClose]);
 
   const classifyContent = useCallback(
     async (text) => {
@@ -112,7 +92,7 @@ const QuickCaptureModal = () => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       classifyContent(value);
-    }, 1000);
+    }, 800);
   };
 
   useEffect(() => {
@@ -132,7 +112,7 @@ const QuickCaptureModal = () => {
         tags: classification?.tags || [],
         source: 'quick_capture',
       }).unwrap();
-      
+
       if (result && result.merged) {
         showToast('success', 'This memory already exists');
       } else {
@@ -141,163 +121,127 @@ const QuickCaptureModal = () => {
       dispatch(closeModal());
     } catch {
       showToast('error', 'Failed to save memory. Please try again.');
+    } finally {
       dispatch(setIsSaving(false));
     }
   };
 
   const handleExpandToChat = () => {
     dispatch(closeModal());
-    navigate('/', { state: { prefillContent: content } });
+    navigate('/chats/new', { state: { prefillContent: content } });
   };
-
-  const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) handleClose();
-  };
-
-  if (!isOpen) return null;
 
   return (
-    <>
-      <div
-        className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
-        onClick={handleBackdropClick}
-      />
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="bg-vault-dark-surface border border-vault-border-dark rounded-2xl shadow-lg w-full max-w-120 overflow-hidden">
-          {/* Header */}
-          <div className="px-5 py-4 border-b border-vault-border-subtle-dark flex items-center justify-between">
-            <h2 className="text-vault-text-on-dark font-medium text-base">
-              CAPTURE A THOUGHT
-            </h2>
-            <button
-              onClick={handleClose}
-              className="p-1 rounded-lg text-vault-stone hover:text-vault-text-on-dark hover:bg-vault-dark-surface-2 transition-colors"
-            >
-              <X size={18} />
-            </button>
+    <Modal isOpen={isOpen} onClose={() => dispatch(closeModal())} size="sm">
+      <div className="-mx-6 -mt-6">
+        {/* Section 1: Text input */}
+        <div className="px-5 pt-5 pb-4 text-left">
+          <p className="font-sans text-12 font-medium uppercase tracking-[0.8px] text-ember mb-3">
+            Capture a Thought
+          </p>
+          <textarea
+            value={content}
+            onChange={handleContentChange}
+            placeholder="What do you want to remember?"
+            autoFocus
+            rows={3}
+            className="w-full font-sans text-15 text-cream bg-transparent
+              placeholder:text-smoke resize-none outline-none leading-relaxed min-h-20"
+          />
+        </div>
+
+        {/* Section 2: Classification */}
+        <div className="px-5 py-3.5 bg-ink border-y border-divide text-left">
+          <div className="flex items-center justify-between mb-2.5">
+            <span className="font-mono text-11 text-smoke uppercase tracking-wider">
+              AI Classification
+            </span>
+            {isClassifying && (
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 border-2 border-smoke border-t-transparent rounded-full animate-spin" />
+                <span className="font-mono text-11 text-smoke">Classifying...</span>
+              </div>
+            )}
           </div>
-
-          {/* Body */}
-          <div className="p-5">
-            {/* Textarea */}
-            <textarea
-              ref={textareaRef}
-              value={content}
-              onChange={handleContentChange}
-              placeholder="What do you want to remember?"
-              rows={4}
-              className="w-full bg-transparent border-none outline-none resize-none text-vault-text-on-dark placeholder-vault-stone text-[15px] leading-relaxed focus:ring-0 p-0"
-            />
-
-            {/* Classification Section */}
-            <div className="mt-4 pt-4 border-t border-vault-border-subtle-dark">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-xs tracking-wider text-vault-stone uppercase font-medium">
-                  AI Classification
-                </span>
-                {isClassifying && (
-                  <Loader2 size={14} className="text-vault-terracotta animate-spin" />
-                )}
+          {classification && (
+            <div className="flex flex-wrap gap-2 animate-fade-up">
+              {/* Category Override Select */}
+              <div className="relative">
+                <select
+                  value={localCategory}
+                  onChange={(e) => {
+                    setLocalCategory(e.target.value);
+                    dispatch(overrideCategory(e.target.value));
+                  }}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                >
+                  {CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {CATEGORY_LABELS[cat] || cat}
+                    </option>
+                  ))}
+                </select>
+                <CategoryBadge category={localCategory} />
               </div>
 
-              {classification ? (
-                <div className="flex gap-2">
-                  {/* Category Dropdown */}
-                  <div className="relative flex-1">
-                    <select
-                      value={localCategory}
-                      onChange={(e) => {
-                        setLocalCategory(e.target.value);
-                        dispatch(overrideCategory(e.target.value));
-                      }}
-                      className="w-full appearance-none bg-vault-dark-surface-2 border border-vault-border-dark rounded-lg px-3 py-2 pr-8 text-sm text-vault-text-on-dark cursor-pointer hover:border-vault-border-dark-strong transition-colors"
-                    >
-                      {CATEGORIES.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {CATEGORY_LABELS[cat]}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown
-                      size={14}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-vault-stone pointer-events-none"
-                    />
-                  </div>
-
-                  {/* Type Dropdown */}
-                  <div className="relative flex-1">
-                    <select
-                      value={localType}
-                      onChange={(e) => {
-                        setLocalType(e.target.value);
-                        dispatch(overrideType(e.target.value));
-                      }}
-                      className="w-full appearance-none bg-vault-dark-surface-2 border border-vault-border-dark rounded-lg px-3 py-2 pr-8 text-sm text-vault-text-on-dark cursor-pointer hover:border-vault-border-dark-strong transition-colors"
-                    >
-                      {MEMORY_TYPES.map((t) => (
-                        <option key={t} value={t}>
-                          {TYPE_LABELS[t]}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown
-                      size={14}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-vault-stone pointer-events-none"
-                    />
-                  </div>
-                </div>
-              ) : (
-                !isClassifying && (
-                  <p className="text-xs text-vault-stone italic">
-                    Start typing to auto-classify...
-                  </p>
-                )
-              )}
-
-              {/* Tags */}
-              {classification?.tags?.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-3">
-                  {classification.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-2 py-0.5 text-xs rounded-full bg-vault-dark-surface-3 text-vault-text-on-dark-soft border border-vault-border-dark"
-                    >
-                      #{tag}
-                    </span>
+              {/* Type Override Select */}
+              <div className="relative">
+                <select
+                  value={localType}
+                  onChange={(e) => {
+                    setLocalType(e.target.value);
+                    dispatch(overrideType(e.target.value));
+                  }}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                >
+                  {MEMORY_TYPES.map((t) => (
+                    <option key={t} value={t}>
+                      {TYPE_LABELS[t] || t}
+                    </option>
                   ))}
-                </div>
-              )}
-            </div>
-          </div>
+                </select>
+                <TypeBadge type={localType} />
+              </div>
 
-          {/* Footer */}
-          <div className="px-5 py-4 border-t border-vault-border-subtle-dark flex items-center justify-between gap-3">
-            <button
-              onClick={handleExpandToChat}
-              disabled={!content.trim()}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-vault-border-dark text-vault-text-on-dark-soft hover:bg-vault-dark-surface-2 hover:text-vault-text-on-dark transition-all duration-150 text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <MessageSquare size={14} />
-              Expand to Chat
-            </button>
-            <button
-              onClick={handleVaultIt}
-              disabled={!content.trim() || isSaving}
-              className="flex items-center gap-2 px-5 py-2 rounded-lg bg-vault-terracotta text-vault-ivory font-semibold text-sm hover:bg-vault-coral transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {isSaving ? (
-                <Loader2 size={14} className="animate-spin" />
-              ) : (
-                <>
-                  Vault it
-                  <ArrowRight size={14} />
-                </>
-              )}
-            </button>
-          </div>
+              {classification.tags?.map((tag) => (
+                <span
+                  key={tag}
+                  className="font-mono text-11 text-smoke bg-dusk border border-divide px-2 py-0.5 rounded-full"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
+          {!classification && !isClassifying && (
+            <p className="font-sans text-13 text-smoke italic">
+              Start typing to auto-classify...
+            </p>
+          )}
+        </div>
+
+        {/* Section 3: Actions */}
+        <div className="flex items-center justify-between px-5 py-3.5 bg-dusk rounded-b-xl">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleExpandToChat}
+            disabled={!content.trim()}
+          >
+            Expand to chat →
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
+            loading={isSaving}
+            disabled={!content.trim() || isSaving}
+            onClick={handleVaultIt}
+          >
+            Vault it →
+          </Button>
         </div>
       </div>
-    </>
+    </Modal>
   );
 };
 

@@ -1,10 +1,4 @@
-const CATEGORIES = [
-  "coding",
-  "deen",
-  "admin",
-  "life",
-  "global"
-];
+const CATEGORIES = ['coding', 'deen', 'admin', 'life', 'global'];
 
 const CategoryModal = ({ isOpen, onClose, selectedCategory, onSelectCategory }) => {
   if (!isOpen) return null;
@@ -13,29 +7,23 @@ const CategoryModal = ({ isOpen, onClose, selectedCategory, onSelectCategory }) 
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 z-40 bg-void/70 backdrop-blur-sm animate-fade-in"
         onClick={onClose}
       />
 
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="
-          bg-vault-dark-surface
-          border border-vault-border-dark
-          rounded-2xl
-          shadow-lg
-          w-full max-w-xs
-          overflow-hidden
-          animate-in fade-in zoom-in duration-200
-        ">
+        <div className="bg-dusk border border-divide rounded-xl shadow-modal
+          w-full max-w-xs overflow-hidden animate-fade-up">
+
           {/* Modal Header */}
-          <div className="px-6 py-4 border-b border-vault-border-subtle-dark text-center">
-            <h2 className="text-vault-text-on-dark font-medium text-lg">
+          <div className="px-6 py-4 border-b border-divide text-center">
+            <h2 className="font-display text-20 text-cream">
               Select Category
             </h2>
           </div>
 
-          {/* Modal Body - Categories Grid */}
+          {/* Modal Body */}
           <div className="p-4 space-y-2">
             {CATEGORIES.map((cat) => (
               <button
@@ -43,16 +31,15 @@ const CategoryModal = ({ isOpen, onClose, selectedCategory, onSelectCategory }) 
                 onClick={() => onSelectCategory(cat)}
                 className={`
                   w-full flex flex-col items-start px-4 py-2.5 rounded-lg
-                  transition-all duration-150
+                  font-sans transition-all duration-200 cursor-pointer
                   ${selectedCategory === cat
-                    ? "bg-vault-terracotta/20 border border-vault-terracotta text-vault-terracotta"
-                    : "border border-transparent text-vault-text-on-dark-soft hover:bg-vault-dark-surface-2 hover:text-vault-text-on-dark"
-                  }
+                    ? 'bg-ember/15 border border-ember/40 text-ember'
+                    : 'border border-transparent text-mist hover:bg-ink hover:text-cream'}
                 `}
               >
-                <span className="font-medium w-full text-left capitalize">{cat}</span>
+                <span className="font-medium capitalize">{cat}</span>
                 {cat === 'global' && (
-                  <span className="text-left text-xs font-normal normal-case opacity-80 mt-1 block">
+                  <span className="text-12 font-normal normal-case text-smoke mt-0.5 block">
                     Draws context from all four areas of your vault.
                   </span>
                 )}
@@ -61,16 +48,12 @@ const CategoryModal = ({ isOpen, onClose, selectedCategory, onSelectCategory }) 
           </div>
 
           {/* Modal Footer */}
-          <div className="px-6 py-4 border-t border-vault-border-subtle-dark flex gap-3">
+          <div className="px-6 py-4 border-t border-divide">
             <button
               onClick={onClose}
-              className="
-                flex-1 px-4 py-2 rounded-lg
-                border border-vault-border-dark
-                text-vault-text-on-dark-soft
-                hover:bg-vault-dark-surface-2
-                transition-all duration-150
-              "
+              className="w-full px-4 py-2 rounded-lg font-sans text-14
+                border border-divide text-mist hover:bg-ink hover:text-cream
+                transition-all duration-200 cursor-pointer"
             >
               Close
             </button>

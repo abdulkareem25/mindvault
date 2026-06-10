@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
+import { Button, Input } from '../../../shared/components/ui';
 import useAuth from '../hooks/useAuth';
 
-const Login = () => {
+const CATEGORY_DOT = {
+  coding: '#7099e8',
+  deen: '#b88cdb',
+  admin: '#d4a84c',
+  life: '#5ec98a',
+};
 
+const Login = () => {
   const { loading, error, user } = useSelector((state) => state.auth);
   const { loginUser } = useAuth();
   const navigate = useNavigate();
@@ -15,10 +22,7 @@ const Login = () => {
   });
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
@@ -36,126 +40,117 @@ const Login = () => {
     }
   }, [user, error, loading, navigate]);
 
-
   return (
-    <div className="min-h-screen bg-vault-deep-dark flex items-center justify-center p-4">
-      {/* Form Container */}
-      <div className="w-full max-w-md">
-        <div className="card">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="feature-title text-vault-terracotta mb-2">
-              MindVault
-            </h1>
-            <p className="text-vault-warm-silver text-sm">Welcome back</p>
+    <div className="min-h-screen flex bg-void">
+
+      {/* Left panel: form */}
+      <div className="flex-1 flex flex-col justify-center px-8 py-12">
+        <div className="max-w-100 mx-auto w-full">
+
+          {/* Logo */}
+          <div className="flex items-center gap-2 mb-10">
+            <span className="font-display text-20 text-cream">MindVault</span>
+            <span className="font-mono text-11 bg-ember text-cream px-2 py-0.5 rounded-full">v2</span>
+          </div>
+
+          {/* Page heading */}
+          <div className="mb-8">
+            <p className="font-sans text-12 font-medium uppercase tracking-[0.8px] text-ember mb-2">
+              WELCOME BACK
+            </p>
+            <h1 className="font-display text-32 text-cream">Sign in to journal</h1>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="mb-6 p-4 bg-vault-error/10 border border-vault-error rounded-base flex items-start gap-3">
-              <svg
-                className="w-10 h-10 text-vault-error shrink-0"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <p className="text-vault-error text-sm">{error}</p>
+            <div className="mb-6 p-4 bg-danger/10 border border-danger/50 rounded-md">
+              <p className="text-danger text-13 font-sans font-medium">{error}</p>
             </div>
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email Input */}
-            <div>
-              <label htmlFor="email" className="block text-vault-warm-silver text-sm font-medium mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                required
-                onChange={handleChange}
-                placeholder="you@example.com"
-                disabled={loading}
-                className='w-full px-3 py-2 rounded-lg bg-vault-dark-surface border border-vault-border-dark transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-vault-focus focus:border-vault-focus text-vault-ivory placeholder-vault-stone disabled:opacity-50 disabled:cursor-not-allowed'
-              />
-            </div>
-
-            {/* Password Input */}
-            <div>
-              <label htmlFor="password" className="block text-vault-warm-silver text-sm font-medium mb-2">
-                Password
-              </label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                required
-                onChange={handleChange}
-                placeholder="••••••••"
-                disabled={loading}
-                className='w-full px-3 py-2 rounded-lg bg-vault-dark-surface border border-vault-border-dark transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-vault-focus focus:border-vault-focus text-vault-ivory placeholder-vault-stone disabled:opacity-50 disabled:cursor-not-allowed'
-              />
-            </div>
-
-            {/* Forgot Password Link */}
-            <div className="flex justify-end pt-1">
-              <Link to="#" className="text-vault-coral hover:text-vault-terracotta text-xs transition-colors">
-                Forgot password?
-              </Link>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input
+              label="Email"
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="you@example.com"
+              required
               disabled={loading}
-              className="btn-primary w-full mt-6 flex items-center justify-center gap-2"
+            />
+
+            <Input
+              label="Password"
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="••••••••"
+              required
+              disabled={loading}
+            />
+
+            <Button
+              variant="primary"
+              size="lg"
+              loading={loading}
+              type="submit"
+              className="w-full mt-2"
             >
-              {loading ? (
-                <>
-                  <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <span className="text-sm">Signing in...</span>
-                </>
-              ) : (
-                'Sign In'
-              )}
-            </button>
+              Sign in
+            </Button>
           </form>
 
-          {/* Divider */}
-          <div className="my-6 flex items-center gap-3">
-            <div className="flex-1 h-px bg-vault-border-dark"></div>
-            <span className="text-vault-stone text-xs">or</span>
-            <div className="flex-1 h-px bg-vault-border-dark"></div>
-          </div>
+          <p className="font-sans text-14 text-smoke text-center mt-5">
+            <Link to="#" className="text-ember hover:underline">
+              Forgot password?
+            </Link>
+          </p>
 
-          {/* Sign Up Link */}
-          <p className="text-center text-vault-olive text-sm">
-            Don't have an account?{' '}
-            <Link to="/signup" className="text-vault-coral hover:text-vault-terracotta transition-colors font-medium">
+          <p className="font-sans text-14 text-smoke text-center mt-3">
+            Don&apos;t have an account?{' '}
+            <Link to="/signup" className="text-ember font-medium hover:underline">
               Create one
             </Link>
           </p>
         </div>
+      </div>
 
-        {/* Footer */}
-        <p className="text-center text-[#606060] text-xs mt-8">
-          © 2026 MindVault
+      {/* Right panel: brand (hidden on mobile) */}
+      <div className="hidden lg:flex w-115 shrink-0 bg-obsidian
+        border-l border-divide flex-col justify-center px-12 py-12">
+        <p className="font-mono text-11 text-sienna uppercase tracking-wider mb-5">
+          Your knowledge, remembered
         </p>
+        <h2 className="font-display text-32 text-cream leading-snug mb-5">
+          Every conversation<br />
+          becomes a <span className="text-ember">memory</span>.
+        </h2>
+        <p className="font-sans text-14 text-mist leading-relaxed mb-10">
+          MindVault watches your conversations and quietly builds a personal knowledge
+          base — then brings that context back exactly when you need it.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {[
+            { cat: 'coding', label: 'Coding · 42' },
+            { cat: 'deen', label: 'Deen · 18' },
+            { cat: 'admin', label: 'Admin · 7' },
+            { cat: 'life', label: 'Life · 23' },
+          ].map(({ cat, label }) => (
+            <span
+              key={cat}
+              className="font-mono text-12 px-3 py-1.5 rounded-lg border border-divide bg-ink"
+              style={{ color: CATEGORY_DOT[cat] }}
+            >
+              {label}
+            </span>
+          ))}
+        </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;

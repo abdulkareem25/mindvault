@@ -1,144 +1,65 @@
-import { ArrowUp, Loader, Plus } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useState, useRef } from 'react';
+import { Send } from 'lucide-react';
 
-const MessageComposer = ({
-  inputValue,
-  onInputChange,
-  onKeyDown,
-  onSend,
-  isSendingMessage,
-  category,
-  onShowCategoryModal,
-  hasMessages
-}) => {
-  const textareaRef = useRef(null);
+export default function MessageComposer({ onSend, disabled, initialValue = '' }) {
+  const [value, setValue] = useState(initialValue);
+  const ref = useRef(null);
 
-  // Auto-expand textarea height based on content
-  useEffect(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = "auto";
-      const newHeight = Math.min(textarea.scrollHeight, 192); // 192px = max-h-48
-      textarea.style.height = `${newHeight}px`;
+  const autoGrow = () => {
+    if (ref.current) {
+      ref.current.style.height = 'auto';
+      ref.current.style.height = Math.min(ref.current.scrollHeight, 200) + 'px';
     }
-  }, [inputValue]);
+  };
 
-  const handleInputChange = (e) => {
-    onInputChange(e);
+  const submit = () => {
+    if (value.trim() && !disabled) {
+      onSend(value.trim());
+      setValue('');
+      if (ref.current) ref.current.style.height = 'auto';
+    }
   };
 
   const handleKeyDown = (e) => {
-    onKeyDown(e);
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = "auto";
-      const newHeight = Math.min(textarea.scrollHeight, 192);
-      textarea.style.height = `${newHeight}px`;
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      submit();
     }
   };
 
   return (
-    <div className="px-6 py-5 flex justify-center">
-      <div
+    <div className="relative max-w-180 mx-auto w-full">
+      <textarea
+        ref={ref}
+        value={value}
+        onChange={e => { setValue(e.target.value); autoGrow(); }}
+        onKeyDown={handleKeyDown}
+        placeholder="Ask anything..."
+        rows={1}
+        disabled={disabled}
         className="
-          w-full max-w-4xl p-5
-          bg-vault-dark-surface
-          border border-vault-border-dark
-          rounded-2xl
-          shadow-whisper
-          flex flex-col
-          transition-all duration-200
-          focus-within:border-vault-terracotta/50 focus-within:shadow-lg
+          w-full pl-4 pr-14 py-3.5 bg-ink border border-divide rounded-xl
+          font-sans text-14 text-cream placeholder:text-smoke
+          min-h-13 max-h-50 resize-none overflow-auto
+          focus:border-ember focus:shadow-input-focus
+          disabled:opacity-50 disabled:cursor-not-allowed
+          outline-none transition-all duration-200
         "
+      />
+      {/* Send button */}
+      <button
+        onClick={submit}
+        disabled={!value.trim() || disabled}
+        className="absolute right-3 bottom-10 w-8 h-8 rounded-lg
+          bg-ember text-cream flex items-center justify-center
+          hover:bg-glow disabled:opacity-30 disabled:cursor-not-allowed
+          transition-all duration-200 active:scale-95 cursor-pointer"
       >
-        {/* Textarea row */}
-        <textarea
-          ref={textareaRef}
-          value={inputValue}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          placeholder="Type your message here..."
-          className="
-            bg-transparent outline-none border-none 
-            resize-none focus-visible:ring-0 text-md
-            text-vault-text-on-dark placeholder:text-vault-stone/70
-            leading-relaxed min-h-6 max-h-48 overflow-y-auto
-            transition-colors duration-200
-          "
-          style={{
-            height: "auto",
-            maxHeight: "192px"
-          }}
-          spellCheck="true"
-          aria-label="Message input"
-        />
-
-        {/* Action buttons row */}
-        <div className="flex items-center justify-between gap-2 pt-3 px-1">
-          {/* Category button */}
-
-          {category ? (
-            <button
-              onClick={onShowCategoryModal}
-              disabled={hasMessages}
-              title={hasMessages ? "Category cannot be changed after sending a message" : "Click to change category"}
-              className={`
-                flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-150
-                ${category === 'global'
-                  ? hasMessages
-                    ? "bg-vault-stone/5 border border-vault-border-dark text-vault-stone/50 cursor-not-allowed opacity-50"
-                    : "bg-vault-stone/10 border border-vault-stone/30 text-vault-stone hover:bg-vault-stone/20"
-                  : hasMessages
-                    ? "bg-vault-dark-surface-2/50 border border-vault-border-dark text-vault-stone cursor-not-allowed opacity-50"
-                    : "bg-vault-terracotta/20 border border-vault-terracotta text-vault-terracotta hover:bg-vault-terracotta/30"
-                }
-              `}
-            >
-              <span className="text-sm font-medium capitalize">{category}</span>
-            </button>
-          ) : (
-            <button
-              onClick={onShowCategoryModal}
-              disabled={hasMessages}
-              title={hasMessages ? "Category cannot be changed after sending a message" : "Click to add category"}
-              className={`
-                flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-150
-                ${hasMessages
-                  ? "border border-vault-border-dark text-vault-stone cursor-not-allowed opacity-50"
-                  : "border border-vault-dark-surface-2 text-vault-stone hover:bg-vault-dark-surface-2 hover:text-vault-text-on-dark"
-                }
-              `}
-            >
-              <Plus size={16} />
-              <span className="text-sm font-medium">Category</span>
-            </button>
-          )}
-
-          {/* Spacer */}
-          <div className="flex-1" />
-
-          {/* Send button */}
-          <button
-            onClick={onSend}
-            disabled={!inputValue.trim() || isSendingMessage}
-            className={`
-              flex items-center justify-center w-15 h-15 rounded-full shrink-0 transition-all duration-150
-              ${inputValue.trim() && !isSendingMessage
-                ? "bg-vault-terracotta hover:bg-vault-coral hover:scale-105 text-white"
-                : "bg-vault-dark-surface-2 text-vault-stone cursor-not-allowed"
-              }
-            `}
-          >
-            {isSendingMessage ? (
-              <Loader size={25} strokeWidth={2} className="animate-spin" />
-            ) : (
-              <ArrowUp size={25} strokeWidth={2} />
-            )}
-          </button>
-        </div>
-      </div>
+        <Send className="w-4 h-4" />
+      </button>
+      <p className="font-mono text-11 text-smoke text-center mt-1.5 select-none">
+        ↵ to send · ⇧↵ for new line
+      </p>
     </div>
   );
-};
-
-export default MessageComposer;
+}
