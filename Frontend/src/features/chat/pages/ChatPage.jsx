@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useBeforeUnload, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { CategoryBadge, SectionLabel } from '../../../shared/components/ui';
 import { showToast } from '../../shared/components/Toast';
-import { incrementMessageCount, setActiveChatId } from '../chat.slice';
+import { addMessageOptimistic, incrementMessageCount, setActiveChatId } from '../chat.slice';
 import ContextPillsBar from '../components/ContextPillsBar';
 import { MessageBubble, TypingIndicator } from '../components/MessageBubble';
 import MessageComposer from '../components/MessageComposer';
@@ -130,6 +130,17 @@ export default function ChatPage() {
           showToast('error', 'Failed to start conversation');
         }
       } else {
+        // Optimistic update: add user message immediately
+        const tempMessageId = `temp_${Date.now()}`;
+        dispatch(addMessageOptimistic({
+          message: {
+            _id: tempMessageId,
+            sender: 'user',
+            content: messageText,
+            createdAt: new Date().toISOString()
+          }
+        }));
+
         dispatch(incrementMessageCount({ chatId, amount: 2 }));
         await sendMessageToChat(chatId, messageText);
         await loadMessageHistory(chatId);

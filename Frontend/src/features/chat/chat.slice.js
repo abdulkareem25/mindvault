@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit"
+import { createSlice } from "@reduxjs/toolkit";
 
 const chatSlice = createSlice({
   name: "chat",
@@ -29,7 +29,7 @@ const chatSlice = createSlice({
     },
     setInjectedMemories(state, action) {
       const { chatId, memories } = action.payload;
-      state.chats = state.chats.map(chat => 
+      state.chats = state.chats.map(chat =>
         chat._id === chatId ? { ...chat, injectedMemories: memories } : chat
       );
       if (!state.injectedMemories) {
@@ -39,7 +39,7 @@ const chatSlice = createSlice({
     },
     incrementMessageCount(state, action) {
       const { chatId, amount = 1 } = action.payload;
-      state.chats = state.chats.map(chat => 
+      state.chats = state.chats.map(chat =>
         chat._id === chatId ? { ...chat, messageCount: (chat.messageCount || 0) + amount } : chat
       );
     },
@@ -51,18 +51,24 @@ const chatSlice = createSlice({
       if (!state.removedPillIds[chatId].includes(memoryId)) {
         state.removedPillIds[chatId].push(memoryId);
       }
+    },
+    addMessageOptimistic(state, action) {
+      const { message } = action.payload;
+      // Add message optimistically (with temporary ID if needed)
+      state.messageHistory.push(message);
     }
   }
 });
 
-export const { 
-  setChats, 
-  setActiveChatId, 
-  setMessageHistory, 
-  setError, 
+export const {
+  setChats,
+  setActiveChatId,
+  setMessageHistory,
+  setError,
   setLoading,
   setInjectedMemories,
   incrementMessageCount,
-  removePill
+  removePill,
+  addMessageOptimistic
 } = chatSlice.actions;
 export default chatSlice.reducer;
