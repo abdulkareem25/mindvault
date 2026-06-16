@@ -1,5 +1,5 @@
-import Chat from '../models/chat.model.js';
 import agenda from '../config/agenda.js';
+import Chat from '../models/chat.model.js';
 import logger from '../utils/logger.js';
 
 export const chatSocket = (socket) => {
@@ -14,9 +14,9 @@ export const chatSocket = (socket) => {
       }
 
       const minMessages = parseInt(process.env.EXTRACTION_MIN_MESSAGES) || 3;
-      if (chat.messageCount < minMessages) {
+      if (chat.userMessageCount < minMessages) {
         await Chat.findByIdAndUpdate(chatId, { extractionStatus: 'skipped' });
-        logger.extraction.info(`Skipped extraction for chat ${chatId}: messageCount ${chat.messageCount} < ${minMessages}`);
+        logger.extraction.info(`Skipped extraction for chat ${chatId}: userMessageCount ${chat.userMessageCount} < ${minMessages}`);
         return;
       }
 

@@ -13,7 +13,7 @@ export const createChat = async (userId, category, initialMessage) => {
   });
 
   await addMessageToChat(chat._id, "user", initialMessage);
-  await Chat.findByIdAndUpdate(chat._id, { $inc: { messageCount: 1 } });
+  await Chat.findByIdAndUpdate(chat._id, { $inc: { messageCount: 1, userMessageCount: 1 } });
 
   const response = await generateInitialAIResponse(initialMessage, category);
 

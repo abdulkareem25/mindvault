@@ -1,9 +1,9 @@
-import { ChatMistralAI } from '@langchain/mistralai';
-import { HumanMessage, SystemMessage } from 'langchain';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { ChatMistralAI } from '@langchain/mistralai';
 import Groq from 'groq-sdk';
-import * as prompts from '../utils/prompts.js';
+import { HumanMessage, SystemMessage } from 'langchain';
 import logger from '../utils/logger.js';
+import * as prompts from '../utils/prompts.js';
 
 const { EXTRACTION } = prompts;
 
@@ -93,16 +93,16 @@ export const generateAIResponse = async (conversationHistory, category, contextP
 };
 
 /**
- * Generates vector embeddings for a given text using Google's text-embedding-004
+ * Generates vector embeddings for a given text using Google's embedding-001
  */
 export const generateEmbedding = async (text) => {
   if (!genAI) {
     throw new Error('GEMINI_API_KEY is not configured, cannot generate embeddings.');
   }
 
-  const model = genAI.getGenerativeModel({ model: 'text-embedding-004' });
+  const model = genAI.getGenerativeModel({ model: 'embedding-001' });
   const result = await model.embedContent(text);
-  
+
   if (!result || !result.embedding || !result.embedding.values) {
     throw new Error('Embedding generation returned an empty result.');
   }
@@ -197,10 +197,10 @@ export const extractMemories = async ({ messages }) => {
 
     const result = await model.generateContent(conversationText);
     const responseText = result.response.text().trim();
-    
+
     // Clean response to parse JSON
     const cleanText = responseText.replace(/```json|```/g, '').trim();
-    
+
     try {
       return JSON.parse(cleanText);
     } catch (e) {

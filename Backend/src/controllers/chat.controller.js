@@ -1,7 +1,7 @@
-import * as chatService from "../services/chat.service.js";
-import asyncHandler from "../utils/asyncHandler.js";
 import Chat from "../models/chat.model.js";
 import { generateAIResponse, generateChatTitle } from "../services/ai.service.js";
+import * as chatService from "../services/chat.service.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
 export const createChatController = asyncHandler(async (req, res) => {
 
@@ -63,7 +63,7 @@ export const getChatByIdController = asyncHandler(async (req, res) => {
       success: false,
       message: "Chat not found",
     });
-  } 
+  }
 
   res.status(200).json({
     success: true,
@@ -133,7 +133,9 @@ export const sendMessageAndGetResponseController = asyncHandler(async (req, res)
 
   // After saving user message:
   await chatService.addMessageToChat(chatId, "user", content);
-  await Chat.findByIdAndUpdate(chatId, { $inc: { messageCount: 1 } });
+  await Chat.findByIdAndUpdate(chatId, {
+    $inc: { messageCount: 1, userMessageCount: 1 }
+  });
 
   // Get updated chat history to pass to AI
   const updatedChat = await Chat.findById(chatId).populate("messages");

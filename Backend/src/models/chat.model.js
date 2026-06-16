@@ -51,7 +51,8 @@ const chatSchema = new mongoose.Schema(
     extractionAttempts: { type: Number, default: 0 },
     extractionCompletedAt: { type: Date, default: null },
     messageCount: { type: Number, default: 0 },
-    extractionPromptVersion: { type: Number, default: 1 }
+    extractionPromptVersion: { type: Number, default: 1 },
+    userMessageCount: { type: Number, default: 0 }
   },
   {
     timestamps: true,

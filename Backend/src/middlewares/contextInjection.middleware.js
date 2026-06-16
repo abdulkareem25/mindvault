@@ -1,7 +1,7 @@
 import Chat from '../models/chat.model.js';
 import * as contextService from '../services/context.service.js';
-import * as prompts from '../utils/prompts.js';
 import logger from '../utils/logger.js';
+import * as prompts from '../utils/prompts.js';
 
 async function contextInjection(req, res, next) {
   try {
@@ -9,8 +9,8 @@ async function contextInjection(req, res, next) {
     const chat = await Chat.findOne({ _id: req.params.id, userId: req.user._id });
     if (!chat) return next();
 
-    // Only inject on the FIRST message of the conversation
-    if (chat.messageCount !== 0) {
+    // Only inject on the FIRST user message of the conversation
+    if (chat.userMessageCount !== 0) {
       req.contextPrefix = null;
       req.injectedMemoryIds = [];
       req.injectedMemories = [];

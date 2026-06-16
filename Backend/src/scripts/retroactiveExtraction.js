@@ -36,31 +36,34 @@ async function run() {
       throw new Error(`Invalid userId format: ${TARGET_USER}`);
     }
 
-    // Step 1: Fix messageCount for chats where it's 0 or missing, but messages exist.
-    const messageCountFilter = {
+    // Step 1: Fix messageCount and userMessageCount for chats where they're missing/invalid.
+    const countFilter = {
       $or: [
         { messageCount: { $exists: false } },
-        { messageCount: { $lte: 0 } }
+        { messageCount: { $lte: 0 } },
+        { userMessageCount: { $exists: false } }
       ]
     };
     if (TARGET_USER) {
-      messageCountFilter.userId = new mongoose.Types.ObjectId(TARGET_USER);
+      countFilter.userId = new mongoose.Types.ObjectId(TARGET_USER);
     }
 
-    const chatsNeedingCount = await Chat.find(messageCountFilter);
-    console.log(`Found ${chatsNeedingCount.length} chats needing messageCount check/fix`);
+    const chatsNeedingCount = await Chat.find(countFilter);
+    console.log(`Found ${chatsNeedingCount.length} chats needing messageCount/userMessageCount check/fix`);
 
-    const simulatedCounts = new Map();
+    const simulatedCounts = new Map(); // { chatId: { messageCount, userMessageCount } }
 
     for (const chat of chatsNeedingCount) {
-      const count = await Message.countDocuments({ chatId: chat._id });
-      simulatedCounts.set(chat._id.toString(), count);
+      const totalCount = await Message.countDocuments({ chatId: chat._id });
+      const userCount = await Message.countDocuments({ chatId: chat._id, sender: 'user' });
+
+      simulatedCounts.set(chat._id.toString(), { messageCount: totalCount, userMessageCount: userCount });
 
       if (EXECUTE) {
-        await Chat.findByIdAndUpdate(chat._id, { messageCount: count });
-        console.log(`Fixed messageCount to ${count} for chat ${chat._id}`);
+        await Chat.findByIdAndUpdate(chat._id, { messageCount: totalCount, userMessageCount: userCount });
+        console.log(`Fixed messageCount to ${totalCount}, userMessageCount to ${userCount} for chat ${chat._id}`);
       } else {
-        console.log(`[Dry Run] Would fix messageCount to ${count} for chat ${chat._id}`);
+        console.log(`[Dry Run] Would fix messageCount to ${totalCount}, userMessageCount to ${userCount} for chat ${chat._id}`);
       }
     }
 
@@ -74,7 +77,7 @@ async function run() {
           { extractionStatus: 'pending' },
           { extractionStatus: { $exists: false } }
         ],
-        messageCount: { $gte: minMessages }
+        userMessageCount: { $gte: minMessages }
       };
       if (TARGET_USER) {
         filter.userId = new mongoose.Types.ObjectId(TARGET_USER);
@@ -98,11 +101,12 @@ async function run() {
       const candidates = await Chat.find(filter).sort({ createdAt: -1 });
       for (const chat of candidates) {
         if (chatsToProcess.length >= LIMIT) break;
-        let count = chat.messageCount;
-        if (count === undefined || count === null || count <= 0) {
-          count = simulatedCounts.get(chat._id.toString()) || 0;
+        let counts = simulatedCounts.get(chat._id.toString());
+        let userCount = counts?.userMessageCount || chat.userMessageCount;
+        if (userCount === undefined || userCount === null || userCount <= 0) {
+          userCount = 0;
         }
-        if (count >= minMessages) {
+        if (userCount >= minMessages) {
           chatsToProcess.push(chat);
         }
       }
@@ -113,14 +117,13 @@ async function run() {
     // Step 3: Schedule/process the chats.
     for (let i = 0; i < chatsToProcess.length; i++) {
       const chat = chatsToProcess[i];
-      let messageCount = chat.messageCount;
-      if (messageCount === undefined || messageCount === null || messageCount <= 0) {
-        messageCount = simulatedCounts.get(chat._id.toString()) || 0;
-      }
-      
+      let counts = simulatedCounts.get(chat._id.toString());
+      let userCount = counts?.userMessageCount || chat.userMessageCount;
+      let messageCount = counts?.messageCount || chat.messageCount;
+
       if (EXECUTE) {
-        console.log(`Processing chat ${i + 1}/${chatsToProcess.length}: ${chat._id} (User: ${chat.userId}, messageCount: ${messageCount})`);
-        
+        console.log(`Processing chat ${i + 1}/${chatsToProcess.length}: ${chat._id} (User: ${chat.userId}, userMessageCount: ${userCount}, totalMessageCount: ${messageCount})`);
+
         await agenda.schedule('now', 'extract-memories', {
           chatId: chat._id.toString(),
           userId: chat.userId.toString()
@@ -132,7 +135,7 @@ async function run() {
           await new Promise(resolve => setTimeout(resolve, 10000));
         }
       } else {
-        console.log(`[Dry Run] Would schedule extraction for chat ${chat._id} (User: ${chat.userId}, messageCount: ${messageCount})`);
+        console.log(`[Dry Run] Would schedule extraction for chat ${chat._id} (User: ${chat.userId}, userMessageCount: ${userCount}, totalMessageCount: ${messageCount})`);
       }
     }
 
@@ -148,7 +151,7 @@ async function run() {
     } catch (err) {
       console.error('Error disconnecting Mongoose:', err);
     }
-    
+
     try {
       if (agenda && typeof agenda.close === 'function') {
         await agenda.close();
