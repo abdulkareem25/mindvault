@@ -106,21 +106,31 @@ export const getChatByIdController = asyncHandler(async (req, res) => {
 });
 
 export const getMessageHistoryController = asyncHandler(async (req, res) => {
-
   const chatId = req.params.id;
-  const messages = await chatService.getMessageHistory(chatId, req.user._id);
+  const { page, limit } = req.query;
 
-  if (!messages) {
+  const result = await chatService.getMessageHistory(chatId, req.user._id, page, limit);
+
+  if (!result) {
     return res.status(404).json({
       success: false,
       message: "Chat not found",
     });
   }
 
+  // If page and limit were not requested, send flat array for backward compatibility
+  if (page === undefined && limit === undefined) {
+    return res.status(200).json({
+      success: true,
+      message: "Message history retrieved successfully",
+      data: result.messages,
+    });
+  }
+
   res.status(200).json({
     success: true,
     message: "Message history retrieved successfully",
-    data: messages,
+    data: result,
   });
 });
 

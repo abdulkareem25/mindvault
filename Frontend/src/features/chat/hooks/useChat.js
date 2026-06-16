@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import { showToast } from "../../shared/components/Toast";
-import { addStreamingMessage, setActiveChatId, setChats, setInjectedMemories, setLoading, setMessageHistory, updateStreamingMessage } from "../chat.slice";
+import { addStreamingMessage, prependMessageHistory, setActiveChatId, setChats, setInjectedMemories, setLoading, setMessageHistory, updateStreamingMessage } from "../chat.slice";
 import {
   createChat,
   deleteChat,
@@ -31,14 +31,28 @@ export const useChat = () => {
     }
   };
 
-  const loadMessageHistory = async (chatId) => {
+  const loadMessageHistory = async (chatId, page = 1, limit = 20) => {
     try {
       dispatch(setLoading(true));
-      const messages = await fetchMessageHistory(chatId);
-      dispatch(setMessageHistory(messages.data));
+      const responseData = await fetchMessageHistory(chatId, page, limit);
+      const data = responseData.data;
+
+      // Extract details handling both paginated and legacy flat array formats
+      const messages = (data && typeof data === 'object' && 'messages' in data) ? data.messages : data;
+      const hasMore = (data && typeof data === 'object' && 'hasMore' in data) ? data.hasMore : false;
+      const total = (data && typeof data === 'object' && 'total' in data) ? data.total : (messages ? messages.length : 0);
+
+      if (page > 1) {
+        dispatch(prependMessageHistory(messages));
+      } else {
+        dispatch(setMessageHistory(messages));
+      }
+
+      return { messages, hasMore, total };
     } catch (error) {
       console.log("Load message history failed:", error);
       showToast("error");
+      return { messages: [], hasMore: false, total: 0 };
     } finally {
       dispatch(setLoading(false));
     }

@@ -54,8 +54,11 @@ export const fetchChatById = async (chatId) => {
   return response.data;
 }
 
-export const fetchMessageHistory = async (chatId) => {
-  const response = await api.get(`/${chatId}/messages`);
+export const fetchMessageHistory = async (chatId, page, limit) => {
+  const params = {};
+  if (page !== undefined) params.page = page;
+  if (limit !== undefined) params.limit = limit;
+  const response = await api.get(`/${chatId}/messages`, { params });
   return response.data;
 }
 

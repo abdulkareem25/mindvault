@@ -19,7 +19,19 @@ const chatSlice = createSlice({
       state.activeChatId = action.payload;
     },
     setMessageHistory(state, action) {
-      state.messageHistory = action.payload;
+      if (action.payload && typeof action.payload === 'object' && 'messages' in action.payload) {
+        state.messageHistory = action.payload.messages;
+      } else {
+        state.messageHistory = action.payload || [];
+      }
+    },
+    prependMessageHistory(state, action) {
+      const messagesToPrepend = Array.isArray(action.payload)
+        ? action.payload
+        : (action.payload && action.payload.messages) || [];
+      const existingIds = new Set(state.messageHistory.map(m => m._id));
+      const newMessages = messagesToPrepend.filter(m => !existingIds.has(m._id));
+      state.messageHistory = [...newMessages, ...state.messageHistory];
     },
     setLoading(state, action) {
       state.loading = action.payload;
@@ -82,6 +94,7 @@ export const {
   setChats,
   setActiveChatId,
   setMessageHistory,
+  prependMessageHistory,
   setError,
   setLoading,
   setInjectedMemories,

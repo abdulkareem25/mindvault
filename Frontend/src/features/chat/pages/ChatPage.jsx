@@ -48,21 +48,35 @@ export default function ChatPage() {
   const [isSending, setIsSending] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
-  const scrollRef = useRef(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  // Set active chat ID in Redux store
+  const scrollRef = useRef(null);
+  const loadingOlderRef = useRef(false);
+  const previousScrollHeightRef = useRef(0);
+
+  // Set active chat ID in Redux store and load page 1
   useEffect(() => {
     if (chatId && chatId !== 'new') {
       const skipSpinner = location.state?.skipHistoryLoad;
       dispatch(setActiveChatId(chatId));
-      
+
+      setPage(1);
+      setHasMore(false);
+      setIsLoadingMore(false);
+      loadingOlderRef.current = false;
+
       // Always load message history, but skip spinner for newly created chats
       if (!skipSpinner) {
         setIsLoadingHistory(true);
       }
-      
-      loadMessageHistory(chatId)
-        .then(() => {
+
+      loadMessageHistory(chatId, 1, 20)
+        .then((res) => {
+          if (res) {
+            setHasMore(res.hasMore);
+          }
           // Load injected memories for this chat
           return loadChatMemories(chatId);
         })
@@ -74,6 +88,8 @@ export default function ChatPage() {
       dispatch(setActiveChatId(null));
       dispatch(setMessageHistory([]));
       setSelectedCategory(null);
+      setPage(1);
+      setHasMore(false);
     }
   }, [chatId, location.state, dispatch]);
 
@@ -112,12 +128,50 @@ export default function ChatPage() {
     emitChatClosed(chatId);
   }, [chatId, emitChatClosed]));
 
-  // Auto-scroll messages to bottom
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  // Handle scroll to detect top and load older messages
+  const handleScroll = async () => {
+    if (!scrollRef.current) return;
+    const { scrollTop } = scrollRef.current;
+
+    // Load older messages if scrolled near top
+    if (scrollTop < 30 && hasMore && !isLoadingMore && !isLoadingHistory) {
+      setIsLoadingMore(true);
+      loadingOlderRef.current = true;
+      previousScrollHeightRef.current = scrollRef.current.scrollHeight;
+
+      const nextPage = page + 1;
+      try {
+        const res = await loadMessageHistory(chatId, nextPage, 20);
+        if (res) {
+          setPage(nextPage);
+          setHasMore(res.hasMore);
+        }
+      } catch (err) {
+        console.error("Failed to load older messages:", err);
+      } finally {
+        setIsLoadingMore(false);
+      }
     }
-  }, [messageHistory, isSending]);
+  };
+
+  // Auto-scroll messages to bottom or restore scroll position on older messages load
+  useEffect(() => {
+    if (!scrollRef.current) return;
+
+    const handleScrollTransition = () => {
+      if (!scrollRef.current) return;
+      if (loadingOlderRef.current) {
+        const delta = scrollRef.current.scrollHeight - previousScrollHeightRef.current;
+        scrollRef.current.scrollTop = delta;
+        loadingOlderRef.current = false;
+      } else {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
+    };
+
+    const frameId = requestAnimationFrame(handleScrollTransition);
+    return () => cancelAnimationFrame(frameId);
+  }, [messageHistory, isSending, isLoadingHistory]);
 
   const activeChat = chats.find((c) => c._id === chatId);
   const chatCategory = activeChat?.category || selectedCategory;
@@ -245,8 +299,15 @@ export default function ChatPage() {
       {/* Message list — this is the ONLY scrollable region */}
       <div
         ref={scrollRef}
+        onScroll={handleScroll}
         className="flex-1 overflow-y-auto px-4 lg:px-6 py-6 space-y-5"
       >
+        {isLoadingMore && (
+          <div className="flex justify-center items-center py-2 gap-2">
+            <span className="inline-block w-4 h-4 border-2 border-ember border-t-transparent rounded-full animate-spin" />
+            <p className="font-sans text-12 text-smoke">Loading older messages...</p>
+          </div>
+        )}
         {messageHistory.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full min-h-75
             text-center py-12 animate-fade-in">

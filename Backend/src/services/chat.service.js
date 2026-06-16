@@ -41,12 +41,36 @@ export const getChatById = async (chatId, userId) => {
   return chat;
 };
 
-export const getMessageHistory = async (chatId, userId) => {
-  const chat = await Chat.findOne({ _id: chatId, userId }).populate("messages");
+export const getMessageHistory = async (chatId, userId, page, limit) => {
+  const chat = await Chat.findOne({ _id: chatId, userId });
   if (!chat) {
     throw new Error("Chat not found");
   }
-  return chat.messages;
+
+  if (page === undefined && limit === undefined) {
+    const populatedChat = await Chat.findOne({ _id: chatId, userId }).populate("messages");
+    return {
+      messages: populatedChat.messages || [],
+      hasMore: false,
+      total: populatedChat.messages ? populatedChat.messages.length : 0
+    };
+  }
+
+  const parsedPage = parseInt(page) || 1;
+  const parsedLimit = parseInt(limit) || 20;
+  const skip = (parsedPage - 1) * parsedLimit;
+
+  const total = await Message.countDocuments({ chatId });
+  const messages = await Message.find({ chatId })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(parsedLimit);
+
+  return {
+    messages: messages.reverse(),
+    hasMore: skip + messages.length < total,
+    total
+  };
 };
 
 export const deleteChat = async (chatId, userId) => {
