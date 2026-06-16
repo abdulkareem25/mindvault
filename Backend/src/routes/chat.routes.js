@@ -5,11 +5,12 @@ import {
   getChatByIdController,
   getChatsController,
   getMessageHistoryController,
-  sendMessageAndGetResponseController
+  sendMessageAndGetResponseController,
+  sendMessageAndStreamResponseController
 } from "../controllers/chat.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
-import validate from "../middlewares/validate.middleware.js";
 import contextInjection from "../middlewares/contextInjection.middleware.js";
+import validate from "../middlewares/validate.middleware.js";
 import {
   createChatSchema,
   idSchema,
@@ -91,6 +92,23 @@ router.post(
   validate(sendMessageSchema),
   contextInjection,
   sendMessageAndGetResponseController
+);
+
+/**
+ * @route POST /api/chats/:id/messages/stream
+ * @desc Send a message and stream AI response (SSE)
+ * @access Private
+ * @param { id } - Chat ID
+ * @body { message: String }
+ * @returns { stream }
+ */
+
+router.post(
+  "/:id/messages/stream",
+  authMiddleware,
+  validate(sendMessageSchema),
+  contextInjection,
+  sendMessageAndStreamResponseController
 );
 
 /**

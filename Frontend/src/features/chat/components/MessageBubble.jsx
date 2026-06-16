@@ -39,26 +39,3 @@ export function MessageBubble({ message }) {
     </div>
   );
 }
-
-// Typing indicator (while waiting for AI)
-export function TypingIndicator() {
-  return (
-    <div className="flex gap-3 w-full items-start animate-fade-up">
-      <div className="w-7 h-7 rounded-full bg-dusk border border-divide
-        flex items-center justify-center text-sienna text-11 shrink-0 select-none">
-        ✦
-      </div>
-      <div className="bg-ink border border-divide rounded-xl rounded-tl-sm px-4 py-3">
-        <div className="flex gap-1.5 items-center h-5">
-          {[0, 1, 2].map((i) => (
-            <span
-              key={i}
-              className="w-1.5 h-1.5 rounded-full bg-smoke animate-blink"
-              style={{ animationDelay: `${i * 230}ms` }}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}

@@ -56,6 +56,24 @@ const chatSlice = createSlice({
       const { message } = action.payload;
       // Add message optimistically (with temporary ID if needed)
       state.messageHistory.push(message);
+    },
+    updateStreamingMessage(state, action) {
+      const { fullResponse } = action.payload;
+      // Find the last assistant message and update it
+      const lastAssistantIndex = state.messageHistory.length - 1;
+      if (lastAssistantIndex >= 0 && state.messageHistory[lastAssistantIndex].sender === 'assistant') {
+        state.messageHistory[lastAssistantIndex].content = fullResponse;
+      }
+    },
+    addStreamingMessage(state, action) {
+      const { tempId } = action.payload;
+      state.messageHistory.push({
+        _id: tempId,
+        sender: 'assistant',
+        content: '',
+        isStreaming: true,
+        createdAt: new Date().toISOString()
+      });
     }
   }
 });
@@ -69,6 +87,8 @@ export const {
   setInjectedMemories,
   incrementMessageCount,
   removePill,
-  addMessageOptimistic
+  addMessageOptimistic,
+  updateStreamingMessage,
+  addStreamingMessage
 } = chatSlice.actions;
 export default chatSlice.reducer;

@@ -5,7 +5,7 @@ import { CategoryBadge, SectionLabel } from '../../../shared/components/ui';
 import { showToast } from '../../shared/components/Toast';
 import { addMessageOptimistic, incrementMessageCount, setActiveChatId } from '../chat.slice';
 import ContextPillsBar from '../components/ContextPillsBar';
-import { MessageBubble, TypingIndicator } from '../components/MessageBubble';
+import { MessageBubble } from '../components/MessageBubble';
 import MessageComposer from '../components/MessageComposer';
 import { useChat } from '../hooks/useChat';
 import { getSocket } from '../services/chat.socket';
@@ -38,6 +38,7 @@ export default function ChatPage() {
     loadChatMemories,
     handleCreateChat,
     sendMessageToChat,
+    sendMessageToChatStream,
   } = useChat();
 
   const { chats, messageHistory, activeChatId } = useSelector((state) => state.chat);
@@ -142,8 +143,7 @@ export default function ChatPage() {
         }));
 
         dispatch(incrementMessageCount({ chatId, amount: 2 }));
-        await sendMessageToChat(chatId, messageText);
-        await loadMessageHistory(chatId);
+        await sendMessageToChatStream(chatId, messageText);
       }
     } catch (err) {
       console.error(err);
@@ -253,7 +253,6 @@ export default function ChatPage() {
         {messageHistory.map((m) => (
           <MessageBubble key={m._id} message={m} />
         ))}
-        {isSending && <TypingIndicator />}
       </div>
 
       {/* Composer — fixed to bottom of this flex column */}

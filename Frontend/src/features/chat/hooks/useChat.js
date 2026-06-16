@@ -1,13 +1,14 @@
 import { useDispatch, useSelector } from "react-redux";
 import { showToast } from "../../shared/components/Toast";
-import { setActiveChatId, setChats, setInjectedMemories, setLoading, setMessageHistory } from "../chat.slice";
+import { addStreamingMessage, setActiveChatId, setChats, setInjectedMemories, setLoading, setMessageHistory, updateStreamingMessage } from "../chat.slice";
 import {
   createChat,
   deleteChat,
   fetchChatById,
   fetchChats,
   fetchMessageHistory,
-  sendMessage
+  sendMessage,
+  sendMessageStream
 } from "../services/chat.api";
 import { initSocketConnection } from "../services/chat.socket";
 
@@ -75,6 +76,25 @@ export const useChat = () => {
     }
   };
 
+  const sendMessageToChatStream = async (chatId, message) => {
+    try {
+      const tempMessageId = `stream_${Date.now()}`;
+      dispatch(addStreamingMessage({ tempId: tempMessageId }));
+
+      await sendMessageStream(chatId, message, (data) => {
+        dispatch(updateStreamingMessage({ fullResponse: data.fullResponse }));
+      });
+
+      // Reload message history to sync with server
+      await loadMessageHistory(chatId);
+    } catch (error) {
+      console.log("Stream message failed:", error);
+      showToast("error");
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+
   const handleCreateChat = async (category, initialMessage) => {
     try {
       dispatch(setLoading(true));
@@ -117,6 +137,7 @@ export const useChat = () => {
     loadMessageHistory,
     loadChatMemories,
     sendMessageToChat,
+    sendMessageToChatStream,
     handleCreateChat,
     initialState,
     handleDeleteChat

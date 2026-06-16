@@ -1,7 +1,7 @@
 import axios from "axios";
-import { API_BASE_URL } from "../../../constants";
 import store from "../../../app/app.store";
-import { setToken, clearAuth } from "../../auth/auth.slice";
+import { API_BASE_URL } from "../../../constants";
+import { clearAuth, setToken } from "../../auth/auth.slice";
 
 const api = axios.create({
   baseURL: `${API_BASE_URL}/chats`,
@@ -62,6 +62,64 @@ export const fetchMessageHistory = async (chatId) => {
 export const sendMessage = async (chatId, message) => {
   const response = await api.post(`/${chatId}/messages`, { content: message });
   return response.data;
+};
+
+export const sendMessageStream = async (chatId, message, onChunk) => {
+  const token = store.getState().auth?.token;
+  const headers = {};
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/chats/${chatId}/messages/stream`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...headers
+      },
+      credentials: 'include',
+      body: JSON.stringify({ content: message })
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Streaming request failed');
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      const lines = chunk.split('\n');
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const data = JSON.parse(line.slice(6));
+            if (data.done) {
+              return data.message;
+            }
+            if (data.fullResponse) {
+              onChunk(data);
+            }
+          } catch (e) {
+            console.error('Failed to parse SSE message:', e);
+          }
+        }
+      }
+    }
+  } finally {
+    reader.cancel();
+  }
 };
 
 export const deleteChat = async (chatId) => {

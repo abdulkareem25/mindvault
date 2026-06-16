@@ -206,3 +206,87 @@ export const sendMessageAndGetResponseController = asyncHandler(async (req, res)
     injectedMemories: req.injectedMemories || []
   });
 });
+
+export const sendMessageAndStreamResponseController = asyncHandler(async (req, res) => {
+
+  const chatId = req.params.id;
+  const { content } = req.body;
+  if (!content) {
+    return res.status(400).json({
+      success: false,
+      message: "Content is required",
+    });
+  }
+
+  const chat = await Chat.findOne({ _id: chatId, userId: req.user._id });
+  if (!chat) {
+    return res.status(404).json({
+      success: false,
+      message: "Chat not found",
+    });
+  }
+
+  const isFirstMessage = (chat.messageCount === 0);
+
+  // After saving user message:
+  await chatService.addMessageToChat(chatId, "user", content);
+  await Chat.findByIdAndUpdate(chatId, {
+    $inc: { messageCount: 1, userMessageCount: 1 },
+    lastUserMessageAt: new Date()
+  });
+
+  // Get updated chat history to pass to AI
+  const updatedChat = await Chat.findById(chatId).populate("messages");
+
+  // Set SSE headers for streaming
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  // CORS is handled by app-level middleware, don't set it here
+
+  // Accept optional contextPrefix
+  const contextPrefix = req.contextPrefix || null;
+
+  // Generate AI response (streams internally in OpenAI SDK)
+  const aiResponseText = await generateAIResponse(updatedChat.messages, chat.category, contextPrefix);
+
+  // Stream the response token by token
+  const tokens = aiResponseText.split(/(\s+)/);
+  let fullResponse = '';
+
+  for (const token of tokens) {
+    fullResponse += token;
+    // Send token as SSE
+    res.write(`data: ${JSON.stringify({ token, fullResponse })}\n\n`);
+
+    // Small delay to simulate typing for demo purposes
+    await new Promise(r => setTimeout(r, 5));
+  }
+
+  // Save AI message after streaming completes
+  const savedAiMessage = await chatService.addMessageToChat(chatId, "assistant", fullResponse);
+  await Chat.findByIdAndUpdate(chatId, { $inc: { messageCount: 1 } });
+
+  // Send completion signal with saved message data
+  res.write(`data: ${JSON.stringify({ done: true, message: savedAiMessage })}\n\n`);
+
+  // Asynchronously generate chat title (first message only):
+  if (isFirstMessage) {
+    generateChatTitle({ firstMessage: content, category: chat.category })
+      .then(async (title) => {
+        await Chat.findByIdAndUpdate(chatId, { title });
+      })
+      .catch((err) => {
+        console.error("Failed to generate chat title asynchronously:", err);
+      });
+  }
+
+  // After AI responds (first message only):
+  if (req.injectedMemoryIds && req.injectedMemoryIds.length > 0) {
+    await Chat.findByIdAndUpdate(chatId, {
+      injectedMemoryIds: req.injectedMemoryIds
+    });
+  }
+
+  res.end();
+});
