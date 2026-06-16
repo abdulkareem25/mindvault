@@ -104,7 +104,14 @@ const Login = () => {
           </form>
 
           <p className="font-sans text-14 text-smoke text-center mt-5">
-            <Link to="#" className="text-ember hover:underline">
+            <Link
+              to="#"
+              className="text-ember hover:underline"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/forgot-password');
+              }}
+            >
               Forgot password?
             </Link>
           </p>

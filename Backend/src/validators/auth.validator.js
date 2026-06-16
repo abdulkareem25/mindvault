@@ -87,8 +87,8 @@ export const loginSchema = Joi.object({
 });
 
 export const resetPasswordSchema = Joi.object({
-  password: passwordSchema,
-  token: Joi.string().optional(),
+  newPassword: passwordSchema,
+  token: Joi.string().required(),
 });
 
 export const emailSchema = Joi.object({

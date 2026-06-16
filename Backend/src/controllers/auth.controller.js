@@ -173,7 +173,7 @@ export const forgotPasswordController = asyncHandler(async (req, res) => {
 });
 
 export const resetPasswordController = asyncHandler(async (req, res) => {
-    const { password } = req.body;
+    const { newPassword } = req.body;
     const token = req.body.token || req.query.token;
 
     if (!token) {
@@ -183,7 +183,7 @@ export const resetPasswordController = asyncHandler(async (req, res) => {
         });
     }
 
-    await authService.resetPassword(token, password);
+    await authService.resetPassword(token, newPassword);
 
     res.status(200).json({
         success: true,

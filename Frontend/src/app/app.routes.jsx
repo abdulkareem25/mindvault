@@ -5,6 +5,8 @@ import Login from "../features/auth/pages/Login";
 import Signup from "../features/auth/pages/Signup";
 import VerifyEmail from "../features/auth/pages/VerifyEmail";
 import VerifySuccess from "../features/auth/pages/VerifySuccess";
+import ForgotPassword from "../features/auth/pages/ForgotPassword";
+import ResetPassword from "../features/auth/pages/ResetPassword";
 import Dashboard from "../features/chat/pages/Dashboard";
 import ChatPage from "../features/chat/pages/ChatPage";
 import VaultPage from "../features/vault/components/VaultPage";
@@ -71,7 +73,16 @@ const router = createBrowserRouter([
   {
     path: "/already-verified",
     element: <AlreadyVerified />,
-  }
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPassword />,
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPassword />,
+  },
 ]);
+
 
 export default router;

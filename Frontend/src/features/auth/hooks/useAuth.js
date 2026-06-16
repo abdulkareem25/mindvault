@@ -1,6 +1,6 @@
 import { useDispatch } from 'react-redux';
 import { setError, setLoading, setUser, setToken, clearAuth } from '../auth.slice';
-import { getCurrentUser, login, logout, resendVerificationEmail, signup, refreshToken } from '../services/auth.api';
+import { getCurrentUser, login, logout, resendVerificationEmail, signup, refreshToken, forgotPassword, resetPassword } from '../services/auth.api';
 import { showToast } from '../../shared/components/Toast';
 
 
@@ -67,12 +67,33 @@ const useAuth = () => {
     }
   };
 
+  const handleForgotPassword = async (email) => {
+    try {
+      const response = await forgotPassword(email);
+      showToast('success', response.message || 'Password reset email sent! Please check your inbox.');
+    } catch (error) {
+      throw new Error(error.message || 'Failed to send password reset email');
+    }
+  };
+
+  const handleResetPassword = async (token, newPassword) => {
+    try {
+      const response = await resetPassword(token, newPassword);
+      showToast('success', response.message || 'Password reset successful! You can now log in with your new password.');
+    } catch (error) {
+      throw new Error(error.message || 'Failed to reset password');
+    }
+  };
+
+
   return {
     loginUser,
     signupUser,
     fetchCurrentUser,
     handleResendVerificationEmail,
-    logoutUser
+    logoutUser,
+    handleForgotPassword,
+    handleResetPassword,
   };
 };
 
