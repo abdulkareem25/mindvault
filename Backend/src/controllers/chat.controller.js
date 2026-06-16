@@ -167,7 +167,8 @@ export const sendMessageAndGetResponseController = asyncHandler(async (req, res)
   // After saving user message:
   await chatService.addMessageToChat(chatId, "user", content);
   await Chat.findByIdAndUpdate(chatId, {
-    $inc: { messageCount: 1, userMessageCount: 1 }
+    $inc: { messageCount: 1, userMessageCount: 1 },
+    lastUserMessageAt: new Date()
   });
 
   // Get updated chat history to pass to AI

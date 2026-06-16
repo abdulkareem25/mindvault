@@ -1,13 +1,13 @@
+import agenda from '../config/agenda.js';
+import { updateUserMemorySummary } from '../controllers/memory.controller.js';
 import Chat from '../models/chat.model.js';
-import Message from '../models/message.model.js';
 import Memory from '../models/Memory.js';
+import Message from '../models/message.model.js';
+import * as vaultSocket from '../socket/vault.socket.js';
+import logger from '../utils/logger.js';
 import * as aiService from './ai.service.js';
 import * as embeddingService from './embedding.service.js';
 import * as searchService from './search.service.js';
-import { updateUserMemorySummary } from '../controllers/memory.controller.js';
-import * as vaultSocket from '../socket/vault.socket.js';
-import agenda from '../config/agenda.js';
-import logger from '../utils/logger.js';
 
 /**
  * Validates the structure and content of an extracted memory node.
@@ -18,7 +18,7 @@ function validateNode(node) {
   const validCategories = ['coding', 'deen', 'admin', 'life'];
   const validTypes = ['decision', 'preference', 'learning', 'goal', 'fact'];
   const validConfidence = ['high', 'medium', 'low'];
-  
+
   return (
     node &&
     typeof node.content === 'string' &&
@@ -43,12 +43,12 @@ export async function extractFromChat({ chatId, userId }) {
     logger.extraction.warn('Chat not found on extraction job', { chatId });
     return;
   }
-  
+
   if (['processing', 'completed'].includes(chat.extractionStatus)) {
     logger.extraction.info(`Extraction already ${chat.extractionStatus} for chat ${chatId}`);
     return;
   }
-  
+
   if (chat.userId.toString() !== userId) {
     logger.extraction.error('UserId mismatch on extraction job', { chatUserId: chat.userId, jobUserId: userId });
     return;
@@ -145,7 +145,8 @@ export async function extractFromChat({ chatId, userId }) {
     // 8. Mark chat extraction as complete
     await Chat.findByIdAndUpdate(chatId, {
       extractionStatus: 'completed',
-      extractionCompletedAt: new Date()
+      extractionCompletedAt: new Date(),
+      lastExtractionAt: new Date()
     });
 
     // 9. Emit vault:updated notification to client if new memories were saved
@@ -157,12 +158,12 @@ export async function extractFromChat({ chatId, userId }) {
 
   } catch (error) {
     logger.extraction.error('Extraction failed', { chatId, error: error.message });
-    
+
     // Get updated attempts count
     const currentChat = await Chat.findById(chatId);
     const attempts = currentChat ? currentChat.extractionAttempts : 1;
     const newStatus = attempts >= 3 ? 'failed' : 'pending';
-    
+
     await Chat.findByIdAndUpdate(chatId, { extractionStatus: newStatus });
 
     // Retry once after 30 seconds if under maximum attempts

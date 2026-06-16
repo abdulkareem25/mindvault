@@ -14,7 +14,10 @@ export const createChat = async (userId, category, initialMessage, contextPrefix
   });
 
   await addMessageToChat(chat._id, "user", initialMessage);
-  await Chat.findByIdAndUpdate(chat._id, { $inc: { messageCount: 1, userMessageCount: 1 } });
+  await Chat.findByIdAndUpdate(chat._id, {
+    $inc: { messageCount: 1, userMessageCount: 1 },
+    lastUserMessageAt: new Date()
+  });
 
   const response = await generateInitialAIResponse(initialMessage, category, contextPrefix);
 
@@ -63,7 +66,10 @@ export const sendMessage = async (chatId, userId, message) => {
   }
 
   await addMessageToChat(chatId, "user", message);
-  await Chat.findByIdAndUpdate(chatId, { $inc: { messageCount: 1 } });
+  await Chat.findByIdAndUpdate(chatId, {
+    $inc: { messageCount: 1, userMessageCount: 1 },
+    lastUserMessageAt: new Date()
+  });
 
   const updatedChat = await Chat.findById(chatId).populate("messages");
 

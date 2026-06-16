@@ -47,9 +47,7 @@ export function Sidebar({ isOpen, onClose, desktopMode = false }) {
   const navigate = useNavigate();
   const { chats } = useSelector((state) => state.chat);
   const { loadChats, handleDeleteChat } = useChat();
-  const { data: statsData } = useGetStatsQuery(undefined, {
-    pollingInterval: 10000,
-  });
+  const { data: statsData } = useGetStatsQuery();
 
   const [chatToDelete, setChatToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);

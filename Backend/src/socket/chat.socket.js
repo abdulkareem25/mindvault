@@ -14,19 +14,36 @@ export const chatSocket = (socket) => {
       }
 
       const minMessages = parseInt(process.env.EXTRACTION_MIN_MESSAGES) || 3;
+      const now = new Date();
+
+      // Check 1: Must have at least minimum user messages
       if (chat.userMessageCount < minMessages) {
-        await Chat.findByIdAndUpdate(chatId, { extractionStatus: 'skipped' });
         logger.extraction.info(`Skipped extraction for chat ${chatId}: userMessageCount ${chat.userMessageCount} < ${minMessages}`);
         return;
       }
 
-      await Chat.findByIdAndUpdate(chatId, { extractionStatus: 'pending' });
-      const delayMinutes = parseInt(process.env.EXTRACTION_DELAY_MINUTES) || 0;
+      // Check 2: Prevent duplicate extraction jobs (only check if already triggered)
+      if (chat.extractionTriggeredAt) {
+        const timeSinceLastTrigger = now.getTime() - chat.extractionTriggeredAt.getTime();
+        const MIN_RETRY_INTERVAL = 5 * 60 * 1000; // 5 minute minimum between retry attempts
+        if (timeSinceLastTrigger < MIN_RETRY_INTERVAL) {
+          logger.extraction.info(`Skipped extraction for chat ${chatId}: Extraction already triggered ${Math.round(timeSinceLastTrigger / 1000)}s ago`);
+          return;
+        }
+      }
+
+      // All conditions met — schedule extraction
+      await Chat.findByIdAndUpdate(chatId, {
+        extractionStatus: 'pending',
+        extractionTriggeredAt: now
+      });
 
       const jobData = {
         chatId: chat._id.toString(),
         userId: chat.userId.toString()
       };
+
+      const delayMinutes = parseInt(process.env.EXTRACTION_DELAY_MINUTES) || 0;
 
       if (delayMinutes === 0) {
         await agenda.now('extract-memories', jobData);
