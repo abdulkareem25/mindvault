@@ -12,12 +12,12 @@ export const createChat = async (userId, category, initialMessage) => {
     title
   });
 
-  await addMessageToChat(chat._id, userId, "user", initialMessage);
+  await addMessageToChat(chat._id, "user", initialMessage);
   await Chat.findByIdAndUpdate(chat._id, { $inc: { messageCount: 1 } });
 
   const response = await generateInitialAIResponse(initialMessage, category);
 
-  await addMessageToChat(chat._id, userId, "assistant", response);
+  await addMessageToChat(chat._id, "assistant", response);
   await Chat.findByIdAndUpdate(chat._id, { $inc: { messageCount: 1 } });
 
   return chat.populate("messages");
@@ -57,22 +57,23 @@ export const sendMessage = async (chatId, userId, message) => {
     throw new Error("Chat not found");
   }
 
-  await addMessageToChat(chatId, userId, "user", message);
+  await addMessageToChat(chatId, "user", message);
+  await Chat.findByIdAndUpdate(chatId, { $inc: { messageCount: 1 } });
 
   const updatedChat = await Chat.findById(chatId).populate("messages");
 
   const response = await generateAIResponse(updatedChat.messages, chat.category);
 
-  await addMessageToChat(chatId, userId, "assistant", response);
+  await addMessageToChat(chatId, "assistant", response);
+  await Chat.findByIdAndUpdate(chatId, { $inc: { messageCount: 1 } });
 
   return response;
 };
 
-export const addMessageToChat = async (chatId, userId, sender, content) => {
+export const addMessageToChat = async (chatId, sender, content) => {
 
   const message = await Message.create({
     chatId,
-    userId,
     sender,
     content,
   });

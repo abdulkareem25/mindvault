@@ -88,7 +88,6 @@ router.get(
 router.post(
   "/:id/messages",
   authMiddleware,
-  validate(idSchema, 'params'),
   validate(sendMessageSchema),
   contextInjection,
   sendMessageAndGetResponseController

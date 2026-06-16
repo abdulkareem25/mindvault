@@ -132,7 +132,7 @@ export const sendMessageAndGetResponseController = asyncHandler(async (req, res)
   const isFirstMessage = (chat.messageCount === 0);
 
   // After saving user message:
-  await chatService.addMessageToChat(chatId, req.user._id, "user", content);
+  await chatService.addMessageToChat(chatId, "user", content);
   await Chat.findByIdAndUpdate(chatId, { $inc: { messageCount: 1 } });
 
   // Get updated chat history to pass to AI
@@ -143,7 +143,7 @@ export const sendMessageAndGetResponseController = asyncHandler(async (req, res)
   const aiResponseText = await generateAIResponse(updatedChat.messages, chat.category, contextPrefix);
 
   // Save AI message:
-  const savedAiMessage = await chatService.addMessageToChat(chatId, req.user._id, "assistant", aiResponseText);
+  const savedAiMessage = await chatService.addMessageToChat(chatId, "assistant", aiResponseText);
   await Chat.findByIdAndUpdate(chatId, { $inc: { messageCount: 1 } });
 
   // Asynchronously generate chat title (first message only):

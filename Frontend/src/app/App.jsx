@@ -1,16 +1,20 @@
 import { useCallback, useEffect } from 'react'
 import { RouterProvider } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
-import { Toaster } from 'react-hot-toast'
+import AppToaster from '../shared/components/AppToaster'
 import { Plus } from 'lucide-react'
 import useAuth from '../features/auth/hooks/useAuth'
 import { useKeyboardShortcut } from '../shared/hooks/useKeyboardShortcut'
 import { openModal } from '../features/capture/captureSlice'
+import { useSocket } from '../features/chat/hooks/useSocket'
 import router from './app.routes'
 
 const App = () => {
   const { fetchCurrentUser } = useAuth();
   const dispatch = useDispatch();
+
+  // Global socket listener — vault:updated events sunne ke liye
+  useSocket();
 
   useEffect(() => {
     fetchCurrentUser();
@@ -25,7 +29,7 @@ const App = () => {
   return (
     <>
       <RouterProvider router={router} />
-      <Toaster position="bottom-right" />
+      <AppToaster />
 
       {/* Mobile floating capture button */}
       <button

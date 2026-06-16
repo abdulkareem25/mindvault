@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, useNavigate, useLocation, useBeforeUnload } from 'react-router-dom';
 import { getSocket } from '../services/chat.socket';
@@ -62,6 +62,23 @@ export default function ChatPage() {
     }
   }, [chatId]);
 
+  // Guard ref: ensure chat:closed fires exactly once per chatId
+  const closedRef = useRef(false);
+
+  const emitChatClosed = useCallback((id) => {
+    if (closedRef.current) return;
+    const socket = getSocket();
+    if (socket && id && id !== 'new') {
+      socket.emit('chat:closed', { chatId: id });
+      closedRef.current = true;
+    }
+  }, []);
+
+  // Reset guard whenever chatId changes (new chat opened)
+  useEffect(() => {
+    closedRef.current = false;
+  }, [chatId]);
+
   // Socket join / leave / closed logic
   useEffect(() => {
     const socket = getSocket();
@@ -70,18 +87,15 @@ export default function ChatPage() {
     socket.emit('chat:join', { chatId });
 
     return () => {
-      socket.emit('chat:closed', { chatId });
+      emitChatClosed(chatId);
       socket.emit('chat:leave', { chatId });
     };
-  }, [chatId]);
+  }, [chatId, emitChatClosed]);
 
-  // Handle browser close / refresh
-  useBeforeUnload(() => {
-    const socket = getSocket();
-    if (socket && chatId && chatId !== 'new') {
-      socket.emit('chat:closed', { chatId });
-    }
-  });
+  // Handle browser close / refresh — backup trigger
+  useBeforeUnload(useCallback(() => {
+    emitChatClosed(chatId);
+  }, [chatId, emitChatClosed]));
 
   // Auto-scroll messages to bottom
   useEffect(() => {

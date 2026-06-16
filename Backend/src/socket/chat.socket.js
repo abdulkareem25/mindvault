@@ -21,14 +21,20 @@ export const chatSocket = (socket) => {
       }
 
       await Chat.findByIdAndUpdate(chatId, { extractionStatus: 'pending' });
-      const delayMinutes = parseInt(process.env.EXTRACTION_DELAY_MINUTES) || 5;
-      
-      await agenda.schedule(`in ${delayMinutes} minutes`, 'extract-memories', {
+      const delayMinutes = parseInt(process.env.EXTRACTION_DELAY_MINUTES) || 0;
+
+      const jobData = {
         chatId: chat._id.toString(),
         userId: chat.userId.toString()
-      });
+      };
 
-      logger.extraction.info(`Scheduled extraction job for chat ${chatId} in ${delayMinutes} minutes`);
+      if (delayMinutes === 0) {
+        await agenda.now('extract-memories', jobData);
+        logger.extraction.info(`Scheduled immediate extraction job for chat ${chatId}`);
+      } else {
+        await agenda.schedule(`in ${delayMinutes} minutes`, 'extract-memories', jobData);
+        logger.extraction.info(`Scheduled extraction job for chat ${chatId} in ${delayMinutes} minutes`);
+      }
     } catch (error) {
       logger.extraction.error('Error handling chat:closed socket event', { chatId, error: error.message });
     }
