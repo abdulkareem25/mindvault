@@ -1,8 +1,8 @@
-import * as authService from "../services/auth.service.js";
-import asyncHandler from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
+import * as authService from "../services/auth.service.js";
 import { checkAndScheduleDigest } from "../services/digest.service.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
 export const signupController = asyncHandler(async (req, res) => {
     const {

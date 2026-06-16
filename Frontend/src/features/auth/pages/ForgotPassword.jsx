@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { AlertCircle, ArrowLeft, CheckCircle, Mail } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Mail, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button, Input } from '../../../shared/components/ui';
-import useAuth from '../hooks/useAuth';
 import { showToast } from '../../shared/components/Toast';
+import useAuth from '../hooks/useAuth';
 
 const STEPS = {
   EMAIL: 'email',
@@ -116,7 +116,7 @@ const ForgotPassword = () => {
               {/* Error Message */}
               {error && (
                 <div className="mb-6 p-4 bg-danger/10 border border-danger/50 rounded-lg flex gap-3">
-                  <AlertCircle className="w-5 h-5 text-danger flex-shrink-0 mt-0.5" />
+                  <AlertCircle className="w-5 h-5 text-danger shrink-0 mt-0.5" />
                   <p className="text-danger text-13 font-sans">{error}</p>
                 </div>
               )}
@@ -182,19 +182,19 @@ const ForgotPassword = () => {
               <div className="bg-ink border border-divide rounded-lg p-4 mb-6">
                 <div className="space-y-3">
                   <div className="flex gap-3">
-                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-ember text-cream font-mono text-11 flex items-center justify-center font-bold">
+                    <span className="shrink-0 w-5 h-5 rounded-full bg-ember text-cream font-mono text-11 flex items-center justify-center font-bold">
                       1
                     </span>
                     <p className="font-sans text-13 text-mist">Click the reset link in the email</p>
                   </div>
                   <div className="flex gap-3">
-                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-ember text-cream font-mono text-11 flex items-center justify-center font-bold">
+                    <span className="shrink-0 w-5 h-5 rounded-full bg-ember text-cream font-mono text-11 flex items-center justify-center font-bold">
                       2
                     </span>
                     <p className="font-sans text-13 text-mist">Create a new secure password</p>
                   </div>
                   <div className="flex gap-3">
-                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-ember text-cream font-mono text-11 flex items-center justify-center font-bold">
+                    <span className="shrink-0 w-5 h-5 rounded-full bg-ember text-cream font-mono text-11 flex items-center justify-center font-bold">
                       3
                     </span>
                     <p className="font-sans text-13 text-mist">Log in with your new password</p>

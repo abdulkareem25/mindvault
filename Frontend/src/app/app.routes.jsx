@@ -1,16 +1,16 @@
 import { createBrowserRouter } from "react-router-dom";
 import Protected from "../features/auth/components/Protected";
 import AlreadyVerified from "../features/auth/pages/AlreadyVerified";
+import ForgotPassword from "../features/auth/pages/ForgotPassword";
 import Login from "../features/auth/pages/Login";
+import ResetPassword from "../features/auth/pages/ResetPassword";
 import Signup from "../features/auth/pages/Signup";
 import VerifyEmail from "../features/auth/pages/VerifyEmail";
 import VerifySuccess from "../features/auth/pages/VerifySuccess";
-import ForgotPassword from "../features/auth/pages/ForgotPassword";
-import ResetPassword from "../features/auth/pages/ResetPassword";
-import Dashboard from "../features/chat/pages/Dashboard";
 import ChatPage from "../features/chat/pages/ChatPage";
-import VaultPage from "../features/vault/components/VaultPage";
+import Dashboard from "../features/chat/pages/Dashboard";
 import DigestArchivePage from "../features/digest/pages/DigestArchivePage";
+import VaultPage from "../features/vault/components/VaultPage";
 import { AppLayout } from "../shared/components/layout/AppLayout";
 
 const router = createBrowserRouter([
