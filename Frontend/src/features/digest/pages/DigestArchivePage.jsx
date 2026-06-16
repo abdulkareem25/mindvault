@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { ArrowLeft, Calendar, Inbox, Sparkles } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Calendar, ArrowLeft, Inbox } from 'lucide-react';
 import ChatSidebar from '../../chat/components/ChatSidebar';
 import SidebarToggle from '../../chat/components/SidebarToggle';
-import QuickCaptureModal from '../../capture/QuickCaptureModal';
 import { useChat } from '../../chat/hooks/useChat';
 import { useGetAllDigestsQuery } from '../digestApi';
 
@@ -54,8 +53,6 @@ const DigestArchivePage = () => {
       className="flex h-screen overflow-hidden bg-vault-parchment"
       style={{ fontFamily: 'var(--font-sans)', color: 'var(--color-vault-charcoal)' }}
     >
-      <QuickCaptureModal />
-
       <SidebarToggle
         sidebarOpen={sidebarOpen}
         onOpenSidebar={() => setSidebarOpen(true)}
@@ -78,7 +75,7 @@ const DigestArchivePage = () => {
       {/* Main View Sheet */}
       <main className="flex-1 flex flex-col min-w-0 bg-vault-parchment overflow-y-auto px-6 md:px-12 py-8 relative text-left">
         <div className="max-w-4xl w-full mx-auto space-y-6">
-          
+
           {/* Back Action / Header */}
           <div className="flex flex-col gap-2">
             <div>

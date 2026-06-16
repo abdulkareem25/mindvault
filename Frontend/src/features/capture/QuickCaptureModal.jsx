@@ -1,19 +1,19 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../../constants';
+import { Button, CategoryBadge, Modal, TypeBadge } from '../../shared/components/ui';
 import { showToast } from '../shared/components/Toast';
 import { useCreateMemoryMutation } from '../vault/vaultApi';
 import {
   closeModal,
-  setContent,
-  setClassification,
-  setIsClassifying,
-  setIsSaving,
   overrideCategory,
   overrideType,
+  setClassification,
+  setContent,
+  setIsClassifying,
+  setIsSaving,
 } from './captureSlice';
-import { API_BASE_URL } from '../../constants';
-import { Modal, Button, CategoryBadge, TypeBadge } from '../../shared/components/ui';
 
 const CATEGORIES = ['coding', 'deen', 'admin', 'life'];
 const MEMORY_TYPES = ['decision', 'preference', 'learning', 'goal', 'fact'];
@@ -70,14 +70,33 @@ const QuickCaptureModal = () => {
           },
           body: JSON.stringify({ content: text }),
         });
+
+        if (!res.ok) {
+          throw new Error(`Classification failed: ${res.status}`);
+        }
+
         const data = await res.json();
-        if (data.classification) {
+
+        // Validate response structure
+        if (data.classification &&
+          data.classification.category &&
+          data.classification.type) {
           dispatch(setClassification(data.classification));
           setLocalCategory(data.classification.category);
           setLocalType(data.classification.type);
+        } else {
+          throw new Error('Invalid classification response structure');
         }
-      } catch {
-        dispatch(setClassification({ category: 'life', type: 'fact', tags: [] }));
+      } catch (error) {
+        console.error('Classification error:', error);
+        const defaultClassification = { category: 'life', type: 'fact', tags: [] };
+        dispatch(setClassification(defaultClassification));
+        setLocalCategory('life');
+        setLocalType('fact');
+        // Only show toast for actual errors, not for normal validation failures
+        if (error.message.includes('Classification failed')) {
+          showToast('warn', 'AI classification unavailable, using defaults');
+        }
       } finally {
         dispatch(setIsClassifying(false));
       }
@@ -92,7 +111,7 @@ const QuickCaptureModal = () => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       classifyContent(value);
-    }, 800);
+    }, 1000);
   };
 
   useEffect(() => {

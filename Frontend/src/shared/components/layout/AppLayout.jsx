@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Topbar } from './Topbar';
+import QuickCaptureModal from '../../../features/capture/QuickCaptureModal';
 import { Sidebar } from './Sidebar';
+import { Topbar } from './Topbar';
 
 export function AppLayout({ children }) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -18,7 +19,7 @@ export function AppLayout({ children }) {
         {/* Desktop sidebar — always visible, never shrinks */}
         <aside className="hidden lg:flex flex-col shrink-0 w-65
           bg-obsidian border-r border-divide overflow-y-auto">
-          <Sidebar isOpen={false} onClose={() => {}} desktopMode />
+          <Sidebar isOpen={false} onClose={() => { }} desktopMode />
         </aside>
 
         {/* Mobile sidebar overlay — rendered via Sidebar's overlay logic */}
@@ -30,6 +31,9 @@ export function AppLayout({ children }) {
         </main>
 
       </div>
+
+      {/* Global Quick Capture Modal */}
+      <QuickCaptureModal />
     </div>
   );
 }
