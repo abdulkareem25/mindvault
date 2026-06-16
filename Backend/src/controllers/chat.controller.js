@@ -1,7 +1,9 @@
 import Chat from "../models/chat.model.js";
 import { generateAIResponse, generateChatTitle } from "../services/ai.service.js";
 import * as chatService from "../services/chat.service.js";
+import * as contextService from "../services/context.service.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import * as prompts from "../utils/prompts.js";
 
 export const createChatController = asyncHandler(async (req, res) => {
 
@@ -14,10 +16,40 @@ export const createChatController = asyncHandler(async (req, res) => {
     });
   }
 
+  // Inject context from relevant vault memories on first message
+  let contextPrefix = null;
+  let injectedMemoryIds = [];
+  let injectedMemories = [];
+
+  try {
+    const memories = await contextService.getRelevantMemories({
+      userId: req.user._id,
+      category,
+      limit: parseInt(process.env.CONTEXT_MAX_MEMORIES) || 5,
+      maxTokens: parseInt(process.env.CONTEXT_MAX_TOKENS) || 1000
+    });
+
+    if (memories && memories.length > 0) {
+      contextPrefix = prompts.CONTEXT_PREFIX(memories);
+      injectedMemoryIds = memories.map(m => m._id);
+      injectedMemories = memories.map(m => ({
+        _id: m._id,
+        content: m.content,
+        category: m.category,
+        type: m.type
+      }));
+    }
+  } catch (error) {
+    console.error('Context injection failed during chat creation:', error);
+    // Don't fail the chat creation if context injection fails
+  }
+
   const chat = await chatService.createChat(
     req.user._id,
     category,
-    initialMessage
+    initialMessage,
+    contextPrefix,
+    injectedMemoryIds
   );
 
   if (!chat) {
@@ -31,6 +63,7 @@ export const createChatController = asyncHandler(async (req, res) => {
     success: true,
     message: "Chat created successfully",
     data: chat,
+    injectedMemories
   });
 });
 

@@ -70,9 +70,9 @@ export const generateChatTitle = async (params) => {
 /**
  * Generates initial AI response when starting a chat using Groq
  */
-export const generateInitialAIResponse = async (initialMessage, category) => {
+export const generateInitialAIResponse = async (initialMessage, category, contextPrefix = null) => {
   const messages = [{ role: 'user', content: initialMessage }];
-  return await chatCompletion({ messages, category });
+  return await chatCompletion({ messages, category, contextPrefix });
 };
 
 /**

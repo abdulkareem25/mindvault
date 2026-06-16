@@ -2,20 +2,21 @@ import Chat from "../models/chat.model.js";
 import Message from "../models/message.model.js";
 import { generateAIResponse, generateChatTitle, generateInitialAIResponse } from "./ai.service.js";
 
-export const createChat = async (userId, category, initialMessage) => {
+export const createChat = async (userId, category, initialMessage, contextPrefix = null, injectedMemoryIds = []) => {
 
   const title = await generateChatTitle({ firstMessage: initialMessage, category });
 
   const chat = await Chat.create({
     userId,
     category,
-    title
+    title,
+    injectedMemoryIds
   });
 
   await addMessageToChat(chat._id, "user", initialMessage);
   await Chat.findByIdAndUpdate(chat._id, { $inc: { messageCount: 1, userMessageCount: 1 } });
 
-  const response = await generateInitialAIResponse(initialMessage, category);
+  const response = await generateInitialAIResponse(initialMessage, category, contextPrefix);
 
   await addMessageToChat(chat._id, "assistant", response);
   await Chat.findByIdAndUpdate(chat._id, { $inc: { messageCount: 1 } });
@@ -24,12 +25,16 @@ export const createChat = async (userId, category, initialMessage) => {
 };
 
 export const getChats = async (userId) => {
-  const chats = await Chat.find({ userId }).sort({ lastMessageAt: -1 });
+  const chats = await Chat.find({ userId })
+    .populate("injectedMemoryIds")
+    .sort({ lastMessageAt: -1 });
   return chats;
 };
 
 export const getChatById = async (chatId, userId) => {
-  const chat = await Chat.findOne({ _id: chatId, userId }).populate("messages");
+  const chat = await Chat.findOne({ _id: chatId, userId })
+    .populate("messages")
+    .populate("injectedMemoryIds");
   return chat;
 };
 

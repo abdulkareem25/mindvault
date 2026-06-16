@@ -1,28 +1,28 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useParams, useNavigate, useLocation, useBeforeUnload } from 'react-router-dom';
-import { getSocket } from '../services/chat.socket';
-import { useChat } from '../hooks/useChat';
-import { setActiveChatId, incrementMessageCount } from '../chat.slice';
-import { MessageBubble, TypingIndicator } from '../components/MessageBubble';
-import MessageComposer from '../components/MessageComposer';
-import ContextPillsBar from '../components/ContextPillsBar';
+import { useBeforeUnload, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { CategoryBadge, SectionLabel } from '../../../shared/components/ui';
 import { showToast } from '../../shared/components/Toast';
+import { incrementMessageCount, setActiveChatId } from '../chat.slice';
+import ContextPillsBar from '../components/ContextPillsBar';
+import { MessageBubble, TypingIndicator } from '../components/MessageBubble';
+import MessageComposer from '../components/MessageComposer';
+import { useChat } from '../hooks/useChat';
+import { getSocket } from '../services/chat.socket';
 
 const CATEGORY_DOT = {
   coding: '#7099e8',
-  deen:   '#b88cdb',
-  admin:  '#d4a84c',
-  life:   '#5ec98a',
+  deen: '#b88cdb',
+  admin: '#d4a84c',
+  life: '#5ec98a',
   global: '#524f4a',
 };
 
 const CATEGORY_LABELS = {
   coding: 'Coding',
-  deen:   'Deen',
-  admin:  'Admin',
-  life:   'Life',
+  deen: 'Deen',
+  admin: 'Admin',
+  life: 'Life',
   global: 'Global',
 };
 
@@ -35,6 +35,7 @@ export default function ChatPage() {
   const {
     loadChats,
     loadMessageHistory,
+    loadChatMemories,
     handleCreateChat,
     sendMessageToChat,
   } = useChat();
@@ -53,9 +54,14 @@ export default function ChatPage() {
     if (chatId && chatId !== 'new') {
       dispatch(setActiveChatId(chatId));
       setIsLoadingHistory(true);
-      loadMessageHistory(chatId).finally(() => {
-        setIsLoadingHistory(false);
-      });
+      loadMessageHistory(chatId)
+        .then(() => {
+          // Load injected memories for this chat
+          return loadChatMemories(chatId);
+        })
+        .finally(() => {
+          setIsLoadingHistory(false);
+        });
     } else {
       dispatch(setActiveChatId(null));
       setSelectedCategory(null);
@@ -159,9 +165,9 @@ export default function ChatPage() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-xl w-full">
           {[
             { id: 'coding', label: 'Coding', desc: 'Software engineering, algorithms, architectures.' },
-            { id: 'deen',   label: 'Deen',   desc: 'Spiritual learnings, Quranic studies, Islamic history.' },
-            { id: 'admin',  label: 'Admin',  desc: 'Tax files, schedules, finances, plans.' },
-            { id: 'life',   label: 'Life',   desc: 'Personal journal entries, reflections, goals.' },
+            { id: 'deen', label: 'Deen', desc: 'Spiritual learnings, Quranic studies, Islamic history.' },
+            { id: 'admin', label: 'Admin', desc: 'Tax files, schedules, finances, plans.' },
+            { id: 'life', label: 'Life', desc: 'Personal journal entries, reflections, goals.' },
             { id: 'global', label: 'Global', desc: 'Cross-cutting topics, queries across all vaults.' },
           ].map(cat => (
             <button

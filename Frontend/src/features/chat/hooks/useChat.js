@@ -1,12 +1,13 @@
 import { useDispatch, useSelector } from "react-redux";
 import { showToast } from "../../shared/components/Toast";
-import { setActiveChatId, setChats, setError, setLoading, setMessageHistory, setInjectedMemories } from "../chat.slice";
+import { setActiveChatId, setChats, setInjectedMemories, setLoading, setMessageHistory } from "../chat.slice";
 import {
+  createChat,
+  deleteChat,
+  fetchChatById,
   fetchChats,
   fetchMessageHistory,
-  sendMessage,
-  createChat,
-  deleteChat
+  sendMessage
 } from "../services/chat.api";
 import { initSocketConnection } from "../services/chat.socket";
 
@@ -42,6 +43,23 @@ export const useChat = () => {
     }
   };
 
+  const loadChatMemories = async (chatId) => {
+    try {
+      const chatData = await fetchChatById(chatId);
+      if (chatData?.data?.injectedMemoryIds && chatData.data.injectedMemoryIds.length > 0) {
+        const memories = chatData.data.injectedMemoryIds.map(m => ({
+          _id: m._id,
+          content: m.content,
+          category: m.category,
+          type: m.type
+        }));
+        dispatch(setInjectedMemories({ chatId, memories }));
+      }
+    } catch (error) {
+      console.log("Load chat memories failed:", error);
+    }
+  };
+
   const sendMessageToChat = async (chatId, message) => {
     try {
       dispatch(setLoading(true));
@@ -60,8 +78,11 @@ export const useChat = () => {
   const handleCreateChat = async (category, initialMessage) => {
     try {
       dispatch(setLoading(true));
-      const chat = await createChat(category, initialMessage);
-      return chat;
+      const response = await createChat(category, initialMessage);
+      if (response?.data?._id && response?.injectedMemories) {
+        dispatch(setInjectedMemories({ chatId: response.data._id, memories: response.injectedMemories }));
+      }
+      return response;
     } catch (error) {
       console.log("Create chat failed:", error);
       showToast("error");
@@ -94,6 +115,7 @@ export const useChat = () => {
     initSocketConnection,
     loadChats,
     loadMessageHistory,
+    loadChatMemories,
     sendMessageToChat,
     handleCreateChat,
     initialState,
