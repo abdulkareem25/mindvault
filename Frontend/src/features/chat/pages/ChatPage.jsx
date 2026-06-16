@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useBeforeUnload, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { CategoryBadge, SectionLabel } from '../../../shared/components/ui';
 import { showToast } from '../../shared/components/Toast';
-import { addMessageOptimistic, incrementMessageCount, setActiveChatId } from '../chat.slice';
+import { addMessageOptimistic, incrementMessageCount, setActiveChatId, setMessageHistory } from '../chat.slice';
 import ContextPillsBar from '../components/ContextPillsBar';
 import { MessageBubble } from '../components/MessageBubble';
 import MessageComposer from '../components/MessageComposer';
@@ -53,8 +53,14 @@ export default function ChatPage() {
   // Set active chat ID in Redux store
   useEffect(() => {
     if (chatId && chatId !== 'new') {
+      const skipSpinner = location.state?.skipHistoryLoad;
       dispatch(setActiveChatId(chatId));
-      setIsLoadingHistory(true);
+      
+      // Always load message history, but skip spinner for newly created chats
+      if (!skipSpinner) {
+        setIsLoadingHistory(true);
+      }
+      
       loadMessageHistory(chatId)
         .then(() => {
           // Load injected memories for this chat
@@ -64,10 +70,12 @@ export default function ChatPage() {
           setIsLoadingHistory(false);
         });
     } else {
+      // Clear everything when starting a new chat
       dispatch(setActiveChatId(null));
+      dispatch(setMessageHistory([]));
       setSelectedCategory(null);
     }
-  }, [chatId]);
+  }, [chatId, location.state, dispatch]);
 
   // Guard ref: ensure chat:closed fires exactly once per chatId
   const closedRef = useRef(false);
@@ -125,8 +133,12 @@ export default function ChatPage() {
       if (chatId === 'new') {
         const result = await handleCreateChat(chatCategory, messageText);
         if (result?.data?._id) {
+          // Set initial message history from creation response if available
+          if (result?.data?.messages) {
+            dispatch(setMessageHistory(result.data.messages));
+          }
           await loadChats();
-          navigate(`/chats/${result.data._id}`);
+          navigate(`/chats/${result.data._id}`, { state: { skipHistoryLoad: true } });
         } else {
           showToast('error', 'Failed to start conversation');
         }
