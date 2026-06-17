@@ -1,5 +1,5 @@
 import Agenda from 'agenda';
-import defineMemoryExtractionJob from '../jobs/memoryExtraction.job.js';
+// [EXTRACTION DISABLED] import defineMemoryExtractionJob from '../jobs/memoryExtraction.job.js';
 import defineDigestJob from '../jobs/digest.job.js';
 
 const agenda = new Agenda({
@@ -12,7 +12,7 @@ const agenda = new Agenda({
 });
 
 // Register job definitions
-defineMemoryExtractionJob(agenda);
+// [EXTRACTION DISABLED] defineMemoryExtractionJob(agenda);
 defineDigestJob(agenda);
 
 export default agenda;

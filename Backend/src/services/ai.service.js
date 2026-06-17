@@ -5,7 +5,7 @@ import { HumanMessage, SystemMessage } from 'langchain';
 import logger from '../utils/logger.js';
 import * as prompts from '../utils/prompts.js';
 
-const { EXTRACTION } = prompts;
+// [EXTRACTION DISABLED] const { EXTRACTION } = prompts;
 
 // Initialize clients
 const geminiApiKey = process.env.GEMINI_API_KEY;
@@ -171,9 +171,10 @@ export const classifyCapture = async ({ content }) => {
   }
 };
 
-/**
- * Extracts memory nodes from a conversation using Google Gemini 2.5 Flash Lite
- */
+/*
+ * [EXTRACTION DISABLED] — extractMemories is temporarily commented out.
+ * Re-enable when extraction pipeline is reactivated.
+ *
 export const extractMemories = async ({ messages }) => {
   if (!genAI) {
     throw new Error('GEMINI_API_KEY is not configured, cannot extract memories.');
@@ -215,6 +216,7 @@ export const extractMemories = async ({ messages }) => {
     throw error; // Rethrow to trigger Agenda job retry
   }
 };
+*/
 
 /**
  * Generates a weekly digest from recent memories and chat topics using Groq
