@@ -42,7 +42,7 @@ export const signup = async ({
         `
           <h1>Welcome, ${name}!</h1>
           <p>Thank you for signing up for MindVault. Please verify your email by clicking the link below:</p>
-          <a href="http://localhost:3000/api/auth/verify-email?token=${emailVerificationToken}">Verify Email</a>
+          <a href="${process.env.SERVER_URL}/api/auth/verify-email?token=${emailVerificationToken}>Verify Email</a>
         `
       ).catch((err) => {
         console.error("Error sending welcome email:", err.message);
@@ -68,7 +68,7 @@ export const signup = async ({
     `
       <h1>Welcome, ${name}!</h1>
       <p>Thank you for signing up for MindVault. Please verify your email by clicking the link below:</p>
-      <a href="http://localhost:3000/api/auth/verify-email?token=${emailVerificationToken}">Verify Email</a>
+      <a href="${process.env.SERVER_URL}/api/auth/verify-email?token=${emailVerificationToken}">Verify Email</a>
     `
   ).catch((err) => {
     console.error("Error sending welcome email:", err.message);
@@ -177,7 +177,7 @@ export const resendEmailVerification = async (email) => {
     `
       <h1>Hello, ${user.name}!</h1>
       <p>It looks like you requested a new email verification link. Please click the link below to verify your email:</p>
-      <a href="http://localhost:3000/api/auth/verify-email?token=${emailVerificationToken}">Verify Email</a>
+      <a href="${process.env.SERVER_URL}/api/auth/verify-email?token=${emailVerificationToken}">Verify Email</a>
     `
   ).catch((err) => {
     console.error("Error sending verification email:", err.message);
