@@ -1,13 +1,9 @@
-// [EXTRACTION DISABLED] import agenda from '../config/agenda.js';
+import agenda from '../config/agenda.js';
 import Chat from '../models/chat.model.js';
 import logger from '../utils/logger.js';
 
 export const chatSocket = (socket) => {
   socket.on('chat:closed', async ({ chatId }) => {
-    // [EXTRACTION DISABLED] — Extraction pipeline is temporarily disabled.
-    // Re-enable the block below to restore auto-extraction on chat close.
-
-    /*
     try {
       if (!chatId) return;
 
@@ -59,6 +55,5 @@ export const chatSocket = (socket) => {
     } catch (error) {
       logger.extraction.error('Error handling chat:closed socket event', { chatId, error: error.message });
     }
-    */
   });
 };

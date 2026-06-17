@@ -31,8 +31,8 @@ export const useSocket = () => {
       const memoryText = newCount === 1 ? 'memory' : 'memories';
       toast.success(`✨ ${newCount} new ${memoryText} saved to your vault`);
       
-      // 3. Invalidate RTK Query cache for memories so that vault page updates
-      dispatch(vaultApi.util.invalidateTags(['Memory']));
+      // 3. Invalidate RTK Query cache for memories AND stats so vault page + sidebar counts update
+      dispatch(vaultApi.util.invalidateTags(['Memory', 'Stats']));
     };
 
     socket.on('vault:updated', handleVaultUpdated);

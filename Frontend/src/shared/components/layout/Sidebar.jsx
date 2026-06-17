@@ -303,7 +303,6 @@ function ChatSidebarItem({ chat, onSelect, onDelete }) {
         </p>
         <p className="font-mono text-11 text-smoke mt-0.5 flex items-center gap-1">
           {formatRelativeTime(chat.updatedAt)}
-          {/* [EXTRACTION DISABLED] — Processing spinner hidden while extraction is off.
           {chat.extractionStatus === 'processing' && (
             <span className="flex gap-0.5 ml-1">
               {[0, 1, 2].map(i => (
@@ -315,7 +314,6 @@ function ChatSidebarItem({ chat, onSelect, onDelete }) {
               ))}
             </span>
           )}
-          */}
         </p>
       </div>
 

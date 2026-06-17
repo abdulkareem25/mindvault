@@ -16,7 +16,7 @@ export async function generateEmbedding(text) {
 
   const model = genAI.getGenerativeModel({ model: 'embedding-001' });
   const truncatedText = text.substring(0, 8000); // Truncate to avoid token limit
-  const result = await model.embedText(truncatedText);
+  const result = await model.embedContent(truncatedText);
 
   if (!result || !result.embedding || !result.embedding.values) {
     throw new Error('Embedding generation returned an empty result.');

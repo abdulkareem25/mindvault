@@ -1,7 +1,3 @@
-// [EXTRACTION DISABLED] — This entire service is temporarily commented out.
-// To re-enable, remove the block comment below.
-
-/*
 import agenda from '../config/agenda.js';
 import { updateUserMemorySummary } from '../controllers/memory.controller.js';
 import Chat from '../models/chat.model.js';
@@ -17,7 +13,7 @@ import * as searchService from './search.service.js';
  * Validates the structure and content of an extracted memory node.
  * @param {Object} node - The memory node to validate
  * @returns {boolean} - True if the node is valid, false otherwise
-//  
+*/
 function validateNode(node) {
   const validCategories = ['coding', 'deen', 'admin', 'life'];
   const validTypes = ['decision', 'preference', 'learning', 'goal', 'fact'];
@@ -39,7 +35,7 @@ function validateNode(node) {
  * @param {Object} params - Extraction parameters
  * @param {string} params.chatId - ID of the Chat
  * @param {string} params.userId - ID of the User
-// 
+*/ 
 export async function extractFromChat({ chatId, userId }) {
   // 1. Guard: verify status is not already processing/completed
   const chat = await Chat.findById(chatId);
@@ -179,5 +175,3 @@ export async function extractFromChat({ chatId, userId }) {
     }
   }
 }
-
-*/
