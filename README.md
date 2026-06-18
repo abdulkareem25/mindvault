@@ -25,24 +25,29 @@ MindVault is a full-stack AI chat application built around a single architectura
 
 ## Features
 
-### Core (MVP)
+### Core (Implemented)
 
 | Feature | Description |
 |---|---|
-| **Memory Extraction Engine** | Background job that runs after every closed chat. Calls Groq with a structured prompt to extract 1–5 Memory Nodes — decisions, preferences, learnings, goals, and facts — specific to the user. |
+| **Memory Extraction Engine** | Background job that runs after every closed chat. Calls Gemini 2.5 Flash Lite with a structured prompt to extract 1–5 Memory Nodes — decisions, preferences, learnings, goals, and facts — specific to the user. |
 | **Knowledge Vault** | Dedicated `/vault` page: browse, filter (by category + type), inline-edit, archive, and delete memory nodes. Your accumulated AI knowledge in one place. |
 | **Context Injection** | On the first message of any new chat, the server fetches the top 5 relevant memories and prepends them as a hidden system context block. The AI starts informed without the user re-explaining anything. |
-| **Quick Capture** | Global modal (`⌘/Ctrl + Shift + M`) to dump a thought directly into the vault in under 3 seconds. AI auto-classifies category and type. |
-| **Four Life Categories** | **Coding**, **Deen**, **Admin**, **Life** — memories and chats are scoped to these domains, enabling category-specific context injection. |
+| **Context Pills** | Visible collapsible bar in the chat UI showing which memories were injected as context. Individual pills can be removed to exclude a specific memory from the current conversation. "Remove all context" clears the entire injected context in one click. |
+| **Semantic Search** | Vector-based search using Gemini `embedding-001` and in-process cosine similarity. Supports both semantic (embedding-based) and keyword (regex) search across the vault. |
+| **Memory De-duplication** | Cosine similarity check on write — memories above `SIMILARITY_MERGE_THRESHOLD` reinforce an existing node's `reinforcementCount` rather than creating a duplicate. Memories above `SIMILARITY_WARN_THRESHOLD` are flagged as possible duplicates. |
+| **Quick Capture** | Global modal (`⌘/Ctrl + Shift + M`) to dump a thought directly into the vault in under 3 seconds. Gemini 2.5 Flash Lite auto-classifies category, type, and tags. |
+| **Five Life Categories** | **Coding**, **Deen**, **Admin**, **Life**, **Global** — memories and chats are scoped to these domains. Global is a cross-cutting category for queries that span multiple vaults. |
+| **Streaming Responses (SSE)** | AI responses are streamed token-by-token via Server-Sent Events, with a dedicated `/messages/stream` endpoint. The frontend renders tokens progressively as they arrive. |
+| **Optimistic UI** | User messages appear in the chat immediately (before the server responds), with the AI response streaming in below. No waiting for a round-trip before your message shows. |
+| **Paginated Message History** | Conversation history loads in pages of 20 messages. Scrolling to the top of a chat automatically loads the next page while preserving scroll position. |
+| **Weekly AI Digest** | Automatically generated in-app synthesis of your last 7 days of memories and chat topics, triggered whenever ≥3 new memories accumulate in a 7-day window. Dismissible and archived for later review. |
+| **Knowledge-first Dashboard** | Home screen showing per-category vault memory counts (live), 5 most recent memory nodes, and 6 most recent chats — each linking directly to the relevant page. |
+| **AI-generated Chat Titles** | New chats are automatically named using Mistral (`mistral-small-latest`) based on the opening message and category. |
 
-### Phase 2 (Planned)
+### Phase 3 (Planned)
 
-- **Context Pills** — visible bar in chat showing which memories were injected, with the ability to remove individual ones
-- **Semantic Search** — vector-based search using Gemini `text-embedding-004` and in-process cosine similarity (no Atlas Vector Search required)
-- **Memory De-duplication** — similarity threshold check on write; near-duplicates reinforce rather than create new nodes
-- **Dashboard Redesign** — knowledge-first home screen with vault highlights and memory counts per category
-- **Weekly AI Digest** — in-app synthesis of your last 7 days of decisions and learnings
 - **Memory Timeline** — chronological view of how your knowledge base grew over time
+- **Global Chat** — a chat mode that searches across all categories simultaneously
 
 ---
 
@@ -55,7 +60,7 @@ MindVault follows a **three-tier monolith with async intelligence** pattern:
 │               CLIENT (Browser)                        │
 │  React 19 · Redux Toolkit · RTK Query · Tailwind v4   │
 └──────────────────────┬────────────────────────────────┘
-                       │  REST (HTTP) + WebSocket
+                       │  REST (HTTP) + SSE + WebSocket
 ┌──────────────────────▼────────────────────────────────┐
 │              APPLICATION SERVER                       │
 │           Node.js + Express 5 + Socket.io             │
@@ -65,17 +70,22 @@ MindVault follows a **three-tier monolith with async intelligence** pattern:
 │                                                       │
 │  Agenda.js (MongoDB-backed job queue)                 │
 │  └── extract-memories job (fires 5 min after close)   │
+│  └── generate-digest job (fires when ≥3 new memories) │
 └──────────────────────┬────────────────────────────────┘
                        │
 ┌──────────────────────▼────────────────────────────────┐
 │             DATA TIER (MongoDB Atlas)                 │
-│   users · chats · messages · memories · agendaJobs    │
+│  users · chats · messages · memories · digests        │
+│  agendaJobs                                           │
 └──────────────────────┬────────────────────────────────┘
                        │
 ┌──────────────────────▼────────────────────────────────┐
 │              EXTERNAL SERVICES                        │
-│  Groq (llama-3.3-70b-versatile) — chat + extraction   │
-│  Gemini (text-embedding-004) — semantic embeddings    │
+│  Groq (llama-3.3-70b-versatile) — chat completions    │
+│  Mistral (mistral-small-latest) — chat title gen      │
+│  Gemini (gemini-2.5-flash-lite) — extraction,         │
+│    classification, quick capture                      │
+│  Gemini (embedding-001) — semantic embeddings         │
 │  Brevo/SMTP — email verification + password reset     │
 └───────────────────────────────────────────────────────┘
 ```
@@ -84,9 +94,11 @@ MindVault follows a **three-tier monolith with async intelligence** pattern:
 
 1. User closes a chat → `chat:closed` socket event fires
 2. Agenda.js schedules an `extract-memories` job (5-minute delay)
-3. Job calls Groq with the full conversation + extraction prompt
-4. Valid Memory Nodes are written to the `memories` collection
-5. `vault:updated` socket event notifies the client — vault refreshes live
+3. Job calls Gemini 2.5 Flash Lite with the full conversation + extraction prompt
+4. Valid Memory Nodes are cosine-similarity checked against existing vault entries
+5. Non-duplicate nodes are written to the `memories` collection
+6. `vault:updated` socket event notifies the client — vault refreshes live
+7. If ≥3 new memories accumulated in the past 7 days, a `generate-digest` job is queued
 
 ---
 
@@ -98,10 +110,12 @@ MindVault follows a **three-tier monolith with async intelligence** pattern:
 |---|---|
 | Node.js + Express 5 | HTTP server and REST API |
 | Socket.io | Real-time chat and vault update events |
-| MongoDB + Mongoose | Primary data store (users, chats, messages, memories) |
-| Agenda.js | MongoDB-backed async job queue for memory extraction |
-| Groq SDK (`llama-3.3-70b-versatile`) | Chat completions, memory extraction, quick capture classification |
-| Google Gemini SDK (`text-embedding-004`) | Vector embeddings for semantic search (Phase 2) |
+| MongoDB + Mongoose | Primary data store (users, chats, messages, memories, digests) |
+| Agenda.js | MongoDB-backed async job queue for memory extraction and digest generation |
+| Groq SDK (`llama-3.3-70b-versatile`) | Chat completions |
+| LangChain + Mistral (`mistral-small-latest`) | AI-generated chat titles |
+| Google Gemini SDK (`gemini-2.5-flash-lite`) | Memory extraction, quick capture classification, note classification |
+| Google Gemini SDK (`embedding-001`) | Vector embeddings for semantic search and de-duplication |
 | bcryptjs | Password hashing (cost factor 12) |
 | JWT (jsonwebtoken) | Access + refresh token authentication |
 | Joi | Request body validation |
@@ -139,11 +153,17 @@ MindVault/
 │   ├── src/
 │   │   ├── config/          # DB connection, Agenda setup, Gemini client
 │   │   ├── controllers/     # Thin request handlers (parse → service → respond)
-│   │   ├── jobs/            # Agenda job definitions (memoryExtraction.job.js)
+│   │   │                    # auth, chat, memory, digest
+│   │   ├── jobs/            # Agenda job definitions (memoryExtraction.job.js,
+│   │   │                    #   generateDigest.job.js)
 │   │   ├── middlewares/     # JWT auth, context injection, Joi validation, error handler
-│   │   ├── models/          # Mongoose schemas: User, Chat, Message, Memory
-│   │   ├── routes/          # Express route definitions
-│   │   ├── services/        # Business logic: ai, extraction, context, embedding, search, email
+│   │   ├── models/          # Mongoose schemas: User, Chat, Message, Memory, Digest
+│   │   ├── routes/          # Express route definitions (auth, chats, memories, digest)
+│   │   ├── scripts/         # One-off admin scripts:
+│   │   │                    #   retroactiveExtraction.js — backfill memory extraction
+│   │   │                    #   migrateEmbeddings.js — backfill vector embeddings
+│   │   ├── services/        # Business logic: ai, chat, extraction, context, embedding,
+│   │   │                    #   search, digest, auth, mail
 │   │   ├── socket/          # Socket.io event handlers (chat, vault)
 │   │   ├── utils/           # prompts.js, cosineSimilarity.js, tokenCounter.js, logger.js
 │   │   ├── validators/      # Joi schemas per resource
@@ -155,18 +175,15 @@ MindVault/
 │       ├── app/             # Redux store, root App.jsx, router config
 │       ├── constants/       # CATEGORIES, MEMORY_TYPES, API_BASE_URL
 │       ├── features/
-│       │   ├── auth/        # Login, Signup, VerifyEmail + authSlice + authApi
-│       │   ├── chat/        # ChatPage, MessageList, MessageComposer + chatSlice + chatApi
+│       │   ├── auth/        # Login, Signup, VerifyEmail, ForgotPassword, ResetPassword
+│       │   │                #   + authSlice + authApi
+│       │   ├── chat/        # ChatPage, Dashboard, MessageBubble, MessageComposer,
+│       │   │                #   ContextPillsBar, ChatSidebar, ChatsModal, CategoryModal,
+│       │   │                #   MarkdownMessage + chatSlice + useChat + useSocket
 │       │   ├── vault/       # VaultPage, MemoryCard, VaultFilters + vaultSlice + vaultApi
 │       │   ├── capture/     # QuickCaptureModal + captureSlice
-│       │   └── digest/      # Weekly digest (Phase 2)
-│       └── shared/          # Sidebar, Dashboard, Button, Badge, Modal, hooks (useSocket, useAuth)
-│
-├── mindvault-v2-prd.md          # Full Product Requirements Document
-├── mindvault-v2-architecture.md # Technical Architecture Document
-├── mindvault-v2-security.md     # Security model, error handling, pre-launch checklist
-├── mindvault-v2-frontend-spec.md# Frontend component and UX specification
-└── mindvault-v2-ticket-list.md  # Full engineering ticket breakdown
+│       │   └── digest/      # DigestCard + digestApi
+│       └── shared/          # Sidebar, Button, Badge, Modal, Toast, hooks (useSocket, useAuth)
 ```
 
 **Design principle:** Controllers are intentionally thin. All business logic lives in services. All AI prompts live in `utils/prompts.js` as the single source of truth — iterable without touching service code.
@@ -180,7 +197,8 @@ MindVault/
 - Node.js ≥ 18
 - A [MongoDB Atlas](https://cloud.mongodb.com) cluster (M0 free tier works)
 - A [Groq](https://console.groq.com) API key
-- A [Google AI Studio](https://aistudio.google.com) API key (Gemini, for Phase 2 embeddings)
+- A [Google AI Studio](https://aistudio.google.com) API key (Gemini, for extraction, classification, and embeddings)
+- A [Mistral AI](https://console.mistral.ai) API key (for chat title generation)
 - SMTP credentials or a [Brevo](https://brevo.com) API key for email
 
 ### Environment Variables
@@ -198,8 +216,9 @@ cp Backend/.env.example Backend/.env
 | `DB_URI` / `MONGODB_URI` | MongoDB Atlas connection string |
 | `JWT_SECRET` | Access token signing secret (min 64 chars) |
 | `JWT_REFRESH_SECRET` | Refresh token signing secret |
-| `GROQ_API_KEY` | Groq API key for chat + extraction |
-| `GEMINI_API_KEY` | Gemini API key for embeddings |
+| `GROQ_API_KEY` | Groq API key for chat completions |
+| `GEMINI_API_KEY` | Gemini API key for extraction, classification, and embeddings |
+| `MISTRAL_API_KEY` | Mistral API key for chat title generation |
 | `SENDER_EMAIL` | From address for transactional email |
 | `BREVO_API_KEY` | Brevo API key for email delivery |
 | `EXTRACTION_MIN_MESSAGES` | Minimum user messages before extraction runs (default: `3`) |
@@ -207,7 +226,7 @@ cp Backend/.env.example Backend/.env
 | `CONTEXT_MAX_MEMORIES` | Max memory nodes injected per chat (default: `5`) |
 | `CONTEXT_MAX_TOKENS` | Hard cap on injected context size (default: `1000`) |
 | `SIMILARITY_MERGE_THRESHOLD` | Cosine similarity above which a new memory is merged (default: `0.90`) |
-| `SIMILARITY_WARN_THRESHOLD` | Similarity above which a \"possible duplicate\" warning is shown (default: `0.75`) |
+| `SIMILARITY_WARN_THRESHOLD` | Similarity above which a "possible duplicate" warning is shown (default: `0.75`) |
 | `AGENDA_COLLECTION` | MongoDB collection for Agenda jobs (default: `agendaJobs`) |
 | `AGENDA_PROCESS_EVERY` | Job polling interval (default: `30 seconds`) |
 
@@ -259,8 +278,9 @@ All routes are prefixed with `/api`. Protected routes require `Authorization: Be
 | `GET` | `/chats/:id` | Get chat with injected memories populated |
 | `PATCH` | `/chats/:id` | Update title |
 | `DELETE` | `/chats/:id` | Delete chat + all messages (cascade) |
-| `GET` | `/chats/:id/messages` | All messages ordered by `createdAt` asc |
-| `POST` | `/chats/:id/messages` | **Send message.** Triggers context injection middleware on first message. |
+| `GET` | `/chats/:id/messages` | Paginated messages. Query: `page`, `limit` (default 20) |
+| `POST` | `/chats/:id/messages` | **Send message.** Triggers context injection middleware on first message. Returns full AI response. |
+| `POST` | `/chats/:id/messages/stream` | **Send message (streaming).** Same as above but returns a Server-Sent Events stream — tokens arrive progressively. |
 
 ### Memories — `/api/memories` *(protected)*
 
@@ -268,17 +288,27 @@ All routes are prefixed with `/api`. Protected routes require `Authorization: Be
 |---|---|---|
 | `GET` | `/memories` | List memories. Query: `category`, `type`, `isArchived`, `page`, `limit` |
 | `POST` | `/memories/capture` | Quick Capture. Body: `{ content, category?, type? }` |
-| `GET` | `/memories/search` | Search vault. Query: `q` |
-| `GET` | `/memories/stats` | Category counts: `{ coding, deen, admin, life }` |
+| `GET` | `/memories/search` | Search vault. Query: `q` — uses semantic search (embeddings + cosine similarity) with keyword fallback |
+| `GET` | `/memories/stats` | Category counts: `{ coding, deen, admin, life, total }` |
 | `GET` | `/memories/:id` | Get single memory |
 | `PATCH` | `/memories/:id` | Update `content`, `category`, `type`, or `tags` |
 | `PATCH` | `/memories/:id/archive` | Toggle `isArchived` |
 | `DELETE` | `/memories/:id` | Hard delete with confirmation |
 
+### Digest — `/api/digest` *(protected)*
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/digest/latest` | Fetch the most recent undismissed digest for the user |
+| `GET` | `/digest` | Fetch all digests (for archive view) |
+| `PATCH` | `/digest/:id/dismiss` | Mark a digest as dismissed |
+
 ### Socket Events
 
 | Event | Direction | Description |
 |---|---|---|
+| `chat:join` | Client → Server | Join a chat room to receive per-chat events |
+| `chat:leave` | Client → Server | Leave a chat room |
 | `chat:closed` | Client → Server | User navigated away from a chat; triggers extraction scheduling |
 | `vault:updated` | Server → Client | Extraction completed; payload includes new memory count |
 
@@ -297,7 +327,18 @@ The atomic unit of the knowledge vault. Each node has:
 - **`source`** — `extraction | quick_capture | manual`
 - **`tags`** — 2–4 topic tags auto-assigned by the AI
 - **`reinforcementCount`** — incremented when a near-duplicate is detected instead of creating a new node
-- **`embedding`** — 768-float vector for semantic search (Phase 2)
+- **`embedding`** — vector for semantic search and de-duplication (Gemini `embedding-001`)
+- **`possibleDuplicateOf`** — reference to the existing node flagged as a near-duplicate
+
+### Context Pills
+
+When a user opens a chat that has injected memories, a collapsible **Context Pills** bar appears at the top of the chat window. Each pill shows the memory's category badge and a truncated preview of its content. Users can:
+
+- **Expand/collapse** the bar to see or hide the full list of injected memories
+- **Remove individual pills** to exclude a specific memory from the AI's context for the rest of the conversation
+- **Remove all context** with a single click
+
+Removed pill IDs are tracked in Redux (`removedPillIds`) and stored per-chat so they survive navigation within the session.
 
 ### Context Injection
 
@@ -308,7 +349,7 @@ When a user sends the **first message** of a new chat:
 3. Builds a formatted system context block and prepends it to the Groq API call
 4. Stores the injected memory IDs on the chat record (`injectedMemoryIds`)
 
-The user never sees the raw context. In Phase 2, Context Pills surface it transparently in the chat UI.
+The user never sees the raw system context — they see it surfaced as Context Pills in the UI.
 
 ### Memory Extraction Pipeline
 
@@ -316,22 +357,45 @@ The user never sees the raw context. In Phase 2, Context Pills surface it transp
 chat:closed event
   → Agenda schedules extract-memories job (delay: EXTRACTION_DELAY_MINUTES)
   → Job fetches full message history
-  → Checks messageCount >= EXTRACTION_MIN_MESSAGES
-  → Calls Groq with extraction prompt → JSON array of Memory Nodes
+  → Checks userMessageCount >= EXTRACTION_MIN_MESSAGES
+  → Calls Gemini 2.5 Flash Lite with extraction prompt → JSON array of Memory Nodes
   → Validates each node (enum values, content length, required fields)
   → De-duplication check (cosine similarity against existing vault)
-  → Writes valid, non-duplicate nodes to `memories` collection
+    → score >= SIMILARITY_MERGE_THRESHOLD → increment reinforcementCount, skip write
+    → score >= SIMILARITY_WARN_THRESHOLD  → write with possibleDuplicateOf reference
+    → score < SIMILARITY_WARN_THRESHOLD   → write as new node
+  → Generates embedding for each new node (Gemini embedding-001)
+  → Writes valid nodes to `memories` collection
   → Updates user.memorySummary counts
   → Emits vault:updated to the user's private socket room
+  → Checks if digest generation should be triggered (≥3 new memories in 7 days)
 ```
 
 Extraction is **fully async and never blocks the UI.** Failures log silently and are retryable. The user's vault continues to work even if extraction fails on a specific chat.
+
+### Weekly Digest
+
+After each extraction pass, `digest.service.js` checks whether a new weekly digest should be generated:
+
+- No digest exists yet, **or** the last digest is older than 7 days
+- At least 3 new memories were created in the past 7 days
+
+If both conditions are met, a `generate-digest` Agenda job is queued immediately. The job calls Groq with the user's recent memories and chat titles, producing a ≤200-word conversational synthesis. The result is stored in the `digests` collection (`weekStartDate`, `isRead`, `isDismissed`) and surfaced in the app as a dismissible `DigestCard`.
 
 ### Authentication Model
 
 - **Access tokens** — JWT, 15-minute expiry, stored in app memory
 - **Refresh tokens** — JWT, 30-day expiry, stored in HttpOnly `Secure` `SameSite=Strict` cookie
 - All database queries filter by `userId: req.user.id` — cross-user data access is architecturally impossible, not just policy
+
+### Admin Scripts
+
+One-off scripts in `Backend/src/scripts/` for data migration and maintenance:
+
+| Script | Purpose |
+|---|---|
+| `retroactiveExtraction.js` | Backfill memory extraction for existing chats. Supports `--dry-run`, `--limit=N`, and `--userId=<id>` flags. Fixes missing `messageCount` / `userMessageCount` fields, then schedules extraction jobs with a 10-second stagger to respect API rate limits. |
+| `migrateEmbeddings.js` | Retroactively generate and attach vector embeddings to existing memory nodes that pre-date the embedding pipeline. |
 
 ---
 
@@ -353,9 +417,9 @@ The `docs/` equivalent for this project lives at the root as versioned markdown 
 
 | Phase | Scope | Status |
 |---|---|---|
-| **Phase 1 — Foundation** | Memory Extraction Engine, Memory Schema, Knowledge Vault UI | 🔨 In Progress |
-| **Phase 2 — Intelligence** | Context Injection, Quick Capture, Semantic Search, De-duplication | 📋 Planned |
-| **Phase 3 — Synthesis** | Dashboard Redesign, Weekly Digest, Memory Timeline, Global Chat | 📋 Planned |
+| **Phase 1 — Foundation** | Memory Extraction Engine, Memory Schema, Knowledge Vault UI, Auth, Quick Capture | ✅ Done |
+| **Phase 2 — Intelligence** | Context Injection, Context Pills, Semantic Search, De-duplication, Streaming Responses, Weekly AI Digest, Dashboard Redesign | ✅ Done |
+| **Phase 3 — Synthesis** | Memory Timeline, Global Chat | 📋 Planned |
 
 ---
 
