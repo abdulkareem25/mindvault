@@ -1,8 +1,8 @@
 # MindVault
 
-> **Your personal AI that builds a working model of you over time — so every conversation starts from where you left off, not from zero.**
+> **Your personal AI that builds a working model of you over time, so every conversation starts from where you left off, not from zero.**
 
-MindVault is a full-stack AI chat application built around a single architectural idea: conversations should produce *persistent, structured knowledge*, not disappear the moment you close a tab. Every chat you close is processed by a background Memory Extraction Engine that distills it into typed Memory Nodes — decisions, preferences, learnings, goals — stored permanently in a searchable Knowledge Vault. When you open a new conversation, relevant memories are silently injected as context so the AI already knows your stack, your goals, and what you've already decided.
+MindVault is a full-stack AI chat application built around a single architectural idea: conversations should produce *persistent, structured knowledge*, not disappear the moment you close a tab. Every chat you close is processed by a background Memory Extraction Engine that distills it into typed Memory Nodes decisions, preferences, learnings, goals stored permanently in a searchable Knowledge Vault. When you open a new conversation, relevant memories are silently injected as context so the AI already knows your stack, your goals, and what you've already decided.
 
 ---
 
