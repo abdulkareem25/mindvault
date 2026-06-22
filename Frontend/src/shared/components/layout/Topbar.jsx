@@ -1,13 +1,15 @@
-import { ChevronDown, LogOut, Menu, Settings } from 'lucide-react';
+import { ChevronDown, LogOut, Menu, Plus, Settings } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import useAuth from '../../../features/auth/hooks/useAuth';
+import { openModal } from '../../../features/capture/captureSlice';
 import { showToast } from '../../../features/shared/components/Toast';
 
 export function Topbar({ onMenuClick }) {
   const { user } = useSelector((state) => state.auth);
   const { logoutUser } = useAuth();
+  const dispatch = useDispatch();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -56,46 +58,62 @@ export function Topbar({ onMenuClick }) {
         </Link>
       </div>
 
-      {/* Right: user menu */}
-      <div className="relative" ref={dropdownRef}>
-        <div
-          onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="flex items-center gap-2 cursor-pointer group select-none"
-        >
-          <div className="w-8 h-8 rounded-full bg-dusk border border-divide
-            flex items-center justify-center font-sans text-13 font-medium text-cream">
-            {initial}
-          </div>
-          <span className="font-sans text-14 text-mist hidden md:block">{name}</span>
-          <ChevronDown className="w-4 h-4 text-smoke group-hover:text-mist transition-colors" />
-        </div>
+      {/* Right: mobile capture button + user menu */}
+      <div className="flex items-center gap-2">
 
-        {/* Dropdown menu */}
-        {dropdownOpen && (
-          <div className="absolute right-0 mt-2 w-48 bg-dusk border border-divide
-            rounded-lg shadow-modal py-1 z-50 animate-fade-up">
-            <button
-              onClick={() => {
-                showToast('info', 'Settings coming soon!');
-                setDropdownOpen(false);
-              }}
-              className="w-full flex items-center gap-2 px-4 py-2.5 text-left
-                font-sans text-14 text-mist hover:bg-ink hover:text-cream transition-colors"
-            >
-              <Settings className="w-4 h-4 text-smoke" />
-              <span>Settings</span>
-            </button>
-            <hr className="border-divide my-1" />
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-2 px-4 py-2.5 text-left
-                font-sans text-14 text-danger hover:bg-danger/10 transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Sign out</span>
-            </button>
+        {/* Quick Capture — mobile only, lives in topbar so it never floats over content */}
+        <button
+          onClick={() => dispatch(openModal())}
+          title="Quick Capture (Ctrl+Shift+M)"
+          className="md:hidden w-9 h-9 flex items-center justify-center
+            rounded-lg bg-ember/10 text-ember border border-ember/20
+            hover:bg-ember/20 hover:border-ember/40
+            transition-all duration-200 cursor-pointer active:scale-95"
+        >
+          <Plus className="w-4 h-4" />
+        </button>
+
+        {/* User menu */}
+        <div className="relative" ref={dropdownRef}>
+          <div
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+            className="flex items-center gap-2 cursor-pointer group select-none"
+          >
+            <div className="w-8 h-8 rounded-full bg-dusk border border-divide
+              flex items-center justify-center font-sans text-13 font-medium text-cream">
+              {initial}
+            </div>
+            <span className="font-sans text-14 text-mist hidden md:block">{name}</span>
+            <ChevronDown className="w-4 h-4 text-smoke group-hover:text-mist transition-colors" />
           </div>
-        )}
+
+          {/* Dropdown menu */}
+          {dropdownOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-dusk border border-divide
+              rounded-lg shadow-modal py-1 z-50 animate-fade-up">
+              <button
+                onClick={() => {
+                  showToast('info', 'Settings coming soon!');
+                  setDropdownOpen(false);
+                }}
+                className="w-full flex items-center gap-2 px-4 py-2.5 text-left
+                  font-sans text-14 text-mist hover:bg-ink hover:text-cream transition-colors"
+              >
+                <Settings className="w-4 h-4 text-smoke" />
+                <span>Settings</span>
+              </button>
+              <hr className="border-divide my-1" />
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-2 px-4 py-2.5 text-left
+                  font-sans text-14 text-danger hover:bg-danger/10 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Sign out</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
