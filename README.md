@@ -1,426 +1,373 @@
 # MindVault
+Your personal AI memory vault for conversations, notes, and recurring knowledge.
 
-> **Your personal AI that builds a working model of you over time, so every conversation starts from where you left off, not from zero.**
+## Overview
 
-MindVault is a full-stack AI chat application built around a single architectural idea: conversations should produce *persistent, structured knowledge*, not disappear the moment you close a tab. Every chat you close is processed by a background Memory Extraction Engine that distills it into typed Memory Nodes decisions, preferences, learnings, goals stored permanently in a searchable Knowledge Vault. When you open a new conversation, relevant memories are silently injected as context so the AI already knows your stack, your goals, and what you've already decided.
+MindVault is a full-stack MERN application that turns AI conversations and quick notes into persistent, structured memories. Users can chat in category-scoped workspaces, browse and manage a personal vault, search memories, and review periodic AI-generated digests.
 
----
+When a chat is closed, an Agenda job can send the conversation to Gemini for memory extraction. Extracted memories are validated, optionally embedded, compared with existing memories, and saved to MongoDB. New chats can receive recent memories as context before the AI response is generated.
 
-## Table of Contents
+The repository contains two independently runnable applications:
 
-- [Features](#features)
-- [Architecture Overview](#architecture-overview)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Environment Variables](#environment-variables)
-  - [Running Locally](#running-locally)
-- [API Reference](#api-reference)
-- [Key Concepts](#key-concepts)
-- [Documentation](#documentation)
-- [Roadmap](#roadmap)
-
----
+- `Frontend`: React/Vite single-page application.
+- `Backend`: Express API, Socket.IO server, MongoDB access, AI integrations, and background jobs. It can also serve the built frontend from `Backend/public`.
 
 ## Features
 
-### Core (Implemented)
-
-| Feature | Description |
-|---|---|
-| **Memory Extraction Engine** | Background job that runs after every closed chat. Calls Gemini 2.5 Flash Lite with a structured prompt to extract 1–5 Memory Nodes — decisions, preferences, learnings, goals, and facts — specific to the user. |
-| **Knowledge Vault** | Dedicated `/vault` page: browse, filter (by category + type), inline-edit, archive, and delete memory nodes. Your accumulated AI knowledge in one place. |
-| **Context Injection** | On the first message of any new chat, the server fetches the top 5 relevant memories and prepends them as a hidden system context block. The AI starts informed without the user re-explaining anything. |
-| **Context Pills** | Visible collapsible bar in the chat UI showing which memories were injected as context. Individual pills can be removed to exclude a specific memory from the current conversation. "Remove all context" clears the entire injected context in one click. |
-| **Semantic Search** | Vector-based search using Gemini `embedding-001` and in-process cosine similarity. Supports both semantic (embedding-based) and keyword (regex) search across the vault. |
-| **Memory De-duplication** | Cosine similarity check on write — memories above `SIMILARITY_MERGE_THRESHOLD` reinforce an existing node's `reinforcementCount` rather than creating a duplicate. Memories above `SIMILARITY_WARN_THRESHOLD` are flagged as possible duplicates. |
-| **Quick Capture** | Global modal (`⌘/Ctrl + Shift + M`) to dump a thought directly into the vault in under 3 seconds. Gemini 2.5 Flash Lite auto-classifies category, type, and tags. |
-| **Five Life Categories** | **Coding**, **Deen**, **Admin**, **Life**, **Global** — memories and chats are scoped to these domains. Global is a cross-cutting category for queries that span multiple vaults. |
-| **Streaming Responses (SSE)** | AI responses are streamed token-by-token via Server-Sent Events, with a dedicated `/messages/stream` endpoint. The frontend renders tokens progressively as they arrive. |
-| **Optimistic UI** | User messages appear in the chat immediately (before the server responds), with the AI response streaming in below. No waiting for a round-trip before your message shows. |
-| **Paginated Message History** | Conversation history loads in pages of 20 messages. Scrolling to the top of a chat automatically loads the next page while preserving scroll position. |
-| **Weekly AI Digest** | Automatically generated in-app synthesis of your last 7 days of memories and chat topics, triggered whenever ≥3 new memories accumulate in a 7-day window. Dismissible and archived for later review. |
-| **Knowledge-first Dashboard** | Home screen showing per-category vault memory counts (live), 5 most recent memory nodes, and 6 most recent chats — each linking directly to the relevant page. |
-| **AI-generated Chat Titles** | New chats are automatically named using Mistral (`mistral-small-latest`) based on the opening message and category. |
-
-### Phase 3 (Planned)
-
-- **Memory Timeline** — chronological view of how your knowledge base grew over time
-- **Global Chat** — a chat mode that searches across all categories simultaneously
-
----
-
-## Architecture Overview
-
-MindVault follows a **three-tier monolith with async intelligence** pattern:
-
-```
-┌───────────────────────────────────────────────────────┐
-│               CLIENT (Browser)                        │
-│  React 19 · Redux Toolkit · RTK Query · Tailwind v4   │
-└──────────────────────┬────────────────────────────────┘
-                       │  REST (HTTP) + SSE + WebSocket
-┌──────────────────────▼────────────────────────────────┐
-│              APPLICATION SERVER                       │
-│           Node.js + Express 5 + Socket.io             │
-│                                                       │
-│  Routes → Controllers → Services → Job Queue          │
-│  Auth MW · Context Injection MW · Joi Validation MW   │
-│                                                       │
-│  Agenda.js (MongoDB-backed job queue)                 │
-│  └── extract-memories job (fires 5 min after close)   │
-│  └── generate-digest job (fires when ≥3 new memories) │
-└──────────────────────┬────────────────────────────────┘
-                       │
-┌──────────────────────▼────────────────────────────────┐
-│             DATA TIER (MongoDB Atlas)                 │
-│  users · chats · messages · memories · digests        │
-│  agendaJobs                                           │
-└──────────────────────┬────────────────────────────────┘
-                       │
-┌──────────────────────▼────────────────────────────────┐
-│              EXTERNAL SERVICES                        │
-│  Groq (llama-3.3-70b-versatile) — chat completions    │
-│  Mistral (mistral-small-latest) — chat title gen      │
-│  Gemini (gemini-2.5-flash-lite) — extraction,         │
-│    classification, quick capture                      │
-│  Gemini (embedding-001) — semantic embeddings         │
-│  Brevo/SMTP — email verification + password reset     │
-└───────────────────────────────────────────────────────┘
-```
-
-**The key data flow:**
-
-1. User closes a chat → `chat:closed` socket event fires
-2. Agenda.js schedules an `extract-memories` job (5-minute delay)
-3. Job calls Gemini 2.5 Flash Lite with the full conversation + extraction prompt
-4. Valid Memory Nodes are cosine-similarity checked against existing vault entries
-5. Non-duplicate nodes are written to the `memories` collection
-6. `vault:updated` socket event notifies the client — vault refreshes live
-7. If ≥3 new memories accumulated in the past 7 days, a `generate-digest` job is queued
-
----
+- Email-based signup, verification, login, refresh, logout, and password reset flows.
+- Category-scoped chats for `coding`, `deen`, `admin`, `life`, and `global`.
+- AI chat responses through Groq, with optional SSE response delivery.
+- Automatically generated chat titles through Mistral.
+- Context injection from recent vault memories when starting a chat.
+- Memory vault with pagination, category/type filters, editing, archiving, and deletion.
+- Quick Capture modal, opened globally with `Ctrl+Shift+M` or `Cmd+Shift+M`.
+- Gemini classification of quick captures into category, type, and tags.
+- Keyword search and optional semantic search using Gemini embeddings and in-process cosine similarity.
+- Duplicate detection that can reinforce an existing memory or flag a possible duplicate.
+- Background memory extraction after a chat is closed when the minimum user-message count is met.
+- Weekly digest generation from recent memories and chat activity.
+- Socket.IO notifications when newly extracted memories update the vault.
+- Dashboard views for memory category counts, recent memories, and recent chats.
 
 ## Tech Stack
 
-### Backend
-
-| Technology | Role |
-|---|---|
-| Node.js + Express 5 | HTTP server and REST API |
-| Socket.io | Real-time chat and vault update events |
-| MongoDB + Mongoose | Primary data store (users, chats, messages, memories, digests) |
-| Agenda.js | MongoDB-backed async job queue for memory extraction and digest generation |
-| Groq SDK (`llama-3.3-70b-versatile`) | Chat completions |
-| LangChain + Mistral (`mistral-small-latest`) | AI-generated chat titles |
-| Google Gemini SDK (`gemini-2.5-flash-lite`) | Memory extraction, quick capture classification, note classification |
-| Google Gemini SDK (`embedding-001`) | Vector embeddings for semantic search and de-duplication |
-| bcryptjs | Password hashing (cost factor 12) |
-| JWT (jsonwebtoken) | Access + refresh token authentication |
-| Joi | Request body validation |
-| Winston + Morgan | Structured application logging + HTTP request logging |
-| express-rate-limit | Rate limiting on auth and AI routes |
-| Nodemailer / Brevo | Transactional email (verification, password reset) |
-
 ### Frontend
 
-| Technology | Role |
-|---|---|
-| React 19 + Vite 6 | SPA framework and build tooling |
-| Redux Toolkit + RTK Query | State management and declarative data fetching with caching |
-| React Router v7 | Client-side routing (`/`, `/vault`, `/chat/:id`, etc.) |
-| Tailwind CSS v4 | Utility-first styling |
-| Socket.io-client | Real-time connection to the backend |
-| react-markdown + remark-gfm | Rendering AI markdown responses |
-| react-hot-toast | Toast notifications (extraction complete, memory vaulted, etc.) |
-| Lucide React | Icon library |
+- React 19
+- Vite 6
+- React Router 7
+- Tailwind CSS 4
+- Lucide React
+- React Markdown with GitHub-Flavored Markdown support
 
-### Infrastructure
+### Backend
 
-| Service | Role |
-|---|---|
-| Render | Hosting (backend + frontend, same process) |
-| MongoDB Atlas M0 | Free-tier database. Note: M0 does not support Atlas Vector Search — semantic similarity is computed in-process. |
+- Node.js with ES modules
+- Express 5
+- Socket.IO
+- Axios
+- Winston and Morgan logging
+- Express Rate Limit
 
----
+### Database and Jobs
+
+- MongoDB with Mongoose
+- Agenda.js using MongoDB for scheduled jobs
+- Collections represented by `User`, `Chat`, `Message`, `Memory`, and `Digest` models
+
+### AI and Email Integrations
+
+- Groq `llama-3.3-70b-versatile` for chat responses and digest generation
+- Google Gemini `gemini-2.5-flash-lite` for extraction and classification
+- Google Gemini `embedding-001` for memory embeddings
+- Mistral `mistral-small-latest` for chat titles
+- Brevo SMTP API for verification and password-reset email delivery
+
+### State and Networking
+
+- Redux Toolkit slices for auth, chat, vault, and capture state
+- RTK Query for auth, vault, and digest APIs
+- Axios services for chat operations and SSE consumption
+- Socket.IO client for vault update events
+
+## Architecture
+
+The frontend and backend are separate during development. The backend owns HTTP routes, authentication, business services, database access, AI calls, and asynchronous jobs. Socket.IO is attached to the same HTTP server as Express.
+
+```mermaid
+flowchart LR
+    Browser[React + Vite SPA\nRedux Toolkit + RTK Query]
+    API[Express API\nControllers and services]
+    Socket[Socket.IO\nAuthenticated user rooms]
+    DB[(MongoDB\nUsers, chats, messages, memories, digests)]
+    Jobs[Agenda jobs\nMemory extraction and digests]
+    AI[Groq, Gemini, Mistral]
+    Mail[Brevo email API]
+
+    Browser -->|REST and SSE| API
+    Browser <-->|vault:updated| Socket
+    API --> DB
+    API --> AI
+    API --> Mail
+    API --> Jobs
+    Jobs --> DB
+    Jobs --> AI
+    Jobs --> Socket
+```
+
+Typical memory extraction flow:
+
+1. The authenticated client emits `chat:closed` through Socket.IO.
+2. The server checks `userMessageCount` against `EXTRACTION_MIN_MESSAGES` and schedules `extract-memories` with Agenda.
+3. Gemini extracts structured memory nodes from the conversation.
+4. Valid nodes are embedded and compared with the user's active memories using cosine similarity.
+5. New memories are stored, duplicate memories may be reinforced, and the user's memory summary is updated.
+6. The server emits `vault:updated` to the user's private Socket.IO room.
+
+The SSE chat endpoint currently generates the complete Groq response first, then sends whitespace-delimited chunks with a short delay. It provides progressive rendering in the UI, but it is not provider-level token streaming.
 
 ## Project Structure
 
-```
+```text
 MindVault/
 ├── Backend/
-│   ├── src/
-│   │   ├── config/          # DB connection, Agenda setup, Gemini client
-│   │   ├── controllers/     # Thin request handlers (parse → service → respond)
-│   │   │                    # auth, chat, memory, digest
-│   │   ├── jobs/            # Agenda job definitions (memoryExtraction.job.js,
-│   │   │                    #   generateDigest.job.js)
-│   │   ├── middlewares/     # JWT auth, context injection, Joi validation, error handler
-│   │   ├── models/          # Mongoose schemas: User, Chat, Message, Memory, Digest
-│   │   ├── routes/          # Express route definitions (auth, chats, memories, digest)
-│   │   ├── scripts/         # One-off admin scripts:
-│   │   │                    #   retroactiveExtraction.js — backfill memory extraction
-│   │   │                    #   migrateEmbeddings.js — backfill vector embeddings
-│   │   ├── services/        # Business logic: ai, chat, extraction, context, embedding,
-│   │   │                    #   search, digest, auth, mail
-│   │   ├── socket/          # Socket.io event handlers (chat, vault)
-│   │   ├── utils/           # prompts.js, cosineSimilarity.js, tokenCounter.js, logger.js
-│   │   ├── validators/      # Joi schemas per resource
-│   │   └── app.js           # Express app setup
-│   └── server.js            # Entry point: HTTP server + Socket.io + Agenda start
-│
-├── Frontend/
+│   ├── server.js                 # HTTP server, Socket.IO, MongoDB, and Agenda startup
+│   ├── package.json              # Backend scripts and dependencies
+│   ├── public/                   # Static frontend build served by Express
 │   └── src/
-│       ├── app/             # Redux store, root App.jsx, router config
-│       ├── constants/       # CATEGORIES, MEMORY_TYPES, API_BASE_URL
-│       ├── features/
-│       │   ├── auth/        # Login, Signup, VerifyEmail, ForgotPassword, ResetPassword
-│       │   │                #   + authSlice + authApi
-│       │   ├── chat/        # ChatPage, Dashboard, MessageBubble, MessageComposer,
-│       │   │                #   ContextPillsBar, ChatSidebar, ChatsModal, CategoryModal,
-│       │   │                #   MarkdownMessage + chatSlice + useChat + useSocket
-│       │   ├── vault/       # VaultPage, MemoryCard, VaultFilters + vaultSlice + vaultApi
-│       │   ├── capture/     # QuickCaptureModal + captureSlice
-│       │   └── digest/      # DigestCard + digestApi
-│       └── shared/          # Sidebar, Button, Badge, Modal, Toast, hooks (useSocket, useAuth)
+│       ├── app.js                # Express middleware, CORS, limits, routes, static serving
+│       ├── config/               # Environment, MongoDB, Agenda, and Gemini setup
+│       ├── controllers/          # HTTP request handlers
+│       ├── jobs/                 # Agenda job definitions
+│       ├── middlewares/          # Auth, context injection, validation, and errors
+│       ├── models/               # Mongoose schemas
+│       ├── routes/               # Auth, chat, memory, and digest routes
+│       ├── scripts/              # Migration and maintenance scripts
+│       ├── services/             # Auth, chat, AI, search, extraction, digest, and email logic
+│       ├── socket/               # Socket.IO authentication and event handlers
+│       ├── utils/                # Prompts, logging, token counting, and similarity helpers
+│       └── validators/           # Joi request schemas
+├── Frontend/
+│   ├── package.json              # Frontend scripts and dependencies
+│   └── src/
+│       ├── app/                  # Router, Redux store, root application
+│       ├── features/             # Auth, chat, vault, capture, and digest features
+│       ├── constants/            # Categories, memory types, and endpoint defaults
+│       └── shared/               # Layout, UI components, hooks, and API re-auth logic
+└── README.md
 ```
-
-**Design principle:** Controllers are intentionally thin. All business logic lives in services. All AI prompts live in `utils/prompts.js` as the single source of truth — iterable without touching service code.
-
----
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js ≥ 18
-- A [MongoDB Atlas](https://cloud.mongodb.com) cluster (M0 free tier works)
-- A [Groq](https://console.groq.com) API key
-- A [Google AI Studio](https://aistudio.google.com) API key (Gemini, for extraction, classification, and embeddings)
-- A [Mistral AI](https://console.mistral.ai) API key (for chat title generation)
-- SMTP credentials or a [Brevo](https://brevo.com) API key for email
+- Node.js and npm
+- A MongoDB deployment reachable by the backend
+- API credentials for Groq, Gemini, and Mistral
+- Brevo API credentials if using email verification or password reset
 
-### Environment Variables
+### Repository Setup
 
-Copy `.env.example` to `.env` in the `Backend/` directory:
+Clone the repository and open the project directory:
 
-```bash
-cp Backend/.env.example Backend/.env
+```powershell
+git clone <repository-url>
+cd MindVault
 ```
 
-| Variable | Description |
-|---|---|
-| `PORT` | Backend server port (default: `3000`) |
-| `CLIENT_URL` | Frontend URL for CORS (e.g., `http://localhost:5173`) |
-| `DB_URI` / `MONGODB_URI` | MongoDB Atlas connection string |
-| `JWT_SECRET` | Access token signing secret (min 64 chars) |
-| `JWT_REFRESH_SECRET` | Refresh token signing secret |
-| `GROQ_API_KEY` | Groq API key for chat completions |
-| `GEMINI_API_KEY` | Gemini API key for extraction, classification, and embeddings |
-| `MISTRAL_API_KEY` | Mistral API key for chat title generation |
-| `SENDER_EMAIL` | From address for transactional email |
-| `BREVO_API_KEY` | Brevo API key for email delivery |
-| `EXTRACTION_MIN_MESSAGES` | Minimum user messages before extraction runs (default: `3`) |
-| `EXTRACTION_DELAY_MINUTES` | Delay after chat close before extraction fires (default: `5`) |
-| `CONTEXT_MAX_MEMORIES` | Max memory nodes injected per chat (default: `5`) |
-| `CONTEXT_MAX_TOKENS` | Hard cap on injected context size (default: `1000`) |
-| `SIMILARITY_MERGE_THRESHOLD` | Cosine similarity above which a new memory is merged (default: `0.90`) |
-| `SIMILARITY_WARN_THRESHOLD` | Similarity above which a "possible duplicate" warning is shown (default: `0.75`) |
-| `AGENDA_COLLECTION` | MongoDB collection for Agenda jobs (default: `agendaJobs`) |
-| `AGENDA_PROCESS_EVERY` | Job polling interval (default: `30 seconds`) |
+The repository has no root-level install or combined development script. Install dependencies in each application directory.
 
-> **Never commit `.env`.** It is in `.gitignore`. Production secrets go in Render's environment settings.
+### Environment Setup
 
-### Running Locally
+Create `Backend/.env.development` using `Backend/.env.example` as the template. The backend loads `.env.development` for `npm run dev` and `.env.production` for `npm start`, based on `NODE_ENV`.
 
-**Backend:**
+For frontend development, optionally create `Frontend/.env` with the Vite variables documented below. The defaults point to the local backend.
 
-```bash
+### Install Dependencies
+
+```powershell
 cd Backend
 npm install
-npm run dev        # NODE_ENV=development + nodemon
-```
 
-**Frontend:**
-
-```bash
-cd Frontend
+cd ..\Frontend
 npm install
-npm run dev        # Vite dev server at http://localhost:5173
 ```
 
-The backend runs at `http://localhost:3000`. The frontend proxies API calls to it via the `CLIENT_URL` setting.
+### Run in Development
 
----
+Start the backend in one terminal:
 
-## API Reference
-
-All routes are prefixed with `/api`. Protected routes require `Authorization: Bearer <access_token>`.
-
-### Auth — `/api/auth`
-
-| Method | Path | Description |
-|---|---|---|
-| `POST` | `/signup` | Create account. Body: `{ email, password }` |
-| `POST` | `/login` | Login. Returns access token + sets HttpOnly refresh cookie |
-| `GET` | `/verify/:token` | Email verification |
-| `POST` | `/forgot-password` | Trigger password reset email |
-| `POST` | `/reset-password/:token` | Set new password |
-| `POST` | `/logout` | Invalidate refresh token |
-
-### Chats — `/api/chats` *(protected)*
-
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/chats` | List all user chats, sorted by `updatedAt` desc |
-| `POST` | `/chats` | Create chat. Body: `{ category, title? }` |
-| `GET` | `/chats/:id` | Get chat with injected memories populated |
-| `PATCH` | `/chats/:id` | Update title |
-| `DELETE` | `/chats/:id` | Delete chat + all messages (cascade) |
-| `GET` | `/chats/:id/messages` | Paginated messages. Query: `page`, `limit` (default 20) |
-| `POST` | `/chats/:id/messages` | **Send message.** Triggers context injection middleware on first message. Returns full AI response. |
-| `POST` | `/chats/:id/messages/stream` | **Send message (streaming).** Same as above but returns a Server-Sent Events stream — tokens arrive progressively. |
-
-### Memories — `/api/memories` *(protected)*
-
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/memories` | List memories. Query: `category`, `type`, `isArchived`, `page`, `limit` |
-| `POST` | `/memories/capture` | Quick Capture. Body: `{ content, category?, type? }` |
-| `GET` | `/memories/search` | Search vault. Query: `q` — uses semantic search (embeddings + cosine similarity) with keyword fallback |
-| `GET` | `/memories/stats` | Category counts: `{ coding, deen, admin, life, total }` |
-| `GET` | `/memories/:id` | Get single memory |
-| `PATCH` | `/memories/:id` | Update `content`, `category`, `type`, or `tags` |
-| `PATCH` | `/memories/:id/archive` | Toggle `isArchived` |
-| `DELETE` | `/memories/:id` | Hard delete with confirmation |
-
-### Digest — `/api/digest` *(protected)*
-
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/digest/latest` | Fetch the most recent undismissed digest for the user |
-| `GET` | `/digest` | Fetch all digests (for archive view) |
-| `PATCH` | `/digest/:id/dismiss` | Mark a digest as dismissed |
-
-### Socket Events
-
-| Event | Direction | Description |
-|---|---|---|
-| `chat:join` | Client → Server | Join a chat room to receive per-chat events |
-| `chat:leave` | Client → Server | Leave a chat room |
-| `chat:closed` | Client → Server | User navigated away from a chat; triggers extraction scheduling |
-| `vault:updated` | Server → Client | Extraction completed; payload includes new memory count |
-
----
-
-## Key Concepts
-
-### Memory Node
-
-The atomic unit of the knowledge vault. Each node has:
-
-- **`content`** — first-person statement about the user (max 500 chars)
-- **`category`** — `coding | deen | admin | life`
-- **`type`** — `decision | preference | learning | goal | fact`
-- **`confidence`** — `high | medium | low` (assigned by the extraction AI)
-- **`source`** — `extraction | quick_capture | manual`
-- **`tags`** — 2–4 topic tags auto-assigned by the AI
-- **`reinforcementCount`** — incremented when a near-duplicate is detected instead of creating a new node
-- **`embedding`** — vector for semantic search and de-duplication (Gemini `embedding-001`)
-- **`possibleDuplicateOf`** — reference to the existing node flagged as a near-duplicate
-
-### Context Pills
-
-When a user opens a chat that has injected memories, a collapsible **Context Pills** bar appears at the top of the chat window. Each pill shows the memory's category badge and a truncated preview of its content. Users can:
-
-- **Expand/collapse** the bar to see or hide the full list of injected memories
-- **Remove individual pills** to exclude a specific memory from the AI's context for the rest of the conversation
-- **Remove all context** with a single click
-
-Removed pill IDs are tracked in Redux (`removedPillIds`) and stored per-chat so they survive navigation within the session.
-
-### Context Injection
-
-When a user sends the **first message** of a new chat:
-
-1. `contextInjection.middleware.js` intercepts the request
-2. Queries the `memories` collection for the user's top 5 most recent memories in that category
-3. Builds a formatted system context block and prepends it to the Groq API call
-4. Stores the injected memory IDs on the chat record (`injectedMemoryIds`)
-
-The user never sees the raw system context — they see it surfaced as Context Pills in the UI.
-
-### Memory Extraction Pipeline
-
-```
-chat:closed event
-  → Agenda schedules extract-memories job (delay: EXTRACTION_DELAY_MINUTES)
-  → Job fetches full message history
-  → Checks userMessageCount >= EXTRACTION_MIN_MESSAGES
-  → Calls Gemini 2.5 Flash Lite with extraction prompt → JSON array of Memory Nodes
-  → Validates each node (enum values, content length, required fields)
-  → De-duplication check (cosine similarity against existing vault)
-    → score >= SIMILARITY_MERGE_THRESHOLD → increment reinforcementCount, skip write
-    → score >= SIMILARITY_WARN_THRESHOLD  → write with possibleDuplicateOf reference
-    → score < SIMILARITY_WARN_THRESHOLD   → write as new node
-  → Generates embedding for each new node (Gemini embedding-001)
-  → Writes valid nodes to `memories` collection
-  → Updates user.memorySummary counts
-  → Emits vault:updated to the user's private socket room
-  → Checks if digest generation should be triggered (≥3 new memories in 7 days)
+```powershell
+cd Backend
+npm run dev
 ```
 
-Extraction is **fully async and never blocks the UI.** Failures log silently and are retryable. The user's vault continues to work even if extraction fails on a specific chat.
+Start the Vite frontend in another terminal:
 
-### Weekly Digest
+```powershell
+cd Frontend
+npm run dev
+```
 
-After each extraction pass, `digest.service.js` checks whether a new weekly digest should be generated:
+The backend defaults to `http://localhost:3000`. Vite uses its standard development port unless configured otherwise, normally `http://localhost:5173`.
 
-- No digest exists yet, **or** the last digest is older than 7 days
-- At least 3 new memories were created in the past 7 days
+### Production Commands
 
-If both conditions are met, a `generate-digest` Agenda job is queued immediately. The job calls Groq with the user's recent memories and chat titles, producing a ≤200-word conversational synthesis. The result is stored in the `digests` collection (`weekStartDate`, `isRead`, `isDismissed`) and surfaced in the app as a dismissible `DigestCard`.
+Backend:
 
-### Authentication Model
+```powershell
+cd Backend
+npm start
+```
 
-- **Access tokens** — JWT, 15-minute expiry, stored in app memory
-- **Refresh tokens** — JWT, 30-day expiry, stored in HttpOnly `Secure` `SameSite=Strict` cookie
-- All database queries filter by `userId: req.user.id` — cross-user data access is architecturally impossible, not just policy
+Frontend build and preview:
 
-### Admin Scripts
+```powershell
+cd Frontend
+npm run build
+npm run preview
+```
 
-One-off scripts in `Backend/src/scripts/` for data migration and maintenance:
+Frontend linting:
 
-| Script | Purpose |
+```powershell
+cd Frontend
+npm run lint
+```
+
+## Environment Variables
+
+Use placeholders for all secrets. Do not commit environment files containing credentials.
+
+### Backend
+
+| Variable | Purpose |
 |---|---|
-| `retroactiveExtraction.js` | Backfill memory extraction for existing chats. Supports `--dry-run`, `--limit=N`, and `--userId=<id>` flags. Fixes missing `messageCount` / `userMessageCount` fields, then schedules extraction jobs with a 10-second stagger to respect API rate limits. |
-| `migrateEmbeddings.js` | Retroactively generate and attach vector embeddings to existing memory nodes that pre-date the embedding pipeline. |
+| `NODE_ENV` | Selects `.env.development` or `.env.production`. |
+| `PORT` | HTTP server port. |
+| `CLIENT_URL` | Allowed browser origin for CORS and email redirects. |
+| `SERVER_URL` | Public backend URL used in verification email links. |
+| `DB_URI` | Mongoose MongoDB connection string. |
+| `MONGODB_URI` | MongoDB connection string used by Agenda; falls back to `DB_URI`. |
+| `JWT_SECRET` | Signs access and email-verification JWTs. |
+| `JWT_REFRESH_SECRET` | Signs refresh JWTs. |
+| `SENDER_EMAIL` | Sender address for Brevo email messages. |
+| `BREVO_API_KEY` | Brevo API credential. |
+| `GEMINI_API_KEY` | Gemini extraction, classification, and embedding credential. |
+| `GROQ_API_KEY` | Groq chat and digest credential. |
+| `MISTRAL_API_KEY` | Mistral chat-title credential. |
+| `EXTRACTION_MIN_MESSAGES` | Minimum user messages required before extraction is scheduled. |
+| `EXTRACTION_INACTIVITY_MINUTES` | Present in the template; current close-event logic does not use it. |
+| `EXTRACTION_DELAY_MINUTES` | Agenda delay after `chat:closed`; `0` runs immediately. |
+| `CONTEXT_MAX_MEMORIES` | Maximum memories selected for context. |
+| `CONTEXT_MAX_TOKENS` | Approximate context token budget. |
+| `SIMILARITY_MERGE_THRESHOLD` | Similarity score at which a memory reinforces an existing memory. |
+| `SIMILARITY_WARN_THRESHOLD` | Similarity score at which a possible duplicate is flagged. |
+| `AGENDA_COLLECTION` | MongoDB collection used for Agenda jobs. |
+| `AGENDA_PROCESS_EVERY` | Agenda polling interval. |
+| `AGENDA_MAX_CONCURRENCY` | Maximum concurrent Agenda jobs. |
+| `VITE_ENABLE_SEMANTIC_SEARCH` | Backend feature flag for `/memories/search`; `true` selects semantic search. |
+| `VITE_ENABLE_CONTEXT_PILLS` | Present in the template; inspect frontend behavior before enabling or relying on it. |
 
----
+### Frontend
 
-## Documentation
-
-The `docs/` equivalent for this project lives at the root as versioned markdown files:
-
-| File | Contents |
-|---|---|
-| [`mindvault-v2-prd.md`](./mindvault-v2-prd.md) | Product Requirements Document — feature specs, user flows, MVP scope, success metrics |
-| [`mindvault-v2-architecture.md`](./mindvault-v2-architecture.md) | Technical Architecture — database schema, API design, socket events, data flows, ADL |
-| [`mindvault-v2-security.md`](./mindvault-v2-security.md) | Security model, error handling strategy, edge cases, pre-launch checklist |
-| [`mindvault-v2-frontend-spec.md`](./mindvault-v2-frontend-spec.md) | Frontend component spec, UX flows, design system |
-| [`mindvault-v2-ticket-list.md`](./mindvault-v2-ticket-list.md) | Full engineering ticket breakdown |
-
----
-
-## Roadmap
-
-| Phase | Scope | Status |
+| Variable | Default | Purpose |
 |---|---|---|
-| **Phase 1 — Foundation** | Memory Extraction Engine, Memory Schema, Knowledge Vault UI, Auth, Quick Capture | ✅ Done |
-| **Phase 2 — Intelligence** | Context Injection, Context Pills, Semantic Search, De-duplication, Streaming Responses, Weekly AI Digest, Dashboard Redesign | ✅ Done |
-| **Phase 3 — Synthesis** | Memory Timeline, Global Chat | 📋 Planned |
+| `VITE_API_URL` | `http://localhost:3000/api` | Backend API base URL. |
+| `VITE_SOCKET_URL` | `http://localhost:3000` | Socket.IO server URL. |
 
----
+## API Documentation
 
-*Built by [Abdul Kareem](https://github.com/abdulkareem25). Personal AI memory for coding, deen, admin, and life.*
+All backend routes are prefixed with `/api`. Protected routes require an access token in `Authorization: Bearer <token>`; the backend also accepts a `token` cookie for protected HTTP requests.
+
+### Authentication
+
+| Method | Route | Auth | Purpose and request |
+|---|---|---|---|
+| `POST` | `/auth/signup` | Public | Body: `name`, `email`, `password`, `confirmPassword`. Creates an unverified account and sends a verification email. |
+| `POST` | `/auth/login` | Public | Body: `email`, `password`. Returns an access token and user data; sets an HttpOnly refresh cookie. |
+| `POST` | `/auth/refresh` | Public with cookie | Uses the `refreshToken` cookie and returns a new access token. |
+| `GET` | `/auth/verify-email?token=...` | Public | Verifies the email and redirects to the configured client URL. |
+| `POST` | `/auth/resend-verification` | Public | Body: `email`. Sends another verification email for an unverified account. |
+| `POST` | `/auth/forgot-password` | Public | Body: `email`. Sends a reset link when the account exists and returns a non-enumerating response. |
+| `POST` | `/auth/reset-password` | Public | Body: `token`, `newPassword`. Resets the password when the token is valid. |
+| `GET` | `/auth/me` | Protected | Returns the current user. |
+| `POST` | `/auth/logout` | Protected | Revokes the current refresh token and clears cookies. |
+
+### Chats
+
+| Method | Route | Auth | Purpose and request |
+|---|---|---|---|
+| `POST` | `/chats` | Protected | Body: `category`, `initialMessage`. Creates a chat, generates its initial AI response, and returns the chat plus injected memories. |
+| `GET` | `/chats` | Protected | Lists the user's chats, sorted by latest activity. |
+| `GET` | `/chats/:id` | Protected | Returns a user's chat with messages and populated injected memories. |
+| `GET` | `/chats/:id/messages?page=1&limit=20` | Protected | Returns paginated chronological messages plus `hasMore` and `total`. Without pagination parameters, returns the full message array for compatibility. |
+| `POST` | `/chats/:id/messages` | Protected | Body: `content`. Saves the user message, generates and saves an AI response, and returns the assistant message plus injected memories. |
+| `POST` | `/chats/:id/messages/stream` | Protected | Body: `content`. Returns an SSE stream of response chunks and a final `done` event containing the saved assistant message. |
+| `DELETE` | `/chats/:id` | Protected | Deletes the chat and its associated messages. |
+
+### Memories
+
+| Method | Route | Auth | Purpose and request |
+|---|---|---|---|
+| `GET` | `/memories?category=&type=&isArchived=&page=1&limit=20` | Protected | Lists filtered, paginated non-archived memories by default. |
+| `POST` | `/memories/capture` | Protected | Body requires `content`; without `category`, returns Gemini classification. With `category`, creates a memory or returns a merge result. |
+| `GET` | `/memories/search?q=&category=&type=` | Protected | Uses keyword search by default, or semantic search when `VITE_ENABLE_SEMANTIC_SEARCH=true`. |
+| `GET` | `/memories/semantic?q=&category=&type=` | Protected | Always performs embedding-based semantic search. |
+| `GET` | `/memories/stats` | Protected | Returns active memory counts for `coding`, `deen`, `admin`, and `life`. |
+| `GET` | `/memories/:id` | Protected | Returns one memory owned by the current user. |
+| `PATCH` | `/memories/:id` | Protected | Updates supported memory fields such as content, category, type, tags, and duplicate metadata. |
+| `PATCH` | `/memories/:id/archive` | Protected | Toggles archive state. |
+| `DELETE` | `/memories/:id` | Protected | Requires body `{ "confirm": true }` before hard deletion. |
+
+### Digests
+
+| Method | Route | Auth | Purpose |
+|---|---|---|---|
+| `GET` | `/digest/latest` | Protected | Returns the latest digest and marks it as read. |
+| `GET` | `/digest` | Protected | Returns the user's digest archive. |
+| `PATCH` | `/digest/:id/dismiss` | Protected | Marks a digest dismissed and read. |
+
+### Socket.IO Events
+
+- Client to server: `chat:closed` with `{ chatId }` to request extraction scheduling.
+- Server to client: `vault:updated` with a count and short previews of newly created memories.
+- Socket connections require a valid JWT supplied through handshake auth, query data, or the `token` cookie.
+
+## Authentication
+
+Login returns a short-lived access JWT that the frontend keeps in Redux state and sends as a Bearer token. The server also creates a 30-day refresh JWT in an HttpOnly, `SameSite=Strict` cookie. Refresh tokens are stored on the user document and checked against that allow-list before issuing a new access token.
+
+The frontend retries failed authenticated requests through `/api/auth/refresh`. If refresh fails, it clears the auth state. Logout removes the refresh token from the user document and clears the relevant cookies.
+
+## Engineering Highlights
+
+- **Layered backend:** Express routes delegate to controllers, services contain business logic, and Mongoose models define persistence boundaries.
+- **Asynchronous intelligence:** Agenda keeps extraction and digest work out of the request path. Extraction records status and attempts, and retries failed jobs up to three times.
+- **Memory quality controls:** Extracted nodes are checked against allowed categories, types, confidence values, and content length before persistence. Embeddings support in-process cosine similarity for reinforcement and duplicate warnings.
+- **User-scoped data access:** Chat and memory queries include the authenticated user ID, and Socket.IO clients join private `user:<id>` rooms.
+- **Resilient context injection:** Context lookup failures are logged and do not prevent chat creation. Context selection is bounded by memory count and an approximate token budget.
+- **Frontend state boundaries:** Redux slices hold UI/session state, while RTK Query manages cached server data for auth, memories, and digests. Chat-specific Axios code handles pagination and SSE consumption.
+- **Progressive chat UX:** The frontend supports optimistic message presentation, paginated history, upward loading, Markdown rendering, and Socket.IO vault refresh notifications.
+
+## Error Handling and Validation
+
+- Joi schemas validate request bodies and route parameters; unknown body fields are stripped and validation errors return structured field messages.
+- `express.json` limits request bodies to 50 KB.
+- Async controllers use `asyncHandler` and centralized error handling.
+- The error handler maps validation, cast, JWT, payload-size, and HTTP errors to appropriate status codes and avoids returning stack traces to clients.
+- AI classification and embedding-dependent flows have fallbacks: classification returns a default `life`/`fact` result, and memory capture can save without an embedding if embedding generation fails.
+
+## Security Considerations
+
+Implemented controls include:
+
+- Bcrypt password hashing with a salt factor of 10.
+- Short-lived access tokens and HttpOnly refresh-token cookies.
+- `SameSite=Strict` cookies and secure cookies in production.
+- Refresh-token allow-listing and revocation on logout.
+- CORS restricted to `CLIENT_URL` with credentials enabled.
+- Rate limits on signup, login, and forgot-password routes.
+- User ownership checks on chat and memory queries.
+- Joi validation and payload-size limits.
+- Non-enumerating forgot-password response.
+
+Environment files should remain outside version control. If any real credentials have been used in a local environment file, rotate them before sharing or deploying the repository.
+
+## Screenshots / Demo
+
+No screenshot assets, live demo URL, or video link are included in the repository.
+
+## Future Improvements
+
+Potential improvements based on the current implementation:
+
+- Add automated backend and frontend tests for authentication, extraction thresholds, pagination, and ownership boundaries.
+- Replace simulated SSE chunking with provider-level streaming from the chat model.
+- Move semantic retrieval and context ranking to a dedicated vector index as the vault grows.
+- Add a single root-level development command and deployment documentation for the frontend build in `Backend/public`.
+- Add an OpenAPI specification or generated API reference to complement the route summary above.
+
+## License
+
+No root-level `LICENSE` file is present. The backend package declares the ISC license in `Backend/package.json`.
